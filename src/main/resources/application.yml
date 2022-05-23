@@ -47,7 +47,7 @@ cpAnnotations:
   configuration: kubectl.kubernetes.io/, kubernetes.io/, k8s.io/
  
 cpResource:
-  clusterResource: Namespace, PersistentVolume, StorageClass, Role, ResourceQuota, LimitRange
+  clusterResource: Namespace, PersistentVolume, StorageClass, Role, ResourceQuota, LimitRange, ConfigMap
  
 cpMaster:
   name:
@@ -158,6 +158,20 @@ cpMaster:
         delete: "/api/v1/namespaces/{namespace}/limitranges/{name}"
         update: "/api/v1/namespaces/{namespace}/limitranges/{name}"
         listAllNamespaces: "/api/v1/limitranges"
+      configMaps:
+        list: "/api/v1/namespaces/{namespace}/configmaps"
+        get: "/api/v1/namespaces/{namespace}/configmaps/{name}"
+        create: "/api/v1/namespaces/{namespace}/configmaps"
+        delete: "/api/v1/namespaces/{namespace}/configmaps/{name}"
+        update: "/api/v1/namespaces/{namespace}/configmaps/{name}"
+        listAllNamespaces: "/api/v1/configmaps"
+      ingresses:
+        list: "/apis/networking.k8s.io/v1/namespaces/{namespace}/ingresses"
+        get: "/apis/networking.k8s.io/v1/namespaces/{namespace}/ingresses/{name}"
+        create: "/apis/networking.k8s.io/v1/namespaces/{namespace}/ingresses"
+        delete: "/apis/networking.k8s.io/v1/namespaces/{namespace}//ingresses/{name}"
+        update: "/apis/networking.k8s.io/v1/namespaces/{namespace}/ingresses/{name}"
+        listAllNamespaces: "/apis/networking.k8s.io/v1/ingresses"
  
 ---
 spring:

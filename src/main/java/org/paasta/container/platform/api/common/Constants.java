@@ -156,6 +156,9 @@ public class Constants {
     public static final String URI_SERVICES = "/container-platform/services";
     public static final String URI_SERVICES_DETAIL = "/container-platform/services/{serviceName:.+}";
 
+    public static final String URI_INGRESSES = "/container-platform/ingresses";
+    public static final String URI_INGRESSES_DETAIL = "/container-platform/ingresses/{serviceName:.+}";
+
     public static final String URI_STORAGES = "/container-platform/storages";
     public static final String URI_STORAGES_DETAIL = "/container-platform/storages/{persistentVolumeClaimName:.+}";
 
@@ -177,6 +180,9 @@ public class Constants {
     public static final String URI_LIMIT_RANGES = "/container-platform";
     public static final String URI_LIMIT_RANGES_DETAIL = "/container-platform/limitRanges/{limitRangeName:.+}";
     public static final String URI_SERVICEINSTANCE_DETAIL =  "/serviceInstance/{serviceInstanceId:.+}";
+
+    public static final String URI_CONFIGMAPS = "/container-platform";
+    public static final String URI_CONFIGMAPS_DETAIL = "/container-platform/configMaps/{configMapsName:.+}";
 
 
 

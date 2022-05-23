@@ -1,6 +1,6 @@
 spring:
   application:
-    name: paas-ta-container-platform-api
+    name: cp-portal-api
   freemarker:
     template-loader-path: classpath:/templates/
  
@@ -10,9 +10,9 @@ jwt:
   refreshExpirationDateInMs: 10800000
 
 project:
-  name: paas-ta-container-platform-api
-  artifactId: paas-ta-container-platform-api
-  description: API of the Container Platform Projects
+  name: cp-portal-api
+  artifactId: cp-portal-api
+  description: API of the PaaS-TA Container Platform Portal
  
 management:
   security:
@@ -22,32 +22,32 @@ cpCluster:
   name: cp-cluster
 
 cp:
-  provide-as-service: paas-ta-container-platform-portal-service
-  provide-as-standalone: paas-ta-container-platform-portal-standalone
+  provide-as-service: cp-portal-service
+  provide-as-standalone: cp-portal-standalone
 
 cpNamespace:
   ignoreNamespace: ${IGNORE_NAMESPACES}
-  defaultNamespace: paas-ta-container-platform-temp-namespace
+  defaultNamespace: cp-portal-temp-namespace
   role:
-    list: paas-ta-container-platform-init-role, paas-ta-container-platform-admin-role
-    init: paas-ta-container-platform-init-role
-    admin: paas-ta-container-platform-admin-role
+    list: cp-init-role, cp-admin-role
+    init: cp-init-role
+    admin: cp-admin-role
   resourceQuotas:
-    list: paas-ta-container-platform-low-rq, paas-ta-container-platform-medium-rq, paas-ta-container-platform-high-rq
-    low: paas-ta-container-platform-low-rq
-    medium: paas-ta-container-platform-medium-rq
-    high: paas-ta-container-platform-high-rq
+    list: cp-low-resourcequota, cp-medium-resourcequota, cp-high-resourcequota
+    low: cp-low-resourcequota
+    medium: cp-medium-resourcequota
+    high: cp-high-resourcequota
   limitRanges:
-    list: paas-ta-container-platform-low-limit-range, paas-ta-container-platform-medium-limit-range, paas-ta-container-platform-high-limit-range
-    low: paas-ta-container-platform-low-limit-range
-    medium: paas-ta-container-platform-medium-limit-range
-    high: paas-ta-container-platform-high-limit-range
+    list: cp-low-limitrange, cp-medium-limitrange, cp-high-limitrange
+    low: cp-low-limitrange
+    medium: cp-medium-limitrange
+    high: cp-high-limitrange
  
 cpAnnotations:
   configuration: kubectl.kubernetes.io/, kubernetes.io/, k8s.io/
  
 cpResource:
-  clusterResource: Namespace, PersistentVolume, StorageClass, Role, ResourceQuota, LimitRange, ConfigMap
+  clusterResource: Namespace, PersistentVolume, StorageClass, Role, ResourceQuota, LimitRange
  
 cpMaster:
   name:
@@ -158,20 +158,6 @@ cpMaster:
         delete: "/api/v1/namespaces/{namespace}/limitranges/{name}"
         update: "/api/v1/namespaces/{namespace}/limitranges/{name}"
         listAllNamespaces: "/api/v1/limitranges"
-      configMaps:
-        list: "/api/v1/namespaces/{namespace}/configmaps"
-        get: "/api/v1/namespaces/{namespace}/configmaps/{name}"
-        create: "/api/v1/namespaces/{namespace}/configmaps"
-        delete: "/api/v1/namespaces/{namespace}/configmaps/{name}"
-        update: "/api/v1/namespaces/{namespace}/configmaps/{name}"
-        listAllNamespaces: "/api/v1/configmaps"
-      ingresses:
-        list: "/apis/networking.k8s.io/v1/namespaces/{namespace}/ingresses"
-        get: "/apis/networking.k8s.io/v1/namespaces/{namespace}/ingresses/{name}"
-        create: "/apis/networking.k8s.io/v1/namespaces/{namespace}/ingresses"
-        delete: "/apis/networking.k8s.io/v1/namespaces/{namespace}//ingresses/{name}"
-        update: "/apis/networking.k8s.io/v1/namespaces/{namespace}/ingresses/{name}"
-        listAllNamespaces: "/apis/networking.k8s.io/v1/ingresses"
  
 ---
 spring:
@@ -206,12 +192,12 @@ logging:
   file: logs/application.log
  
 server:
-  port: ${API_SERVER_PORT}
+  port: ${PORT:3333}
   auth:
     valid: N
  
 commonApi:
-  url: ${CONTAINER_PLATFORM_COMMON_API_DNS}
+  url: ${CP_PORTAL_COMMON_API_DNS}
   authorization:
     id: admin
     password: PaaS-TA

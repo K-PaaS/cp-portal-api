@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api-deployment
+  labels:
+    app: api
+  namespace: cp-dev-namespace
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: api
+  template:
+    metadata:
+      labels:
+        app: api
+    spec:
+      containers:
+      - name: api
+        image: $REGISTRY_HARBOR_URL/container-platform-new-dev/container-platform-api:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 2333
+        env:
+        - name: K8S_IP
+          value: K8S_IP
+        - name: CLUSTER_NAME
+          value: CLUSTER_NAME
+        - name: CONTAINER_PLATFORM_COMMON_API_URL
+          value: CONTAINER_PLATFORM_COMMON_API_URL
+      imagePullSecrets:
+        - name: paasta-cp-dev-secret
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: api-deployment
+  labels:
+    app: api
+  namespace: cp-dev-namespace
+spec:
+  ports:
+  - nodePort: 32701
+    port: 2333
+    protocol: TCP
+    targetPort: 2333
+  selector:
+    app: api
+  type: NodePort

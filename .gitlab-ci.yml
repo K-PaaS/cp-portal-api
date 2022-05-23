@@ -1,0 +1,7 @@
+variables:
+  PROJECT_RELEASE_NAME: "api"
+
+include:
+  - project: ${PORTAL_CI_INCLUDE_PROJECT}
+    ref: ${CI_COMMIT_REF_NAME}
+    file: ${PORTAL_CI_INCLUDE_FILE}

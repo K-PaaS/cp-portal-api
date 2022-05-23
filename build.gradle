@@ -1,0 +1,104 @@
+buildscript {
+	ext {
+		springBootVersion = '2.3.10.RELEASE'
+		springBootManagementPlugin = '1.0.11.RELEASE'
+	}
+	repositories {
+		mavenCentral()
+	}
+
+	dependencies {
+		classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
+		classpath "io.spring.gradle:dependency-management-plugin:${springBootManagementPlugin}"
+	}
+}
+
+
+apply plugin: 'java'
+apply plugin: 'idea'
+apply plugin: 'eclipse'
+apply plugin: 'jacoco'
+apply plugin: 'org.springframework.boot'
+apply plugin: 'io.spring.dependency-management'
+
+
+group = 'org.paasta.container.platform.api'
+sourceCompatibility = '1.8'
+
+
+configurations {
+	compileOnly {
+		extendsFrom annotationProcessor
+	}
+}
+
+repositories {
+	mavenCentral()
+}
+
+
+ext {
+	apacheHttpClientVersion = '4.5.12'
+	gsonVersion = '2.8.6'
+	lombokVersion = '1.18.12'
+	jacocoVersion = '0.8.5'
+	swaggerVersion = '2.9.2'
+	jjwtVersion = '0.9.1'
+	jsonpathVersion = '2.4.0'
+}
+
+jar {
+	archivesBaseName = 'paas-ta-container-platform-api'
+}
+
+dependencies {
+	compile "org.springframework.boot:spring-boot-starter-security"
+	compile "org.springframework.boot:spring-boot-starter-web"
+	compile "org.springframework.boot:spring-boot-starter-aop"
+	compile "org.apache.httpcomponents:httpclient:${apacheHttpClientVersion}"
+	compile "com.google.code.gson:gson:${gsonVersion}"
+	compileOnly "org.projectlombok:lombok:${lombokVersion}"
+	annotationProcessor "org.projectlombok:lombok:${lombokVersion}"
+	compile('org.springframework.boot:spring-boot-starter-freemarker')
+	compile "io.jsonwebtoken:jjwt:${jjwtVersion}"
+	compile("io.springfox:springfox-swagger2:${swaggerVersion}") {
+		exclude module: 'swagger-annotations'
+		exclude module: 'swagger-models'
+	}
+	compile("io.swagger:swagger-annotations:1.5.21")
+	compile("io.swagger:swagger-models:1.5.21")
+	compile "io.springfox:springfox-swagger-ui:${swaggerVersion}"
+	compile "com.jayway.jsonpath:json-path:${jsonpathVersion}"
+	compile 'com.fasterxml.jackson.core:jackson-core'
+	compile 'com.fasterxml.jackson.core:jackson-databind'
+	compile 'com.fasterxml.jackson.dataformat:jackson-dataformat-yaml'
+	compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.0'
+
+	testCompile "org.springframework.boot:spring-boot-starter-test"
+
+	implementation group: 'ch.qos.logback', name: 'logback-core', version: '1.2.9'
+	implementation group: 'ch.qos.logback', name: 'logback-classic', version: '1.2.9'
+	implementation group: 'org.slf4j', name: 'slf4j-api', version: '1.7.32'
+	implementation group: 'org.slf4j', name: 'jul-to-slf4j', version: '1.7.32'
+	implementation group: 'org.apache.logging.log4j', name: 'log4j-to-slf4j', version: '2.17.0'
+	implementation group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.17.0'
+}
+
+jacoco {
+	toolVersion = "${jacocoVersion}"
+	reportsDir = file("$buildDir/jacocoReport")
+}
+
+test {
+	ignoreFailures = true
+	jacoco {
+		destinationFile = file("$buildDir/jacoco/jacoco-overall.exec")
+	}
+	finalizedBy("jacocoTestReport")
+}
+
+jacocoTestReport {
+	reports {
+		xml.enabled true
+	}
+}

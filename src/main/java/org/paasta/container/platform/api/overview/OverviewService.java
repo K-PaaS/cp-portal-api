@@ -1,35 +1,15 @@
 package org.paasta.container.platform.api.overview;
 
-import org.paasta.container.platform.api.clusters.namespaces.NamespacesListAdmin;
 import org.paasta.container.platform.api.clusters.namespaces.NamespacesService;
 import org.paasta.container.platform.api.common.CommonService;
-import org.paasta.container.platform.api.common.Constants;
 import org.paasta.container.platform.api.common.PropertyService;
 import org.paasta.container.platform.api.common.RestTemplateService;
-import org.paasta.container.platform.api.common.model.CommonItemMetaData;
-import org.paasta.container.platform.api.common.model.CommonStatus;
-import org.paasta.container.platform.api.users.Users;
-import org.paasta.container.platform.api.users.UsersList;
 import org.paasta.container.platform.api.users.UsersService;
-import org.paasta.container.platform.api.workloads.deployments.DeploymentsListAdmin;
 import org.paasta.container.platform.api.workloads.deployments.DeploymentsService;
-import org.paasta.container.platform.api.workloads.deployments.support.DeploymentsStatus;
-import org.paasta.container.platform.api.workloads.pods.PodsListAdmin;
 import org.paasta.container.platform.api.workloads.pods.PodsService;
-import org.paasta.container.platform.api.workloads.pods.support.ContainerStatusesItem;
-import org.paasta.container.platform.api.workloads.pods.support.PodsStatus;
-import org.paasta.container.platform.api.workloads.replicaSets.ReplicaSetsListAdmin;
 import org.paasta.container.platform.api.workloads.replicaSets.ReplicaSetsService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
-
-import java.text.DecimalFormat;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 /**
  * Overview Service 클래스
@@ -83,7 +63,7 @@ public class OverviewService {
      *
      * @param cluster the cluster
      * @return the overview
-     */
+     *//*
     public Overview getOverviewAll(String cluster) {
         Overview overview = new Overview();
 
@@ -123,13 +103,13 @@ public class OverviewService {
     }
 
 
-    /**
+    *//**
      * Overview 조회(Get Overview)
      *
      * @param cluster the cluster
      * @param namespace the namespace
      * @return the overview
-     */
+     *//*
     public Overview getOverview(String cluster, String namespace) {
         Overview overview = new Overview();
 
@@ -166,24 +146,24 @@ public class OverviewService {
     }
 
 
-    /**
+    *//**
      * 해당 Resource 총 개수 조회(Get resource's total size)
      *
      * @param resourceList the resource list
      * @return the int
-     */
+     *//*
     private int getCommonCnt(Object resourceList) {
         CommonItemMetaData itemMetadata = commonService.getField("itemMetaData", resourceList);
         return itemMetadata == null? 0 : itemMetadata.getAllItemCount();
     }
 
 
-    /**
+    *//**
      * Overview 조회를 위한 Namespace 별 Deployments 목록 조회(Get Deployments list for getting overview)
      *
      * @param namespace the namespace
      * @return the deployments list admin
-     */
+     *//*
     private DeploymentsListAdmin getDeploymentsList(String namespace){
         if(StringUtils.isEmpty(namespace)) {
             return (DeploymentsListAdmin) deploymentsService.getDeploymentsListAllNamespacesAdmin(0,0, ORDER_BY_DEFAULT, ORDER_DEFAULT, "");
@@ -193,12 +173,12 @@ public class OverviewService {
     }
 
 
-    /**
+    *//**
      * Overview 조회를 위한 Namespace 별 Pods 목록 조회(Get Pods list for getting overview)
      *
      * @param namespace the namespace
      * @return the pods list admin
-     */
+     *//*
     private PodsListAdmin getPodsList(String namespace){
         if(StringUtils.isEmpty(namespace)) {
             return (PodsListAdmin) podsService.getPodsListAllNamespacesAdmin(0,0, ORDER_BY_DEFAULT, ORDER_DEFAULT, "");
@@ -208,12 +188,12 @@ public class OverviewService {
     }
 
 
-    /**
+    *//**
      * Overview 조회를 위한 Namespace 별 ReplicaSets 목록 조회(Get ReplicaSets list for getting overview)
      *
      * @param namespace the namespace
      * @return the replicaSets list admin
-     */
+     *//*
     private ReplicaSetsListAdmin getReplicaSetsList(String namespace){
         if(StringUtils.isEmpty(namespace)) {
             return (ReplicaSetsListAdmin) replicaSetsService.getReplicaSetsListAllNamespacesAdmin(0,0, ORDER_BY_DEFAULT, ORDER_DEFAULT, "");
@@ -223,12 +203,12 @@ public class OverviewService {
     }
 
 
-    /**
+    *//**
      * All Overview, Overview 조회를 위한 공통 Deployments 사용량 조회(Get Common Deployment Usage for getting Overview according to namespaces)
      *
      * @param deploymentsList the deployments list
      * @return the map
-     */
+     *//*
     private Map<String, Object> getDeploymentsUsage(DeploymentsListAdmin deploymentsList) {
         int failedCnt = 0;
         int runningCnt = 0;
@@ -247,12 +227,12 @@ public class OverviewService {
     }
 
 
-    /**
+    *//**
      * All Overview, Overview 조회를 위한 공통 Pods 사용량 조회(Get Common Deployment Usage for getting Overview according to namespaces)
      *
      * @param podsList the pods list
      * @return the map
-     */
+     *//*
     private Map<String, Object> getPodsUsage(PodsListAdmin podsList) {
         int failedCnt = 0;
         int runningCnt = 0;
@@ -282,12 +262,12 @@ public class OverviewService {
     }
 
 
-    /**
+    *//**
      * All Overview, Overview 조회를 위한 공통 ReplicaSets 사용량 조회(Get Common ReplicaSets Usage for getting Overview according to namespaces)
      *
      * @param replicaSetsList the replicaSets list
      * @return the map
-     */
+     *//*
     private Map<String, Object> getReplicaSetsUsage(ReplicaSetsListAdmin replicaSetsList) {
         int failedCnt = 0;
         int runningCnt = 0;
@@ -306,14 +286,14 @@ public class OverviewService {
     }
 
 
-    /**
+    *//**
      * 사용량 계산 후 퍼센트로 변환(Convert to percentage after calculating usage)
      *
      * @param runningCnt the running count
      * @param failedCnt the failed count
      * @param totalCnt the total count
      * @return the map
-     */
+     *//*
     private Map<String, Object> convertToPercentMap(int runningCnt, int failedCnt, int totalCnt) {
         Map<String, Object> map = new HashMap<>();
 
@@ -332,13 +312,13 @@ public class OverviewService {
         return map;
     }
 
-    /**
+    *//**
      * 각 Namespace 별 Users 목록 조회(Get Users namespace list)
      *
      * @param cluster   the cluster
      * @param namespace the namespace
      * @return the users list
-     */
+     *//*
     public Integer getUsersListByNamespaceByOverview(String cluster, String namespace) {
         UsersList usersList =  restTemplateService.send(Constants.TARGET_COMMON_API, Constants.URI_COMMON_API_USERS_LIST_BY_NAMESPACE
                 .replace("{cluster:.+}", cluster)
@@ -349,5 +329,5 @@ public class OverviewService {
 
         return overviewUserList.size();
     }
-
+*/
 }

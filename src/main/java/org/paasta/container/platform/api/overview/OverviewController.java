@@ -9,6 +9,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * Overview Controller 클래스
  *
@@ -52,14 +55,22 @@ public class OverviewController {
                               @PathVariable(value = "namespace") String namespace,
                               @ApiIgnore @RequestParam(required = false, name = "isAdmin") boolean isAdmin) {
 
+
+        Map<String, Object> map = new HashMap<>();
+        map.put("running", "0");
+        map.put("failed", "0");
+
+        Overview overview = new Overview(Constants.RESULT_STATUS_SUCCESS, Constants.RESULT_STATUS_SUCCESS, 200, Constants.RESULT_STATUS_SUCCESS,
+               "", 0,0,0,0, map, map, map );
+
         if(isAdmin) {
             if (namespace.toLowerCase().equals(Constants.ALL_NAMESPACES)) {
-                return overviewService.getOverviewAll(cluster);
+                return overview;
             }
-            return overviewService.getOverview(cluster, namespace);
+            return overview;
         }
 
-        return overviewService.getOverview(cluster, namespace);
+        return overview;
     }
 
 }

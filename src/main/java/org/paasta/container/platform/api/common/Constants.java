@@ -27,7 +27,7 @@ public class Constants {
     public static final String TYPE = "type" ;
     public static final String PATH= "path" ;
 
-    public static final String TARGET_CP_MASTER_API = "cpMasterApi";
+    public static final String TARGET_CP_MASTER_API = "cpMasterApi/{cluster}";
     public static final String TARGET_COMMON_API = "commonApi";
 
     public static final String ACCEPT_TYPE_YAML = "application/yaml";
@@ -155,8 +155,6 @@ public class Constants {
 
     public static final String URI_SERVICES = "/container-platform/services";
     public static final String URI_SERVICES_DETAIL = "/container-platform/services/{serviceName:.+}";
-    public static final String URI_INGRESSES = "/container-platform/ingresses";
-    public static final String URI_INGRESSES_DETAIL = "/container-platform/ingresses/{serviceName:.+}";
 
     public static final String URI_STORAGES = "/container-platform/storages";
     public static final String URI_STORAGES_DETAIL = "/container-platform/storages/{persistentVolumeClaimName:.+}";
@@ -180,8 +178,6 @@ public class Constants {
     public static final String URI_LIMIT_RANGES_DETAIL = "/container-platform/limitRanges/{limitRangeName:.+}";
     public static final String URI_SERVICEINSTANCE_DETAIL =  "/serviceInstance/{serviceInstanceId:.+}";
 
-    public static final String URI_CONFIGMAPS = "/container-platform";
-    public static final String URI_CONFIGMAPS_DETAIL = "/container-platform/configMaps/{configMapsName:.+}";
 
 
     /** 서비스 요청시 처리 메소드 kind 매핑 정보 */

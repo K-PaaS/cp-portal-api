@@ -2,6 +2,7 @@ package org.paasta.container.platform.api.common.util;
 
 import org.paasta.container.platform.api.common.CommonUtils;
 import org.paasta.container.platform.api.common.Constants;
+import org.paasta.container.platform.api.common.model.Params;
 import org.paasta.container.platform.api.exception.ContainerPlatformException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -92,6 +93,68 @@ public class ResourceExecuteManager {
             object = execServiceMethod(namespace, kind, temp, isAdmin);
         }
         return object;
+    }
+
+
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * multi yaml 순서대로 Resource 생성(Create Resource in order)
+     *
+     * @param namespace the namespace
+     * @param yaml the yaml
+     * @return the object
+     * @throws Exception
+     */
+    public static Object commonControllerExecute(Params params) throws Exception {
+        String[] multiYaml;
+
+        multiYaml = YamlUtil.splitYaml(params.getYaml());
+        Object object = null;
+
+        for (String temp : multiYaml) {
+            String kind = YamlUtil.parsingYaml(temp,"kind");
+            object = execServiceMethod(params, kind);
+        }
+        return object;
+    }
+
+
+    /**
+     * Resource 값에 따라 각 Resource를 수행하는 메서드 호출(Call method according to resource value)
+     *
+     * @param cluster the cluster
+     * @param namespace the namespace
+     * @param kind the kind
+     * @param yaml the yaml
+     * @return the object
+     * @throws Exception
+     */
+    public static Object execServiceMethod(Params params, String kind) throws Exception {
+
+        // get method info for processing the service class
+        String [] arrMethodInfo = Constants.RESOURCE_SERVICE_MAP.get(kind).split(":");
+        String methodClassName = arrMethodInfo[1].trim();
+        String methodName = makeServiceMethodName(kind);
+
+        //createServices
+        LOGGER.info("method name >>> " + CommonUtils.loggerReplace(methodName));
+
+        String injectBeanName = methodClassName.substring(0,1).toLowerCase() + methodClassName.substring(1);
+
+        Object targetObject = InspectionUtil.getBean(injectBeanName);
+
+        Method paramMethod = targetObject.getClass().getDeclaredMethod(methodName, String.class, String.class, boolean.class);
+        if (paramMethod == null) {
+            throw new ContainerPlatformException("처리할 메소드 (" + methodName + ") 가 존재 하지 않습니다.", "404");
+        }
+
+        if(params.getNamespace() == null || params.getNamespace().length() == 0) {
+            return paramMethod.invoke(targetObject, params.getYaml());
+        }
+
+        return paramMethod.invoke(targetObject, params);
     }
 
 }

@@ -6,7 +6,9 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import org.paasta.container.platform.api.adminToken.AdminToken;
 import org.paasta.container.platform.api.common.model.CommonStatusCode;
+import org.paasta.container.platform.api.common.model.Params;
 import org.paasta.container.platform.api.common.model.ResultStatus;
+import org.paasta.container.platform.api.exception.CommonStatusCodeException;
 import org.paasta.container.platform.api.exception.CpCommonAPIException;
 import org.paasta.container.platform.api.login.JwtUtil;
 import org.paasta.container.platform.api.users.Users;
@@ -44,6 +46,7 @@ public class RestTemplateService {
     private final String commonApiBase64Authorization;
     private final RestTemplate restTemplate;
     private final PropertyService propertyService;
+    private final CommonService commonService;
     private String base64Authorization;
     private String baseUrl;
 
@@ -52,6 +55,7 @@ public class RestTemplateService {
 
     /**
      * Instantiates a new Rest template service
+     *
      * @param restTemplate                   the rest template
      * @param commonApiAuthorizationId       the common api authorization id
      * @param commonApiAuthorizationPassword the common api authorization password
@@ -61,10 +65,11 @@ public class RestTemplateService {
     public RestTemplateService(RestTemplate restTemplate,
                                @Value("${commonApi.authorization.id}") String commonApiAuthorizationId,
                                @Value("${commonApi.authorization.password}") String commonApiAuthorizationPassword,
-                               PropertyService propertyService) {
+                               PropertyService propertyService,
+                               CommonService commonService) {
         this.restTemplate = restTemplate;
         this.propertyService = propertyService;
-
+        this.commonService = commonService;
         this.commonApiBase64Authorization = "Basic "
                 + Base64Utils.encodeToString(
                 (commonApiAuthorizationId + ":" + commonApiAuthorizationPassword).getBytes(StandardCharsets.UTF_8));
@@ -73,40 +78,9 @@ public class RestTemplateService {
 
     /**
      * t 전송(Send t)
-     *
-     * @param <T>          the type parameter
-     * @param reqApi       the req api
-     * @param reqUrl       the req url
-     * @param httpMethod   the http method
-     * @param bodyObject   the body object
-     * @param responseType the response type
-     * @return the t
-     */
-    public <T> T send(String reqApi, String reqUrl, HttpMethod httpMethod, Object bodyObject, Class<T> responseType) {
-        return send(reqApi, reqUrl, httpMethod, bodyObject, responseType, Constants.ACCEPT_TYPE_JSON, MediaType.APPLICATION_JSON_VALUE);
-    }
-
-
-    /**
-     * t 전송(Send t)
-     *
-     * @param <T>          the type parameter
-     * @param reqApi       the req api
-     * @param reqUrl       the req url
-     * @param httpMethod   the http method
-     * @param bodyObject   the body object
-     * @param responseType the response type
-     * @param acceptType   the accept type
-     * @return the t
-     */
-    public <T> T send(String reqApi, String reqUrl, HttpMethod httpMethod, Object bodyObject, Class<T> responseType, String acceptType) {
-        return send(reqApi, reqUrl, httpMethod, bodyObject, responseType, acceptType, MediaType.APPLICATION_JSON_VALUE);
-    }
-
-    /**
-     * t 전송(Send t)
-     *
+     * <p>
      * (Admin)
+     *
      * @param <T>          the type parameter
      * @param reqApi       the req api
      * @param reqUrl       the req url
@@ -116,9 +90,115 @@ public class RestTemplateService {
      * @param acceptType   the accept type
      * @return the t
      */
-    public <T> T sendAdmin(String reqApi, String reqUrl, HttpMethod httpMethod, Object bodyObject, Class<T> responseType, String acceptType) {
-        return sendAdmin(reqApi, reqUrl, httpMethod, bodyObject, responseType, acceptType, MediaType.APPLICATION_JSON_VALUE);
+    public <T> T send(String reqApi, String reqUrl, HttpMethod httpMethod, Object bodyObject, Class<T> responseType, String acceptType, Params params) {
+        return sendAdmin(reqApi, reqUrl, httpMethod, bodyObject, responseType, acceptType, MediaType.APPLICATION_JSON_VALUE, params);
     }
+
+
+    /**
+     * t 전송(Send t)
+     * <p>
+     * (Admin)
+     *
+     * @param <T>          the type parameter
+     * @param reqApi       the req api
+     * @param reqUrl       the req url
+     * @param httpMethod   the http method
+     * @param bodyObject   the body object
+     * @param responseType the response type
+     * @return the t
+     */
+    public <T> T send(String reqApi, String reqUrl, HttpMethod httpMethod, Object bodyObject, Class<T> responseType, Params params) {
+        return sendAdmin(reqApi, reqUrl, httpMethod, bodyObject, responseType, Constants.ACCEPT_TYPE_JSON, MediaType.APPLICATION_JSON_VALUE, params);
+    }
+
+
+    /**
+     * 사용자가 보낸 YAML 그대로 REST API Call 하는 메소드(Call the Rest Api) isAdmin 제거
+     *
+     * @param reqApi       the req api
+     * @param reqUrl       the req url
+     * @param httpMethod   the http method
+     * @param responseType the response type
+     * @return the t
+     */
+    public <T> T sendYaml(String reqApi, String reqUrl, HttpMethod httpMethod, Class<T> responseType, Params params) {
+        return sendAdmin(reqApi, reqUrl, httpMethod, params.getYaml(), responseType, Constants.ACCEPT_TYPE_JSON, "application/yaml", params);
+
+    }
+
+    public String setRequestParameter(String reqApi, String reqUrl, HttpMethod httpMethod, Params params) {
+
+        if (reqApi.equals(Constants.TARGET_CP_MASTER_API)) {
+            if (httpMethod.equals(HttpMethod.GET) && params.getNamespace().equalsIgnoreCase(Constants.ALL_NAMESPACES)) {
+                reqUrl = reqUrl.replace("namespaces/{namespace}/", "");
+                reqUrl += commonService.generateFieldSelectorForExceptNamespace(Constants.RESOURCE_NAMESPACE);
+                System.out.println("reqUrl::" + reqUrl);
+            }
+
+            reqUrl = reqUrl.replace("{namespace}", params.getNamespace()).replace("{name}", params.getResourceName());
+        }
+
+        return reqUrl;
+    }
+
+
+    /**
+     * t 전송(Send t)
+     * <p>
+     * (Admin)
+     *
+     * @param <T>          the type parameter
+     * @param reqApi       the req api
+     * @param reqUrl       the req url
+     * @param httpMethod   the http method
+     * @param bodyObject   the body object
+     * @param responseType the response type
+     * @param acceptType   the accept type
+     * @param contentType  the content type
+     * @return the t
+     */
+    public <T> T sendAdmin(String reqApi, String reqUrl, HttpMethod httpMethod, Object bodyObject, Class<T> responseType, String acceptType, String contentType, Params params) {
+
+        reqUrl = setRequestParameter(reqApi, reqUrl, httpMethod, params);
+        System.out.println("reqUrl::" + reqUrl);
+        setApiUrlAuthorizationAdmin(reqApi);
+
+        HttpHeaders reqHeaders = new HttpHeaders();
+        reqHeaders.add(AUTHORIZATION_HEADER_KEY, base64Authorization);
+        reqHeaders.add(CONTENT_TYPE, contentType);
+        reqHeaders.add("ACCEPT", acceptType);
+
+        HttpEntity<Object> reqEntity;
+        if (bodyObject == null) {
+            reqEntity = new HttpEntity<>(reqHeaders);
+        } else {
+            reqEntity = new HttpEntity<>(bodyObject, reqHeaders);
+        }
+
+        LOGGER.info("<T> T SEND :: REQUEST: {} BASE-URL: {}, CONTENT-TYPE: {}", CommonUtils.loggerReplace(httpMethod), CommonUtils.loggerReplace(reqUrl), CommonUtils.loggerReplace(reqHeaders.get(CONTENT_TYPE)));
+
+        ResponseEntity<T> resEntity = null;
+
+        try {
+            resEntity = restTemplate.exchange(baseUrl + reqUrl, httpMethod, reqEntity, responseType);
+        } catch (HttpStatusCodeException exception) {
+            LOGGER.info("HttpStatusCodeException API Call URL : {}, errorCode : {}, errorMessage : {}", CommonUtils.loggerReplace(reqUrl), CommonUtils.loggerReplace(exception.getRawStatusCode()), CommonUtils.loggerReplace(exception.getMessage()));
+            throw new CommonStatusCodeException(Integer.toString(exception.getRawStatusCode()));
+        }
+
+        if (resEntity.getBody() != null) {
+            LOGGER.info("RESPONSE-TYPE: {}", CommonUtils.loggerReplace(resEntity.getBody().getClass()));
+            return statusCodeDiscriminate(reqApi, resEntity, httpMethod);
+
+        } else {
+            LOGGER.error("RESPONSE-TYPE: RESPONSE BODY IS NULL");
+        }
+
+        return resEntity.getBody();
+    }
+
+
 
 
 
@@ -163,21 +243,6 @@ public class RestTemplateService {
         return resEntity.getBody();
     }
 
-    /**
-     * t 전송(Send t)
-     *
-     * (Admin)
-     * @param <T>          the type parameter
-     * @param reqApi       the req api
-     * @param reqUrl       the req url
-     * @param httpMethod   the http method
-     * @param bodyObject   the body object
-     * @param responseType the response type
-     * @return the t
-     */
-    public <T> T sendAdmin(String reqApi, String reqUrl, HttpMethod httpMethod, Object bodyObject, Class<T> responseType) {
-        return sendAdmin(reqApi, reqUrl, httpMethod, bodyObject, responseType, Constants.ACCEPT_TYPE_JSON, MediaType.APPLICATION_JSON_VALUE);
-    }
 
     /**
      * t 전송(Send t)
@@ -217,12 +282,7 @@ public class RestTemplateService {
             resEntity = restTemplate.exchange(baseUrl + reqUrl, httpMethod, reqEntity, responseType);
         } catch (HttpStatusCodeException exception) {
             LOGGER.info("HttpStatusCodeException API Call URL : {}, errorCode : {}, errorMessage : {}", CommonUtils.loggerReplace(reqUrl), CommonUtils.loggerReplace(exception.getRawStatusCode()), CommonUtils.loggerReplace(exception.getMessage()));
-
-            for (CommonStatusCode code : CommonStatusCode.class.getEnumConstants()) {
-                if(code.getCode() == exception.getRawStatusCode()) {
-                    return (T) new ResultStatus(Constants.RESULT_STATUS_FAIL, exception.getStatusText(), code.getCode(), code.getMsg());
-                }
-            }
+            throw new CommonStatusCodeException(Integer.toString(exception.getRawStatusCode()));
         }
 
         if (resEntity.getBody() != null) {
@@ -299,6 +359,7 @@ public class RestTemplateService {
         this.baseUrl = apiUrl;
     }
 
+
     /**
      * requestURI 에서 namespace 명 추출(Extract namespace name from requestURI)
      *
@@ -314,13 +375,13 @@ public class RestTemplateService {
                 for (int i = 0; i < arrString.length; i++) {
                     if (arrString[i].equals("namespaces")) {
                         nsOrder = i + 1;
-                        if (Constants.CLUSTER_ROLE_URI.indexOf(arrString[nsOrder + 1])>=0)
+                        if (Constants.CLUSTER_ROLE_URI.indexOf(arrString[nsOrder + 1]) >= 0)
                             return namespace;
                     }
                 }
                 namespace = arrString[nsOrder];
             }
-        }catch(Exception e){
+        } catch (Exception e) {
             return namespace;
         }
         return namespace;
@@ -333,10 +394,10 @@ public class RestTemplateService {
      */
     public AdminToken getAdminToken() {
         this.setApiUrlAuthorization(TARGET_COMMON_API);
-        String reqUrl = Constants.URI_COMMON_API_ADMIN_TOKEN_DETAIL.replace("{tokenName:.+}",Constants.TOKEN_KEY);
+        String reqUrl = Constants.URI_COMMON_API_ADMIN_TOKEN_DETAIL.replace("{tokenName:.+}", Constants.TOKEN_KEY);
         AdminToken adminToken = this.send(TARGET_COMMON_API, reqUrl, HttpMethod.GET, null, AdminToken.class);
 
-        if(Constants.RESULT_STATUS_FAIL.equals(adminToken.getResultCode())) {
+        if (Constants.RESULT_STATUS_FAIL.equals(adminToken.getResultCode())) {
             throw new CpCommonAPIException(adminToken.getResultCode(), CommonStatusCode.NOT_FOUND.getMsg(), adminToken.getStatusCode(), CommonStatusCode.NOT_FOUND.getMsg());
         }
 
@@ -348,7 +409,7 @@ public class RestTemplateService {
         String reqUrl = Constants.URI_COMMON_API_USERS.replace("{cluster:.+}", "cp-namespace").replace("{namespace:.+}", namespace).replace("{userId:.+}", username);
         Users users = this.send(TARGET_COMMON_API, reqUrl, HttpMethod.GET, null, Users.class);
 
-        if(Constants.RESULT_STATUS_FAIL.equals(users.getResultCode())) {
+        if (Constants.RESULT_STATUS_FAIL.equals(users.getResultCode())) {
             throw new CpCommonAPIException(users.getResultCode(), CommonStatusCode.NOT_FOUND.getMsg(), 0, CommonStatusCode.NOT_FOUND.getMsg());
         }
 
@@ -357,31 +418,12 @@ public class RestTemplateService {
 
 
     /**
-     * 사용자가 보낸 YAML 그대로 REST API Call 하는 메소드(Call the Rest Api)
-     *
-     * @param reqApi       the req api
-     * @param reqUrl       the req url
-     * @param httpMethod   the http method
-     * @param bodyObject   the body object
-     * @param responseType the response type
-     * @param isAdmin the is Admin
-     * @return the t
-     */
-    public <T> T sendYaml(String reqApi, String reqUrl, HttpMethod httpMethod, Object bodyObject, Class<T> responseType, Boolean isAdmin) {
-        if(isAdmin)
-            return sendAdmin(reqApi, reqUrl, httpMethod, bodyObject, responseType, Constants.ACCEPT_TYPE_JSON, "application/yaml");
-        else
-            return send(reqApi, reqUrl, httpMethod, bodyObject, responseType, Constants.ACCEPT_TYPE_JSON, "application/yaml");
-    }
-
-
-    /**
      * 생성, 갱신, 삭제 로직의 코드 식별(Create/Update/Delete logic's status code discriminate)
      *
-     * @param reqApi      the reqApi
-     * @param res         the response
-     * @param httpMethod  the http method
-     * @return            the t
+     * @param reqApi     the reqApi
+     * @param res        the response
+     * @param httpMethod the http method
+     * @return the t
      */
     public <T> T statusCodeDiscriminate(String reqApi, ResponseEntity<T> res, HttpMethod httpMethod) {
         // 200, 201, 202일때 결과 코드 동일하게(Same Result Code = 200, 201, 202)
@@ -390,17 +432,16 @@ public class RestTemplateService {
         ResultStatus resultStatus;
 
         List<Integer> intList = new ArrayList<>(RESULT_STATUS_SUCCESS_CODE.length);
-        for (int i : RESULT_STATUS_SUCCESS_CODE)
-        {
+        for (int i : RESULT_STATUS_SUCCESS_CODE) {
             intList.add(i);
         }
 
         // Rest 호출 시 에러가 났지만 에러 메세지를 보여주기 위해 200 OK로 리턴된 경우 (Common API Error Object)
-        if(Constants.TARGET_COMMON_API.equals(reqApi)) {
+        if (Constants.TARGET_COMMON_API.equals(reqApi)) {
             ObjectMapper oMapper = new ObjectMapper();
             Map map = oMapper.convertValue(res.getBody(), Map.class);
 
-            if(Constants.RESULT_STATUS_FAIL.equals(map.get("resultCode"))) {
+            if (Constants.RESULT_STATUS_FAIL.equals(map.get("resultCode"))) {
                 resultStatus = new ResultStatus(Constants.RESULT_STATUS_FAIL, map.get("resultMessage").toString(), CommonStatusCode.INTERNAL_SERVER_ERROR.getCode(), CommonStatusCode.INTERNAL_SERVER_ERROR.getMsg());
                 return (T) resultStatus;
             }
@@ -408,7 +449,7 @@ public class RestTemplateService {
 
 
         if (httpMethod == HttpMethod.PUT || httpMethod == HttpMethod.POST || httpMethod == HttpMethod.DELETE) {
-            if (Arrays.asList(RESULT_STATUS_SUCCESS_CODE).contains(res.getStatusCode().value()) ) {
+            if (Arrays.asList(RESULT_STATUS_SUCCESS_CODE).contains(res.getStatusCode().value())) {
                 resultStatus = new ResultStatus(Constants.RESULT_STATUS_SUCCESS, res.getStatusCode().toString(), CommonStatusCode.OK.getCode(), CommonStatusCode.OK.getMsg());
                 return (T) resultStatus;
             }
@@ -422,11 +463,11 @@ public class RestTemplateService {
      * service account 의 secret 이름을 조회(Get Secret of Service Account)
      *
      * @param namespace the namespace
-     * @param userName the user name
+     * @param userName  the user name
      * @return the String
      */
     public String getSecretName(String namespace, String userName) {
-        String jsonObj = this.sendAdmin(Constants.TARGET_CP_MASTER_API, propertyService.getCpMasterApiListUsersGetUrl().replace("{namespace}", namespace).replace("{name}", userName), HttpMethod.GET, null, String.class);
+        String jsonObj = this.send(Constants.TARGET_CP_MASTER_API, propertyService.getCpMasterApiListUsersGetUrl().replace("{namespace}", namespace).replace("{name}", userName), HttpMethod.GET, null, String.class);
 
         JsonObject jsonObject = JsonParser.parseString(jsonObj).getAsJsonObject();
         JsonElement element = jsonObject.getAsJsonObject().get("secrets");
@@ -435,4 +476,107 @@ public class RestTemplateService {
         token = token.replaceAll("\"", "");
         return token;
     }
+
+
+    ///지울것
+    ///////////////////////////////////////////////////////////////////////////
+
+    /**
+     * t 전송(Send t)
+     * <p>
+     * (Admin)
+     *
+     * @param <T>          the type parameter
+     * @param reqApi       the req api
+     * @param reqUrl       the req url
+     * @param httpMethod   the http method
+     * @param bodyObject   the body object
+     * @param responseType the response type
+     * @param acceptType   the accept type
+     * @return the t
+     */
+    public <T> T sendAdmin(String reqApi, String reqUrl, HttpMethod httpMethod, Object bodyObject, Class<T> responseType, String acceptType) {
+        return sendAdmin(reqApi, reqUrl, httpMethod, bodyObject, responseType, acceptType, MediaType.APPLICATION_JSON_VALUE);
+    }
+
+    public <T> T sendAdmin(String reqApi, String reqUrl, HttpMethod httpMethod, Object bodyObject, Class<T> responseType) {
+        return sendAdmin(reqApi, reqUrl, httpMethod, bodyObject, responseType, Constants.ACCEPT_TYPE_JSON, MediaType.APPLICATION_JSON_VALUE);
+    }
+
+    /**
+     * 사용자가 보낸 YAML 그대로 REST API Call 하는 메소드(Call the Rest Api)
+     *
+     * @param reqApi       the req api
+     * @param reqUrl       the req url
+     * @param httpMethod   the http method
+     * @param bodyObject   the body object
+     * @param responseType the response type
+     * @param isAdmin      the is Admin
+     * @return the t
+     */
+    public <T> T sendYaml(String reqApi, String reqUrl, HttpMethod httpMethod, Object bodyObject, Class<T> responseType, Boolean isAdmin) {
+        if (isAdmin)
+            return sendAdmin(reqApi, reqUrl, httpMethod, bodyObject, responseType, Constants.ACCEPT_TYPE_JSON, "application/yaml");
+        else
+            return send(reqApi, reqUrl, httpMethod, bodyObject, responseType, Constants.ACCEPT_TYPE_JSON, "application/yaml");
+    }
+
+
+    ///////////////////////////////
+
+    /**
+     * t 전송(Send t)
+     * <p>
+     * (Admin)
+     *
+     * @param <T>          the type parameter
+     * @param reqApi       the req api
+     * @param reqUrl       the req url
+     * @param httpMethod   the http method
+     * @param bodyObject   the body object
+     * @param responseType the response type
+     * @param acceptType   the accept type
+     * @return the t
+     */
+    public <T> T send(String reqApi, String reqUrl, HttpMethod httpMethod, Object bodyObject, Class<T> responseType, String acceptType) {
+        return sendAdmin(reqApi, reqUrl, httpMethod, bodyObject, responseType, acceptType, MediaType.APPLICATION_JSON_VALUE);
+    }
+
+
+    /**
+     * t 전송(Send t)
+     * <p>
+     * (Admin)
+     *
+     * @param <T>          the type parameter
+     * @param reqApi       the req api
+     * @param reqUrl       the req url
+     * @param httpMethod   the http method
+     * @param bodyObject   the body object
+     * @param responseType the response type
+     * @return the t
+     */
+    public <T> T send(String reqApi, String reqUrl, HttpMethod httpMethod, Object bodyObject, Class<T> responseType) {
+        return sendAdmin(reqApi, reqUrl, httpMethod, bodyObject, responseType, Constants.ACCEPT_TYPE_JSON, MediaType.APPLICATION_JSON_VALUE);
+    }
+
+
+    /**
+     * 사용자가 보낸 YAML 그대로 REST API Call 하는 메소드(Call the Rest Api) isAdmin 제거
+     *
+     * @param reqApi       the req api
+     * @param reqUrl       the req url
+     * @param httpMethod   the http method
+     * @param bodyObject   the body object
+     * @param responseType the response type
+     * @return the t
+     */
+    public <T> T sendYaml(String reqApi, String reqUrl, HttpMethod httpMethod, Object bodyObject, Class<T> responseType) {
+        return sendAdmin(reqApi, reqUrl, httpMethod, bodyObject, responseType, Constants.ACCEPT_TYPE_JSON, "application/yaml");
+
+    }
+
+
+
+
 }

@@ -3,9 +3,12 @@ package org.paasta.container.platform.api.exception;
 import org.paasta.container.platform.api.common.CommonUtils;
 import org.paasta.container.platform.api.common.Constants;
 import org.paasta.container.platform.api.common.MessageConstant;
+import org.paasta.container.platform.api.common.ResultStatusService;
 import org.paasta.container.platform.api.common.model.CommonStatusCode;
+import org.paasta.container.platform.api.common.model.ResultStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.BindingResult;
@@ -29,7 +32,11 @@ import java.util.Iterator;
 public class GlobalExceptionHandler extends RuntimeException {
     private static final Logger LOGGER = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
+    @Autowired
+    ResultStatusService resultStatusService;
+
     public GlobalExceptionHandler() {
+
     }
 
     @ExceptionHandler({HttpClientErrorException.class})
@@ -37,7 +44,7 @@ public class GlobalExceptionHandler extends RuntimeException {
     public ErrorMessage handleException(HttpClientErrorException ex) {
         LOGGER.info("HttpClientErrorException >>> " + CommonUtils.loggerReplace(ex.getStatusText()));
         for (CommonStatusCode code : CommonStatusCode.class.getEnumConstants()) {
-            if(code.getCode() == ex.getRawStatusCode()) {
+            if (code.getCode() == ex.getRawStatusCode()) {
                 return new ErrorMessage(Constants.RESULT_STATUS_FAIL, code.getMsg(), code.getCode(), code.getMsg());
             }
         }
@@ -62,7 +69,7 @@ public class GlobalExceptionHandler extends RuntimeException {
 
     @ExceptionHandler({Exception.class})
     public ErrorMessage handleAll(final Exception ex) {
-        if(ex.getMessage().contains("404")) {
+        if (ex.getMessage().contains("404")) {
             return new ErrorMessage(Constants.RESULT_STATUS_FAIL, CommonStatusCode.NOT_FOUND.getMsg(), HttpStatus.NOT_FOUND.value(), CommonStatusCode.NOT_FOUND.getMsg());
         }
 
@@ -75,7 +82,7 @@ public class GlobalExceptionHandler extends RuntimeException {
     public ErrorMessage handleException(HttpMessageNotReadableException ex) {
 
         String message = "Required request body is missing";
-        if(ex.getMessage().contains(message)){
+        if (ex.getMessage().contains(message)) {
             return new ErrorMessage(Constants.RESULT_STATUS_FAIL, MessageConstant.REQUEST_VALUE_IS_MISSING.getMsg(), HttpStatus.UNPROCESSABLE_ENTITY.value(), MessageConstant.REQUEST_VALUE_IS_MISSING.getMsg());
         }
         return new ErrorMessage(Constants.RESULT_STATUS_FAIL, ex.getMessage(), HttpStatus.UNPROCESSABLE_ENTITY.value(), ex.getLocalizedMessage());
@@ -88,8 +95,8 @@ public class GlobalExceptionHandler extends RuntimeException {
         String message = MessageConstant.REQUEST_VALUE_IS_MISSING.getMsg() + " : ";
 
         FieldError error;
-        for(Iterator var5 = result.getFieldErrors().iterator(); var5.hasNext(); message = message + error.getField()) {
-            error = (FieldError)var5.next();
+        for (Iterator var5 = result.getFieldErrors().iterator(); var5.hasNext(); message = message + error.getField()) {
+            error = (FieldError) var5.next();
         }
         LOGGER.info("MethodArgumentNotValidException >>> " + CommonUtils.loggerReplace(message));
 
@@ -116,4 +123,20 @@ public class GlobalExceptionHandler extends RuntimeException {
         LOGGER.info("ClassCastException >>> " + CommonUtils.loggerReplace(ex.getMessage()));
         return new ErrorMessage(Constants.RESULT_STATUS_FAIL, MessageConstant.CODE_ERROR.getMsg());
     }
+
+    @ExceptionHandler({CommonStatusCodeException.class})
+    @ResponseBody
+    public ResultStatus commonStatusCodeException(CommonStatusCodeException ex) {
+
+        for (CommonStatusCode code : CommonStatusCode.class.getEnumConstants()) {
+            if (ex.getMessage().contains(Integer.toString(code.getCode()))) {
+                return new ResultStatus(Constants.RESULT_STATUS_FAIL, code.getMsg(),
+                        code.getCode(), code.getMsg());
+            }
+        }
+
+        return new ResultStatus(Constants.RESULT_STATUS_FAIL, CommonStatusCode.INTERNAL_SERVER_ERROR.getMsg(),
+                CommonStatusCode.INTERNAL_SERVER_ERROR.getCode(), CommonStatusCode.INTERNAL_SERVER_ERROR.getMsg());
+    }
+
 }

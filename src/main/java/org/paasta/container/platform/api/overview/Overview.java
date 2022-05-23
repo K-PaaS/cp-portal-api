@@ -1,10 +1,10 @@
 package org.paasta.container.platform.api.overview;
 
-import java.util.Map;
-
+import lombok.AllArgsConstructor;
 import lombok.Data;
-
 import org.paasta.container.platform.api.common.CommonUtils;
+
+import java.util.Map;
 
 /**
  * Overview Model 클래스
@@ -14,6 +14,7 @@ import org.paasta.container.platform.api.common.CommonUtils;
  * @since 2020.10.30
  **/
 @Data
+@AllArgsConstructor
 public class Overview {
     private String resultCode;
     private String resultMessage;

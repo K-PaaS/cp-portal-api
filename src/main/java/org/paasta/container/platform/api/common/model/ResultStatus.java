@@ -17,7 +17,7 @@ import org.paasta.container.platform.api.common.CommonUtils;
 public class ResultStatus {
     private String resultCode;
     private String resultMessage;
-    private int httpStatusCode;
+    private Integer httpStatusCode;
     private String detailMessage;
     private String nextActionUrl;
 

@@ -3,10 +3,7 @@ package org.paasta.container.platform.api.common;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
 import lombok.SneakyThrows;
-import org.paasta.container.platform.api.common.model.CommonAnnotations;
-import org.paasta.container.platform.api.common.model.CommonItemMetaData;
-import org.paasta.container.platform.api.common.model.CommonMetaData;
-import org.paasta.container.platform.api.common.model.CommonStatusCode;
+import org.paasta.container.platform.api.common.model.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,7 +13,10 @@ import org.springframework.stereotype.Service;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -535,7 +535,7 @@ public class CommonService {
                 commonAnnotations.setCheckYn(Constants.CHECK_N);
 
                 for(String configAnnotations : propertyService.getCpAnnotationsConfiguration()) {
-                   // if exists kube-annotations
+                    // if exists kube-annotations
                     if(key.startsWith(configAnnotations)) {
                         commonAnnotations.setCheckYn(Constants.CHECK_Y);
                     }
@@ -567,17 +567,45 @@ public class CommonService {
      * @return the string
      */
     public String procSetAnnotations(String value) {
-      return value.replace("\\\"","\"");
+        return value.replace("\\\"","\"");
     }
 
-    public<T> Object procResultList(Object response, int offset, int limit, String orderBy, String order, String searchName, Class<T> requestClass){
-        try {
-            HashMap responseMap = (HashMap) response;
-            T returnList = setResultObject(responseMap, requestClass);
-            returnList = resourceListProcessing(returnList, offset, limit, orderBy, order, searchName, requestClass);
-            return setResultModel(returnList, Constants.RESULT_STATUS_SUCCESS);
-        } catch (Exception e){
-            return null;
+
+    /**
+     * Resource 목록에 대한 검색 및 페이징, 정렬을 위한 공통 메서드(Common Method for searching, paging, ordering about resource's list)
+     *
+     * @param resourceList the resourceList
+     * @param params
+     * @param requestClass the requestClass
+     *
+     * @return the T
+     */
+    public <T> T resourceListProcessing(Object resourceList, Params params, Class<T> requestClass) {
+
+        Object resourceReturnList = null;
+
+        List resourceItemList = getField("items", resourceList);
+
+        // 1. 키워드 match에 따른 리스트 필터
+        if (params.getSearchName() != null && !params.getSearchName().equals("")) {
+            resourceItemList = searchKeywordForResourceName(resourceItemList, params.getSearchName().trim());
         }
+
+        // 2. 조건에 따른 리스트 정렬
+        resourceItemList = sortingListByCondition(resourceItemList, params.getOrderBy(), params.getOrder());
+
+        // 3. commonItemMetaData 추가
+        CommonItemMetaData commonItemMetaData = setCommonItemMetaData(resourceItemList, params.getOffset(),  params.getLimit());
+        resourceReturnList = setField("itemMetaData", resourceList, commonItemMetaData);
+
+
+        // 4. offset, limit에 따른 리스트 subLIst
+        resourceItemList = subListforLimit(resourceItemList, params.getOffset(), params.getLimit());
+        resourceReturnList = setField("items", resourceReturnList, resourceItemList);
+
+        return (T) resourceReturnList;
     }
+
+
+
 }

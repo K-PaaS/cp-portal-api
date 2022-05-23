@@ -5,8 +5,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
-import org.aspectj.lang.reflect.CodeSignature;
 import org.paasta.container.platform.api.common.model.CommonStatusCode;
+import org.paasta.container.platform.api.common.model.Params;
 import org.paasta.container.platform.api.common.model.ResultStatus;
 import org.paasta.container.platform.api.common.util.InspectionUtil;
 import org.paasta.container.platform.api.common.util.YamlUtil;
@@ -61,33 +61,18 @@ public class MethodHandler {
     @Around("execution(* org.paasta.container.platform.api..*Controller.*create*(..))")
     public Object createResourceAspect(ProceedingJoinPoint joinPoint) throws Throwable {
 
-        String yaml = null;
-        String namespace = null;
+        String yaml = "";
+        String namespace = "";
         Boolean isAdmin = false;
 
         Object[] parameterValues = Arrays.asList(joinPoint.getArgs()).toArray();
+        Params params = (Params) parameterValues[0];
+        yaml = params.getYaml();
+        namespace = params.getNamespace();
 
-        // parameter name -> namespace, yaml
-        CodeSignature methodSignature = (CodeSignature) joinPoint.getSignature();
-        String[] sigParamNames = methodSignature.getParameterNames();
-
-        // yaml 의 위치 파악(locate yaml)
-        for (int i = 0; i < sigParamNames.length; i++) {
-            if (YAML_KEY.equals(sigParamNames[i])) {
-                yaml = Arrays.asList(parameterValues).get(i).toString();
-            }
-
-            if (NAMESPACE_KEY.equals(sigParamNames[i])) {
-                namespace = Arrays.asList(parameterValues).get(i).toString();
-            }
-
-            if (IS_ADMIN_KEY.equals(sigParamNames[i])) {
-                isAdmin = (boolean) Arrays.asList(parameterValues).get(i);
-            }
-        }
 
         if(namespace.toLowerCase().equals(Constants.ALL_NAMESPACES)) {
-           return new ResultStatus(Constants.RESULT_STATUS_FAIL, MessageConstant.NAMESPACES_CANNOT_BE_CREATED.getMsg(), CommonStatusCode.BAD_REQUEST.getCode(), MessageConstant.NAMESPACES_CANNOT_BE_CREATED.getMsg());
+            return new ResultStatus(Constants.RESULT_STATUS_FAIL, MessageConstant.NAMESPACES_CANNOT_BE_CREATED.getMsg(), CommonStatusCode.BAD_REQUEST.getCode(), MessageConstant.NAMESPACES_CANNOT_BE_CREATED.getMsg());
         }
 
         String requestResource;
@@ -225,24 +210,10 @@ public class MethodHandler {
 
         Object[] parameterValues = Arrays.asList(joinPoint.getArgs()).toArray();
 
-        // parameter name -> namespace, yaml
-        CodeSignature methodSignature = (CodeSignature) joinPoint.getSignature();
-        String[] sigParamNames = methodSignature.getParameterNames();
-
-        // yaml 의 위치 파악(locate yaml)
-        for (int i=0; i < sigParamNames.length; i++) {
-            if (YAML_KEY.equals(sigParamNames[i])) {
-                yaml = Arrays.asList(parameterValues).get(i).toString();
-            }
-
-            if (NAMESPACE_KEY.equals(sigParamNames[i])) {
-                namespace = Arrays.asList(parameterValues).get(i).toString();
-            }
-
-            if ("resourceName".equals(sigParamNames[i])) {
-                resourceName = Arrays.asList(parameterValues).get(i).toString();
-            }
-        }
+        Params params = (Params) parameterValues[0];
+        yaml = params.getYaml();
+        namespace = params.getNamespace();
+        resourceName = params.getResourceName();
 
 
         String requestResource;

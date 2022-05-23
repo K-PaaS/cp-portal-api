@@ -18,4 +18,7 @@ public class CommonResourcesYaml {
 
     private String sourceTypeYaml;
 
+    public CommonResourcesYaml(String sourceTypeYaml) {
+        this.sourceTypeYaml = sourceTypeYaml;
+    }
 }

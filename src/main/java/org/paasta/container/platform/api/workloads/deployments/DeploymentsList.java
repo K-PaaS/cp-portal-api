@@ -1,10 +1,13 @@
 package org.paasta.container.platform.api.workloads.deployments;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 import org.paasta.container.platform.api.common.model.CommonItemMetaData;
+import org.paasta.container.platform.api.common.model.CommonMetaData;
+import org.paasta.container.platform.api.workloads.deployments.support.DeploymentsSpec;
+import org.paasta.container.platform.api.workloads.deployments.support.DeploymentsStatus;
 
 import java.util.List;
-import java.util.Map;
 
 /**
  * Deployments List Model 클래스
@@ -19,7 +22,49 @@ public class DeploymentsList {
     private String resultMessage;
     private Integer httpStatusCode;
     private String detailMessage;
-    private Map metadata;
     private CommonItemMetaData itemMetaData;
-    private List<Deployments> items;
+    private List<DeploymentsListItem> items;
+}
+
+@Data
+class DeploymentsListItem {
+    private String name;
+    private String namespace;
+    private int runningPods;
+    private int totalPods;
+    private String images;
+    private String creationTimestamp;
+
+    @JsonIgnore
+    private CommonMetaData metadata;
+
+    @JsonIgnore
+    private DeploymentsSpec spec;
+
+    @JsonIgnore
+    private DeploymentsStatus status;
+
+    public String getName() {
+        return name = metadata.getName();
+    }
+
+    public String getNamespace() {
+        return namespace = metadata.getNamespace();
+    }
+
+    public int getRunningPods() {
+        return runningPods = status.getAvailableReplicas();
+    }
+
+    public int getTotalPods() {
+        return totalPods = status.getReplicas();
+    }
+
+    public String getImages() {
+        return images = spec.getTemplate().getSpec().getContainers().get(0).getImage();
+    }
+
+    public String getCreationTimestamp() {
+        return creationTimestamp = metadata.getCreationTimestamp();
+    }
 }

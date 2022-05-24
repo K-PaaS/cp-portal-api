@@ -1,20 +1,19 @@
 package org.paasta.container.platform.api.storages.storageClasses;
 
-import java.util.Map;
-
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
-
 import org.paasta.container.platform.api.common.CommonUtils;
+import org.paasta.container.platform.api.common.model.CommonAnnotations;
 import org.paasta.container.platform.api.common.model.CommonMetaData;
-import org.paasta.container.platform.api.storages.persistentVolumeClaims.support.PersistentVolumeClaimsSpec;
-import org.paasta.container.platform.api.storages.persistentVolumeClaims.support.PersistentVolumeClaimsStatus;
+
+import java.util.List;
 
 /**
- * StorageClasses Model 클래스
+ * StorageClasses Admin Model 클래스
  *
- * @author jjy
+ * @author hkm
  * @version 1.0
- * @since 2020.10.13
+ * @since 2022.05.23
  */
 @Data
 public class StorageClasses {
@@ -22,16 +21,36 @@ public class StorageClasses {
     private String resultMessage;
     private Integer httpStatusCode;
     private String detailMessage;
-    private String nextActionUrl;
 
+    private String name;
+    private String uid;
+    private Object labels;
+    private List<CommonAnnotations> annotations;
+    private String creationTimestamp;
+
+    private String provisioner;
+    private Object parameters;
+
+    @JsonIgnore
     private CommonMetaData metadata;
-    private PersistentVolumeClaimsSpec spec;
-    private PersistentVolumeClaimsStatus status;
 
-    private Map<String, Object> source;
-    private String sourceTypeYaml;
+    public String getName() {
+        return metadata.getName();
+    }
 
-    public String getNextActionUrl() {
-        return CommonUtils.procReplaceNullValue(nextActionUrl);
+    public String getUid() {
+        return metadata.getUid();
+    }
+
+    public Object getLabels() {
+        return CommonUtils.procReplaceNullValue(metadata.getLabels());
+    }
+
+    public String getCreationTimestamp() {
+        return metadata.getCreationTimestamp();
+    }
+
+    public Object getParameters() {
+        return CommonUtils.procReplaceNullValue(this.parameters);
     }
 }

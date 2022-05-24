@@ -2,7 +2,10 @@ package org.paasta.container.platform.api.storages.storageClasses;
 
 import org.paasta.container.platform.api.common.*;
 import org.paasta.container.platform.api.common.model.CommonResourcesYaml;
+import org.paasta.container.platform.api.common.model.Params;
 import org.paasta.container.platform.api.common.model.ResultStatus;
+import org.paasta.container.platform.api.workloads.deployments.Deployments;
+import org.paasta.container.platform.api.workloads.deployments.DeploymentsList;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
@@ -13,9 +16,9 @@ import java.util.Map;
 /**
  * StorageClasses Service 클래스
  *
- * @author jjy
+ * @author hkm
  * @version 1.0
- * @since 2020.10.13
+ * @since 2022.05.23
  */
 @Service
 public class StorageClassesService {
@@ -43,128 +46,78 @@ public class StorageClassesService {
      * StorageClasses 목록 조회(Get StorageClasses list)
      * (Admin Portal)
      *
-     * @param namespace  the namespace
-     * @param offset     the offset
-     * @param limit      the limit
-     * @param orderBy    the orderBy
-     * @param order      the order
-     * @param searchName the searchName
+     * @param params the params
      * @return the storageClasses list
      */
-    public Object getStorageClassesListAdmin(String namespace, int offset, int limit, String orderBy, String order, String searchName) {
-        HashMap responseMap = null;
-
-        Object response = restTemplateService.sendAdmin(Constants.TARGET_CP_MASTER_API,
-                propertyService.getCpMasterApiListStorageClassesListUrl().replace("{namespace}", namespace),
-                HttpMethod.GET, null, Map.class);
-
-        try {
-            responseMap = (HashMap) response;
-        } catch (Exception e) {
-            return response;
-        }
-
-        StorageClassesListAdmin storageClassesListAdmin = commonService.setResultObject(responseMap, StorageClassesListAdmin.class);
-        storageClassesListAdmin = commonService.resourceListProcessing(storageClassesListAdmin, offset, limit, orderBy, order, searchName, StorageClassesListAdmin.class);
-
-        return commonService.setResultModel(storageClassesListAdmin, Constants.RESULT_STATUS_SUCCESS);
+    public StorageClassesList getStorageClassesList(Params params) {
+        HashMap responseMap = (HashMap) restTemplateService.send(Constants.TARGET_CP_MASTER_API,
+                propertyService.getCpMasterApiListStorageClassesListUrl(), HttpMethod.GET, null, Map.class, params);
+        StorageClassesList storageClassesList = commonService.setResultObject(responseMap, StorageClassesList.class);
+        storageClassesList = commonService.resourceListProcessing(storageClassesList, params, StorageClassesList.class);
+        return (StorageClassesList) commonService.setResultModel(storageClassesList, Constants.RESULT_STATUS_SUCCESS);
     }
 
     /**
      * StorageClasses 상세 조회(Get StorageClasses detail)
-     * (Admin Portal)
      *
-     * @param namespace          the namespace
-     * @param storageClassesName the storageClasses name
+     * @param params the params
      * @return the storageClasses detail
      */
-    public Object getStorageClassesAdmin(String namespace, String storageClassesName) {
-        Object obj = restTemplateService.sendAdmin(Constants.TARGET_CP_MASTER_API,
-                propertyService.getCpMasterApiListStorageClassesGetUrl()
-                        .replace("{namespace}", namespace)
-                        .replace("{name}", storageClassesName)
-                , HttpMethod.GET, null, Map.class);
-        HashMap responseMap;
-
-        try {
-            responseMap = (HashMap) obj;
-        } catch (Exception e) {
-            return obj;
-        }
-
-        StorageClassesAdmin storageClassesAdmin = commonService.setResultObject(responseMap, StorageClassesAdmin.class);
-        storageClassesAdmin = commonService.annotationsProcessing(storageClassesAdmin, StorageClassesAdmin.class);
-
-        return commonService.setResultModel(storageClassesAdmin, Constants.RESULT_STATUS_SUCCESS);
+    public StorageClasses getStorageClasses(Params params) {
+        HashMap responseMap = (HashMap) restTemplateService.send(Constants.TARGET_CP_MASTER_API,
+                propertyService.getCpMasterApiListStorageClassesGetUrl(), HttpMethod.GET, null, Map.class, params);
+        StorageClasses storageClasses = commonService.setResultObject(responseMap, StorageClasses.class);
+        storageClasses = commonService.annotationsProcessing(storageClasses, StorageClasses.class);
+        return (StorageClasses) commonService.setResultModel(storageClasses, Constants.RESULT_STATUS_SUCCESS);
     }
 
     /**
      * StorageClasses YAML 조회(Get StorageClasses yaml)
      *
-     * @param resourceName the resource name
-     * @param resultMap    the result map
+     * @param params the params
      * @return the storageClasses yaml
      */
-    public Object getStorageClassesAdminYaml(String resourceName, HashMap resultMap) {
-        Object response = restTemplateService.sendAdmin(Constants.TARGET_CP_MASTER_API,
-                propertyService.getCpMasterApiListStorageClassesGetUrl().replace("{name}", resourceName), HttpMethod.GET, null, String.class, Constants.ACCEPT_TYPE_YAML);
-
-        if (CommonUtils.isResultStatusInstanceCheck(response)) {
-            return response;
-        }
-
-        resultMap.put("sourceTypeYaml", response);
-
-        return commonService.setResultModel(commonService.setResultObject(resultMap, CommonResourcesYaml.class), Constants.RESULT_STATUS_SUCCESS);
+    public CommonResourcesYaml getStorageClassesYaml(Params params) {
+        String resourceYaml = restTemplateService.send(Constants.TARGET_CP_MASTER_API,
+                propertyService.getCpMasterApiListStorageClassesGetUrl(), HttpMethod.GET, null, String.class, Constants.ACCEPT_TYPE_YAML, params);
+        return (CommonResourcesYaml) commonService.setResultModel(new CommonResourcesYaml(resourceYaml), Constants.RESULT_STATUS_SUCCESS);
     }
 
     /**
      * StorageClasses 생성(Create StorageClasses)
      *
-     * @param namespace the namespace
-     * @param yaml      the yaml
-     * @param isAdmin the isAmdin
+     * @param params the params
      * @return return is succeeded
      */
-    public Object createStorageClasses(String namespace, String yaml, boolean isAdmin) {
-        Object map = restTemplateService.sendYaml(Constants.TARGET_CP_MASTER_API,
-                propertyService.getCpMasterApiListStorageClassesCreateUrl()
-                        .replace("{namespace}", namespace), HttpMethod.POST, yaml, Object.class, isAdmin);
+    public ResultStatus createStorageClasses(Params params) {
+        ResultStatus resultStatus = restTemplateService.sendYaml(Constants.TARGET_CP_MASTER_API,
+                propertyService.getCpMasterApiListStorageClassesCreateUrl(), HttpMethod.POST, ResultStatus.class, params);
 
-        return commonService.setResultModelWithNextUrl(commonService.setResultObject(map, ResultStatus.class),
-                Constants.RESULT_STATUS_SUCCESS, Constants.URI_STORAGES_STORAGE_CLASSES);
+        return (ResultStatus) commonService.setResultModel(resultStatus, Constants.RESULT_STATUS_SUCCESS);
     }
 
     /**
      * StorageClasses 삭제(Delete StorageClasses)
      *
-     * @param namespace    the namespace
-     * @param resourceName the resource name
+     * @param params the params
      * @return return is succeeded
      */
-    public ResultStatus deleteStorageClasses(String namespace, String resourceName) {
-        ResultStatus resultStatus = restTemplateService.sendAdmin(Constants.TARGET_CP_MASTER_API,
-                propertyService.getCpMasterApiListStorageClassesDeleteUrl()
-                        .replace("{namespace}", namespace).replace("{name}", resourceName), HttpMethod.DELETE, null, ResultStatus.class);
-
-        return (ResultStatus) commonService.setResultModelWithNextUrl(commonService.setResultObject(resultStatus, ResultStatus.class),
-                Constants.RESULT_STATUS_SUCCESS, Constants.URI_STORAGES_STORAGE_CLASSES);
+    public ResultStatus deleteStorageClasses(Params params) {
+        ResultStatus resultStatus = restTemplateService.send(Constants.TARGET_CP_MASTER_API,
+                propertyService.getCpMasterApiListStorageClassesDeleteUrl(), HttpMethod.DELETE, null, ResultStatus.class, params);
+        return (ResultStatus) commonService.setResultModel(resultStatus, Constants.RESULT_STATUS_SUCCESS);
     }
 
     /**
      * StorageClasses 수정(Update StorageClasses)
      *
-     * @param resourceName the resource name
-     * @param yaml         the yaml
+     * @param params the params
      * @return return is succeeded
      */
-    public ResultStatus updateStorageClasses(String resourceName, String yaml) {
+    public ResultStatus updateStorageClasses(Params params) {
         ResultStatus resultStatus = restTemplateService.sendYaml(Constants.TARGET_CP_MASTER_API,
-                propertyService.getCpMasterApiListStorageClassesUpdateUrl()
-                        .replace("{name}", resourceName), HttpMethod.PUT, yaml, ResultStatus.class, true);
-
-        return (ResultStatus) commonService.setResultModelWithNextUrl(commonService.setResultObject(resultStatus, ResultStatus.class),
-                Constants.RESULT_STATUS_SUCCESS, Constants.URI_STORAGES_STORAGE_CLASSES_DETAIL.replace("{storageClassName:.+}", resourceName));
+                propertyService.getCpMasterApiListStorageClassesUpdateUrl(), HttpMethod.PUT, ResultStatus.class, params);
+        return (ResultStatus) commonService.setResultModel(resultStatus, Constants.RESULT_STATUS_SUCCESS);
     }
 
 

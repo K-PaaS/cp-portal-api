@@ -3,20 +3,19 @@ package org.paasta.container.platform.api.storages.persistentVolumeClaims;
 import io.swagger.annotations.*;
 import org.paasta.container.platform.api.common.Constants;
 import org.paasta.container.platform.api.common.ResultStatusService;
+import org.paasta.container.platform.api.common.model.CommonResourcesYaml;
+import org.paasta.container.platform.api.common.model.Params;
 import org.paasta.container.platform.api.common.model.ResultStatus;
 import org.paasta.container.platform.api.common.util.ResourceExecuteManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-import springfox.documentation.annotations.ApiIgnore;
-
-import java.util.HashMap;
 
 /**
  * PersistentVolumeClaims Controller 클래스
  *
- * @author hrjin
+ * @author hkm
  * @version 1.0
- * @since 2020.09.18
+ * @since 2022.05.24
  */
 @Api(value = "PersistentVolumeClaimsController v1")
 @RestController
@@ -40,174 +39,103 @@ public class PersistentVolumeClaimsController {
     /**
      * PersistentVolumeClaims 목록 조회(Get PersistentVolumeClaims list)
      *
-     * @param cluster    the cluster
-     * @param namespace  the namespace
-     * @param offset     the offset
-     * @param limit      the limit
-     * @param orderBy    the orderBy
-     * @param order      the order
-     * @param searchName the searchName
-     * @param isAdmin    the isAdmin
+     * @param params the params
      * @return the persistentVolumeClaims list
      */
     @ApiOperation(value = "PersistentVolumeClaims 목록 조회(Get PersistentVolumeClaims list)", nickname = "getPersistentVolumeClaimsList")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "cluster", value = "클러스터 명", required = true, dataType = "string", paramType = "path"),
-            @ApiImplicitParam(name = "namespace", value = "네임스페이스 명", required = true, dataType = "string", paramType = "path"),
-            @ApiImplicitParam(name = "offset", value = "목록 시작지점, 기본값 0", required = false, dataType = "int", paramType = "query"),
-            @ApiImplicitParam(name = "limit", value = "한 페이지에 가져올 리소스 최대 수", required = false, dataType = "int", paramType = "query"),
-            @ApiImplicitParam(name = "orderBy", value = "정렬 기준, 기본값 creationTime(생성날짜)", required = false, dataType = "string", paramType = "query"),
-            @ApiImplicitParam(name = "order", value = "정렬 순서, 기본값 desc(내림차순)", required = false, dataType = "string", paramType = "query"),
-            @ApiImplicitParam(name = "searchName", value = "리소스 명 검색", required = false, dataType = "string", paramType = "query")
+            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body")
     })
     @GetMapping
-    public Object getPersistentVolumeClaimsList(@PathVariable(value = "cluster") String cluster,
-                                                @PathVariable(value = "namespace") String namespace,
-                                                @RequestParam(required = false, defaultValue = "0") int offset,
-                                                @RequestParam(required = false, defaultValue = "0") int limit,
-                                                @RequestParam(required = false, defaultValue = "creationTime") String orderBy,
-                                                @RequestParam(required = false, defaultValue = "") String order,
-                                                @RequestParam(required = false, defaultValue = "") String searchName,
-                                                @ApiIgnore @RequestParam(required = false, name = "isAdmin") boolean isAdmin) {
+    public PersistentVolumeClaimsList getPersistentVolumeClaimsList(Params params) {
 
-        if (namespace.toLowerCase().equals(Constants.ALL_NAMESPACES)) {
-            if (isAdmin) {
-                return persistentVolumeClaimsService.getPersistentVolumeClaimsListAllNamespacesAdmin(offset, limit, orderBy, order, searchName);
-            } else {
-                return resultStatusService.FORBIDDEN_ACCESS_RESULT_STATUS();
-            }
-        }
+        if (params.namespace.toLowerCase().equals(Constants.ALL_NAMESPACES)) {
+            return persistentVolumeClaimsService.getPersistentVolumeClaimsListAllNamespaces(params);
 
-        if (isAdmin) {
-            return persistentVolumeClaimsService.getPersistentVolumeClaimsListAdmin(namespace, offset, limit, orderBy, order, searchName);
         }
-        return persistentVolumeClaimsService.getPersistentVolumeClaimsList(namespace, offset, limit, orderBy, order, searchName);
+        return persistentVolumeClaimsService.getPersistentVolumeClaimsList(params);
     }
 
     /**
      * PersistentVolumeClaims 상세 조회(Get PersistentVolumeClaims detail)
      *
-     * @param namespace    the namespace
-     * @param resourceName the resource name
-     * @param isAdmin      the isAdmin
+     * @param params the params
      * @return the persistentVolumeClaims detail
      */
     @ApiOperation(value = "PersistentVolumeClaims 상세 조회(Get PersistentVolumeClaims detail)", nickname = "getPersistentVolumeClaims")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "namespace", value = "네임스페이스 명", required = true, dataType = "string", paramType = "path"),
-            @ApiImplicitParam(name = "resourceName", value = "리소스 명", required = true, dataType = "string", paramType = "path")
+            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body")
     })
     @GetMapping(value = "/{resourceName:.+}")
-    public Object getPersistentVolumeClaims(@PathVariable(value = "namespace") String namespace,
-                                            @PathVariable(value = "resourceName") String resourceName,
-                                            @ApiIgnore @RequestParam(required = false, name = "isAdmin") boolean isAdmin) {
-
-        // For Admin
-        if (isAdmin) {
-            return persistentVolumeClaimsService.getPersistentVolumeClaimsAdmin(namespace, resourceName);
-        }
-        return persistentVolumeClaimsService.getPersistentVolumeClaims(namespace, resourceName);
+    public PersistentVolumeClaims getPersistentVolumeClaims(Params params) {
+        return persistentVolumeClaimsService.getPersistentVolumeClaims(params);
     }
 
     /**
      * PersistentVolumeClaims YAML 조회(Get PersistentVolumeClaims yaml)
      *
-     * @param namespace    the namespace
-     * @param resourceName the resource name
-     * @param isAdmin      the isAdmin
+     * @param params the params
      * @return the persistentVolumeClaims yaml
      */
     @ApiOperation(value = "PersistentVolumeClaims YAML 조회(Get PersistentVolumeClaims yaml)", nickname = "getPersistentVolumeClaimsYaml")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "namespace", value = "네임스페이스 명", required = true, dataType = "string", paramType = "path"),
-            @ApiImplicitParam(name = "resourceName", value = "리소스 명", required = true, dataType = "string", paramType = "path")
+            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body")
     })
     @GetMapping(value = "/{resourceName:.+}/yaml")
-    public Object getPersistentVolumeClaimsYaml(@PathVariable(value = "namespace") String namespace,
-                                                                    @PathVariable(value = "resourceName") String resourceName,
-                                                                    @ApiIgnore @RequestParam(required = false, name = "isAdmin") boolean isAdmin) {
-        // For Admin
-        if (isAdmin) {
-            return persistentVolumeClaimsService.getPersistentVolumeClaimsAdminYaml(namespace, resourceName, new HashMap<>());
-        }
-
-        return persistentVolumeClaimsService.getPersistentVolumeClaimsYaml(namespace, resourceName, new HashMap<>());
+    public CommonResourcesYaml getPersistentVolumeClaimsYaml(Params params) {
+        return persistentVolumeClaimsService.getPersistentVolumeClaimsYaml(params);
     }
 
     /**
      * PersistentVolumeClaims 생성(Create PersistentVolumeClaims)
      *
-     * @param cluster   the cluster
-     * @param namespace the namespace
-     * @param yaml      the yaml
-     * @param isAdmin   the isAdmin
+     * @param params the params
      * @return return is succeeded
      */
     @ApiOperation(value = "PersistentVolumeClaims 생성(Create PersistentVolumeClaims)", nickname = "createPersistentVolumeClaims")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "cluster", value = "클러스터 명", required = true, dataType = "string", paramType = "path"),
-            @ApiImplicitParam(name = "namespace", value = "네임스페이스 명", required = true, dataType = "string", paramType = "path"),
-            @ApiImplicitParam(name = "yaml", value = "리소스 생성 yaml", required = true, dataType = "string", paramType = "body")
+            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body")
     })
     @PostMapping
-    public Object createPersistentVolumeClaims(@PathVariable(value = "cluster") String cluster,
-                                               @PathVariable(value = "namespace") String namespace,
-                                               @RequestBody String yaml,
-                                               @ApiIgnore @RequestParam(required = false, name = "isAdmin") boolean isAdmin) throws Exception {
-        if (yaml.contains("---")) {
-            Object object = ResourceExecuteManager.commonControllerExecute(namespace, yaml, isAdmin);
+    public Object createPersistentVolumeClaims(@RequestBody Params params) throws Exception {
+        if (params.getYaml().contains("---")) {
+            Object object = ResourceExecuteManager.commonControllerExecute(params);
             return object;
         }
 
-        return persistentVolumeClaimsService.createPersistentVolumeClaims(namespace, yaml, isAdmin);
+        return persistentVolumeClaimsService.createPersistentVolumeClaims(params);
     }
 
     /**
      * PersistentVolumeClaims 삭제(Delete PersistentVolumeClaims)
      *
-     * @param namespace    the namespace
-     * @param resourceName the resource name
-     * @param isAdmin      the isAdmin
+     * @param params the params
      * @return return is succeeded
      */
     @ApiOperation(value = "PersistentVolumeClaims 삭제(Delete PersistentVolumeClaims)", nickname = "deletePersistentVolumeClaims")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "namespace", value = "네임스페이스 명", required = true, dataType = "string", paramType = "path"),
-            @ApiImplicitParam(name = "resourceName", value = "리소스 명", required = true, dataType = "string", paramType = "path")
+            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body")
     })
     @DeleteMapping("/{resourceName:.+}")
-    public ResultStatus deletePersistentVolumeClaims(@PathVariable(value = "namespace") String namespace,
-                                                     @PathVariable(value = "resourceName") String resourceName,
-                                                     @ApiIgnore @RequestParam(required = false, name = "isAdmin") boolean isAdmin) {
+    public ResultStatus deletePersistentVolumeClaims(Params params) {
 
-        return persistentVolumeClaimsService.deletePersistentVolumeClaims(namespace, resourceName, isAdmin);
+        return persistentVolumeClaimsService.deletePersistentVolumeClaims(params);
     }
 
     /**
      * PersistentVolumeClaims 수정(Update PersistentVolumeClaims)
      *
-     * @param cluster      the cluster
-     * @param namespace    the namespace
-     * @param resourceName the resource name
-     * @param yaml         the yaml
-     * @param isAdmin      the isAdmin
+     * @param params the params
      * @return return is succeeded
      */
     @ApiOperation(value = "PersistentVolumeClaims 수정(Update PersistentVolumeClaims)", nickname = "updatePersistentVolumeClaims")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "cluster", value = "클러스터 명", required = true, dataType = "string", paramType = "path"),
-            @ApiImplicitParam(name = "namespace", value = "네임스페이스 명", required = true, dataType = "string", paramType = "path"),
-            @ApiImplicitParam(name = "resourceName", value = "리소스 명", required = true, dataType = "string", paramType = "path"),
-            @ApiImplicitParam(name = "yaml", value = "리소스 수정 yaml", required = true, dataType = "string", paramType = "body")
+            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body")
     })
     @PutMapping("/{resourceName:.+}")
-    public ResultStatus updatePersistentVolumeClaims(@PathVariable(value = "cluster") String cluster,
-                                               @PathVariable(value = "namespace") String namespace,
-                                               @PathVariable(value = "resourceName") String resourceName,
-                                               @RequestBody String yaml,
-                                               @ApiIgnore @RequestParam(required = false, name = "isAdmin") boolean isAdmin) {
+    public ResultStatus updatePersistentVolumeClaims(@RequestBody Params params) {
 
-        return persistentVolumeClaimsService.updatePersistentVolumeClaims(namespace, resourceName, yaml, isAdmin);
+        return persistentVolumeClaimsService.updatePersistentVolumeClaims(params);
     }
 
 }

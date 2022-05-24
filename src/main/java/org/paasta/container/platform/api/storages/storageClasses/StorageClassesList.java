@@ -1,49 +1,52 @@
 package org.paasta.container.platform.api.storages.storageClasses;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import lombok.Data;
-import org.paasta.container.platform.api.common.CommonUtils;
-import org.paasta.container.platform.api.common.model.CommonAnnotations;
-import org.paasta.container.platform.api.common.model.CommonMetaData;
 
 import java.util.List;
 
+import lombok.Data;
+
+import org.paasta.container.platform.api.common.CommonUtils;
+import org.paasta.container.platform.api.common.model.CommonItemMetaData;
+import org.paasta.container.platform.api.common.model.CommonMetaData;
+import org.paasta.container.platform.api.common.model.CommonSpec;
+import org.paasta.container.platform.api.common.model.CommonStatus;
+
 /**
- * StorageClasses Admin Model 클래스
+ * StorageClasses List Admin Model 클래스
  *
- * @author jjy
+ * @author hkm
  * @version 1.0
- * @since 2020.10.13
+ * @since 2022.05.23
  */
 @Data
-public class StorageClassesAdmin {
+public class StorageClassesList {
     private String resultCode;
     private String resultMessage;
     private Integer httpStatusCode;
     private String detailMessage;
+    private CommonItemMetaData itemMetaData;
+    private List<StorageClassesListItem> items;
+}
 
+@Data
+class StorageClassesListItem {
     private String name;
-    private String uid;
-    private Object labels;
-    private List<CommonAnnotations> annotations;
-    private String creationTimestamp;
-
     private String provisioner;
     private Object parameters;
+    private String creationTimestamp;
 
     @JsonIgnore
     private CommonMetaData metadata;
 
+    @JsonIgnore
+    private CommonSpec spec;
+
+    @JsonIgnore
+    private CommonStatus status;
+
     public String getName() {
         return metadata.getName();
-    }
-
-    public String getUid() {
-        return metadata.getUid();
-    }
-
-    public Object getLabels() {
-        return CommonUtils.procReplaceNullValue(metadata.getLabels());
     }
 
     public String getCreationTimestamp() {

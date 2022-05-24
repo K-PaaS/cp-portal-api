@@ -1,17 +1,25 @@
 package org.paasta.container.platform.api.storages.persistentVolumes;
 
-import lombok.Data;
-import org.paasta.container.platform.api.common.model.CommonItemMetaData;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import java.util.List;
 import java.util.Map;
 
+import lombok.Data;
+
+import org.paasta.container.platform.api.common.CommonUtils;
+import org.paasta.container.platform.api.common.model.CommonItemMetaData;
+import org.paasta.container.platform.api.common.model.CommonMetaData;
+import org.paasta.container.platform.api.storages.persistentVolumes.support.ObjectReference;
+import org.paasta.container.platform.api.storages.persistentVolumes.support.PersistentVolumesSpec;
+import org.paasta.container.platform.api.storages.persistentVolumes.support.PersistentVolumesStatus;
+
 /**
- * PersistentVolumes List Model 클래스
+ * PersistentVolumes List Admin Model 클래스
  *
- * @author jjy
+ * @author hkm
  * @version 1.0
- * @since 2020.10.19
+ * @since 2022.05.23
  */
 @Data
 public class PersistentVolumesList {
@@ -21,5 +29,48 @@ public class PersistentVolumesList {
     private String detailMessage;
     private Map metadata;
     private CommonItemMetaData itemMetaData;
-    private List<PersistentVolumes> items;
+    private List<PersistentVolumesListItem> items;
+}
+
+@Data
+class PersistentVolumesListItem {
+    private String name;
+    private Object capacity;
+    private String accessMode;
+    private String persistentVolumeStatus;
+    private ObjectReference claim;
+    private String creationTimestamp;
+
+    @JsonIgnore
+    private CommonMetaData metadata;
+
+    @JsonIgnore
+    private PersistentVolumesSpec spec;
+
+    @JsonIgnore
+    private PersistentVolumesStatus status;
+
+    public String getName() {
+        return metadata.getName();
+    }
+
+    public Object getCapacity() {
+        return CommonUtils.procReplaceNullValue(spec.getCapacity());
+    }
+
+    public List<String> getAccessMode() {
+        return spec.getAccessModes();
+    }
+
+    public String getPersistentVolumeStatus() {
+        return status.getPhase();
+    }
+
+    public ObjectReference getClaim() {
+        return CommonUtils.procReplaceNullValue(spec.getClaimRef());
+    }
+
+    public String getCreationTimestamp() {
+        return metadata.getCreationTimestamp();
+    }
 }

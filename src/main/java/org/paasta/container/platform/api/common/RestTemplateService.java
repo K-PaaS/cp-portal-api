@@ -136,7 +136,7 @@ public class RestTemplateService {
                 System.out.println("reqUrl::" + reqUrl);
             }
 
-            reqUrl = reqUrl.replace("{namespace}", params.getNamespace()).replace("{name}", params.getResourceName());
+            reqUrl = reqUrl.replace("{namespace}", params.getNamespace()).replace("{name}", params.getResourceName()).replace("{userId}", params.getUserId());
         }
 
         return reqUrl;

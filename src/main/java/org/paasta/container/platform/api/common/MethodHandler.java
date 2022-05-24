@@ -63,7 +63,7 @@ public class MethodHandler {
 
         String yaml = "";
         String namespace = "";
-        Boolean isAdmin = false;
+        Boolean isAdmin = true;
 
         Object[] parameterValues = Arrays.asList(joinPoint.getArgs()).toArray();
         Params params = (Params) parameterValues[0];

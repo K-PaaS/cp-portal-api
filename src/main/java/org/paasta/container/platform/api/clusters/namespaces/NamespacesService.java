@@ -8,6 +8,7 @@ import org.paasta.container.platform.api.clusters.resourceQuotas.ResourceQuotasL
 import org.paasta.container.platform.api.clusters.resourceQuotas.ResourceQuotasService;
 import org.paasta.container.platform.api.common.*;
 import org.paasta.container.platform.api.common.model.CommonResourcesYaml;
+import org.paasta.container.platform.api.common.model.Params;
 import org.paasta.container.platform.api.common.model.ResultStatus;
 import org.paasta.container.platform.api.signUp.SignUpAdminService;
 import org.paasta.container.platform.api.users.Users;
@@ -406,7 +407,10 @@ public class NamespacesService {
 
         // delete
         for (String deleteRqName : toBeDelete) {
-            resourceQuotasService.deleteResourceQuotas(namespace, deleteRqName);
+            Params params = new Params();
+            params.setNamespace(namespace);
+            params.setResourceName(deleteRqName);
+            resourceQuotasService.deleteResourceQuotas(params);
         }
 
         // add

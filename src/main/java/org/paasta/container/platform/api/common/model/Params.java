@@ -21,6 +21,7 @@ public class Params {
     public String ownerReferencesName;
     public String selector;
     public String type;
+    public String userId;
 
 
     @JsonProperty("yaml")
@@ -41,6 +42,7 @@ public class Params {
         this.ownerReferencesName = "";
         this.selector = "";
         this.type = "";
+        this.userId = "";
     }
 
 

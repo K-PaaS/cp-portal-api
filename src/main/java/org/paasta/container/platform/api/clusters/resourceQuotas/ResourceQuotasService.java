@@ -7,6 +7,7 @@ import org.paasta.container.platform.api.clusters.resourceQuotas.support.Resourc
 import org.paasta.container.platform.api.common.*;
 import org.paasta.container.platform.api.common.model.CommonMetaData;
 import org.paasta.container.platform.api.common.model.CommonResourcesYaml;
+import org.paasta.container.platform.api.common.model.Params;
 import org.paasta.container.platform.api.common.model.ResultStatus;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpMethod;
@@ -21,9 +22,9 @@ import static org.paasta.container.platform.api.common.Constants.CHECK_Y;
 /**
  * ResourceQuotas Service 클래스
  *
- * @author hrjin
+ * @author hkm
  * @version 1.0
- * @since 2020.09.03
+ * @since 2022.05.24
  **/
 @Service
 public class ResourceQuotasService {
@@ -48,35 +49,25 @@ public class ResourceQuotasService {
 
     /**
      * ResourceQuotas 목록 조회(Get ResourceQuotas list)
-     *
-     * @param namespace  the namespace
-     * @param offset     the offset
-     * @param limit      the limit
-     * @param orderBy    the orderBy
-     * @param order      the order
-     * @param searchName the searchName
+     * @param params the params
      * @return the resourceQuotas list
      */
-    public ResourceQuotasList getResourceQuotasList(String namespace, int offset, int limit, String orderBy, String order, String searchName) {
-
+    public ResourceQuotasList getResourceQuotasList(Params params) {
         HashMap responseMap = (HashMap) restTemplateService.send(Constants.TARGET_CP_MASTER_API,
-                propertyService.getCpMasterApiListResourceQuotasListUrl()
-                        .replace("{namespace}", namespace),
-                HttpMethod.GET, null, Map.class);
+                propertyService.getCpMasterApiListResourceQuotasListUrl(), HttpMethod.GET, null, Map.class, params);
 
         ResourceQuotasList resourceQuotasList = commonService.setResultObject(responseMap, ResourceQuotasList.class);
-        resourceQuotasList = commonService.resourceListProcessing(resourceQuotasList, offset, limit, orderBy, order, searchName, ResourceQuotasList.class);
-
+        resourceQuotasList = commonService.resourceListProcessing(resourceQuotasList, params, ResourceQuotasList.class);
 
         //convert Status
-        for(ResourceQuotas rq : resourceQuotasList.getItems()) {
+        for(ResourceQuotasListItem rq : resourceQuotasList.getItems()) {
 
             Map<String, String> hards = rq.getStatus().getHard();
             Map<String, String> useds = rq.getStatus().getUsed();
 
             if(hards == null || useds == null) {
                 Map<String, Object> convertStatusMap = new HashMap<>();
-                rq.setResourceQuotasStatus(convertStatusMap);
+                rq.setConvertStatus(convertStatusMap);
             }
             else {
                 HashMap<String, Object> convertStatus = new HashMap<>();
@@ -90,116 +81,28 @@ public class ResourceQuotasService {
                 }
 
                 Map<String, Object> convertStatusMap = new TreeMap<>(convertStatus);
-                rq.setResourceQuotasStatus(convertStatusMap);
+                rq.setConvertStatus(convertStatusMap);
             }
+
         }
 
         return (ResourceQuotasList) commonService.setResultModel(resourceQuotasList, Constants.RESULT_STATUS_SUCCESS);
     }
 
-
-    /**
-     * ResourceQuotas Admin 목록 조회(Get ResourceQuotas Admin list)
-     *
-     * @param namespace  the namespace
-     * @param offset     the offset
-     * @param limit      the limit
-     * @param orderBy    the orderBy
-     * @param order      the order
-     * @param searchName the searchName
-     * @return the resourceQuotas admin list
-     */
-    public Object getResourceQuotasListAdmin(String namespace, int offset, int limit, String orderBy, String order, String searchName) {
-        HashMap responseMap = null;
-
-        Object response = restTemplateService.sendAdmin(Constants.TARGET_CP_MASTER_API,
-                propertyService.getCpMasterApiListResourceQuotasListUrl()
-                        .replace("{namespace}", namespace), HttpMethod.GET, null, Map.class);
-
-        try {
-            responseMap = (HashMap) response;
-        } catch (Exception e) {
-            return response;
-        }
-
-        ResourceQuotasListAdmin resourceQuotasListAdmin = commonService.setResultObject(responseMap, ResourceQuotasListAdmin.class);
-        resourceQuotasListAdmin = commonService.resourceListProcessing(resourceQuotasListAdmin, offset, limit, orderBy, order, searchName, ResourceQuotasListAdmin.class);
-
-        //convert Status
-        for(ResourceQuotasListAdminItem rq : resourceQuotasListAdmin.getItems()) {
-
-            Map<String, String> hards = rq.getStatus().getHard();
-            Map<String, String> useds = rq.getStatus().getUsed();
-
-            if(hards == null || useds == null) {
-                Map<String, Object> convertStatusMap = new HashMap<>();
-                rq.setConvertStatus(convertStatusMap);
-            }
-            else {
-                HashMap<String, Object> convertStatus = new HashMap<>();
-
-                for (String key : hards.keySet()) {
-                    ResourceQuotasConvertStatus resourceQuotasConvertStatus = new ResourceQuotasConvertStatus();
-                    resourceQuotasConvertStatus.setHard(hards.get(key));
-                    resourceQuotasConvertStatus.setUsed(useds.get(key));
-
-                    convertStatus.put(key, resourceQuotasConvertStatus);
-                }
-
-                Map<String, Object> convertStatusMap = new TreeMap<>(convertStatus);
-                rq.setConvertStatus(convertStatusMap);
-            }
-
-        }
-
-        return commonService.setResultModel(resourceQuotasListAdmin, Constants.RESULT_STATUS_SUCCESS);
-    }
-
     /**
      * ResourceQuotas 상세 조회(Get ResourceQuotas detail)
-     *
-     * @param namespace    the namespace
-     * @param resourceName the resource name
-     * @return the resourceQuotas detail
+     * @param params the params
+     * @return the resourceQuotas
      */
-    public ResourceQuotas getResourceQuotas(String namespace, String resourceName) {
+    public ResourceQuotas getResourceQuotas(Params params) {
         HashMap responseMap = (HashMap) restTemplateService.send(Constants.TARGET_CP_MASTER_API,
-                propertyService.getCpMasterApiListResourceQuotasGetUrl()
-                        .replace("{namespace}", namespace)
-                        .replace("{name}", resourceName)
-                , HttpMethod.GET, null, Map.class);
+                propertyService.getCpMasterApiListResourceQuotasGetUrl(), HttpMethod.GET, null, Map.class, params);
 
-        return (ResourceQuotas) commonService.setResultModel(commonService.setResultObject(responseMap, ResourceQuotas.class), Constants.RESULT_STATUS_SUCCESS);
-    }
-
-
-    /**
-     * ResourceQuotasAdmin 상세 조회(Get ResourceQuotas Admin detail)
-     *
-     * @param namespace    the namespace
-     * @param resourceName the resource name
-     * @return the resourceQuotas admin
-     */
-    public Object getResourceQuotasAdmin(String namespace, String resourceName) {
-        Object obj = restTemplateService.sendAdmin(Constants.TARGET_CP_MASTER_API,
-                propertyService.getCpMasterApiListResourceQuotasGetUrl()
-                        .replace("{namespace}", namespace)
-                        .replace("{name}", resourceName)
-                , HttpMethod.GET, null, Map.class);
-
-        HashMap responseMap;
-
-        try {
-            responseMap = (HashMap) obj;
-        } catch (Exception e) {
-            return obj;
-        }
-
-        ResourceQuotasAdmin resourceQuotasAdmin = commonService.setResultObject(responseMap, ResourceQuotasAdmin.class);
+        ResourceQuotas resourceQuotas = commonService.setResultObject(responseMap, ResourceQuotas.class);
 
         // resource, hards, useds set
-        Map<String, String> hards = resourceQuotasAdmin.getStatus().getHard();
-        Map<String, String> useds = resourceQuotasAdmin.getStatus().getUsed();
+        Map<String, String> hards = resourceQuotas.getStatus().getHard();
+        Map<String, String> useds = resourceQuotas.getStatus().getUsed();
 
         List<ResourceQuotasStatusItem> items = new ArrayList<>();
 
@@ -215,106 +118,73 @@ public class ResourceQuotasService {
             }
 
         }
-        resourceQuotasAdmin.setItems(items);
+        resourceQuotas.setItems(items);
 
-        return commonService.setResultModel(resourceQuotasAdmin, Constants.RESULT_STATUS_SUCCESS);
+        return (ResourceQuotas) commonService.setResultModel(resourceQuotas, Constants.RESULT_STATUS_SUCCESS);
     }
 
     /**
-     * ResourceQuotas Admin YAML 조회(Get ResourceQuotas Admin yaml)
-     *
-     * @param namespace    the namespace
-     * @param resourceName the resource name
-     * @param resultMap    the resultMap
+     * ResourceQuotas YAML 조회(Get ResourceQuotas yaml)
+     * @param params the params
      * @return the resourceQuotas yaml
      */
-    public Object getResourceQuotasAdminYaml(String namespace, String resourceName, HashMap resultMap) {
-        Object response = restTemplateService.sendAdmin(Constants.TARGET_CP_MASTER_API,
-                propertyService.getCpMasterApiListResourceQuotasGetUrl()
-                        .replace("{namespace}", namespace)
-                        .replace("{name}", resourceName), HttpMethod.GET, null, String.class, Constants.ACCEPT_TYPE_YAML);
-
-        if (CommonUtils.isResultStatusInstanceCheck(response)) {
-            return response;
-        }
-        //noinspection unchecked
-        resultMap.put("sourceTypeYaml", response);
-
-        return commonService.setResultModel(commonService.setResultObject(resultMap, CommonResourcesYaml.class), Constants.RESULT_STATUS_SUCCESS);
+    public CommonResourcesYaml getResourceQuotasYaml(Params params) {
+        String resourceYaml = restTemplateService.send(Constants.TARGET_CP_MASTER_API,
+                propertyService.getCpMasterApiListResourceQuotasGetUrl(), HttpMethod.GET, null, String.class, Constants.ACCEPT_TYPE_YAML, params);
+        return (CommonResourcesYaml) commonService.setResultModel(new CommonResourcesYaml(resourceYaml), Constants.RESULT_STATUS_SUCCESS);
     }
 
     /**
      * ResourceQuotas 생성(Create ResourceQuotas)
-     *
-     * @param namespace the namespace
-     * @param yaml      the yaml
-     * @param isAdmin    the isAdmin
+     * @param params the params
      * @return return is succeeded
      */
-    public Object createResourceQuotas(String namespace, String yaml, boolean isAdmin) {
-        Object map = restTemplateService.sendYaml(Constants.TARGET_CP_MASTER_API,
-                propertyService.getCpMasterApiListResourceQuotasCreateUrl()
-                        .replace("{namespace}", namespace), HttpMethod.POST, yaml, Object.class, isAdmin);
+    public ResultStatus createResourceQuotas(Params params) {
+        ResultStatus resultStatus = restTemplateService.sendYaml(Constants.TARGET_CP_MASTER_API,
+                propertyService.getCpMasterApiListResourceQuotasCreateUrl(), HttpMethod.POST, ResultStatus.class, params);
 
-        return commonService.setResultModelWithNextUrl(commonService.setResultObject(map, ResultStatus.class),
-                Constants.RESULT_STATUS_SUCCESS, Constants.URI_RESOURCE_QUOTAS);
+        return (ResultStatus) commonService.setResultModel(resultStatus, Constants.RESULT_STATUS_SUCCESS);
     }
 
     /**
      * ResourceQuotas 삭제(Delete ResourceQuotas)
-     *
-     * @param namespace    the namespace
-     * @param resourceName the resource name
+     * @param params the params
      * @return the return is succeeded
      */
-    public ResultStatus deleteResourceQuotas(String namespace, String resourceName) {
-        ResultStatus resultStatus = restTemplateService.sendAdmin(Constants.TARGET_CP_MASTER_API,
-                propertyService.getCpMasterApiListResourceQuotasDeleteUrl()
-                        .replace("{namespace}", namespace).replace("{name}", resourceName), HttpMethod.DELETE, null, ResultStatus.class);
-
-        return (ResultStatus) commonService.setResultModelWithNextUrl(commonService.setResultObject(resultStatus, ResultStatus.class), Constants.RESULT_STATUS_SUCCESS, Constants.URI_RESOURCE_QUOTAS);
+    public ResultStatus deleteResourceQuotas(Params params) {
+        ResultStatus resultStatus = restTemplateService.send(Constants.TARGET_CP_MASTER_API,
+                propertyService.getCpMasterApiListResourceQuotasDeleteUrl(), HttpMethod.DELETE, null, ResultStatus.class, params);
+        return (ResultStatus) commonService.setResultModel(resultStatus, Constants.RESULT_STATUS_SUCCESS);
     }
 
     /**
      * ResourceQuotas 수정(Update ResourceQuotas)
-     *
-     * @param namespace    the namespace
-     * @param resourceName the resource name
-     * @param yaml         the yaml
+     * @param params the params
      * @return return is succeeded
      */
-    public ResultStatus updateResourceQuotas(String namespace, String resourceName, String yaml) {
+    public ResultStatus updateResourceQuotas(Params params) {
         ResultStatus resultStatus = restTemplateService.sendYaml(Constants.TARGET_CP_MASTER_API,
-                propertyService.getCpMasterApiListResourceQuotasUpdateUrl()
-                        .replace("{namespace}", namespace).replace("{name}", resourceName), HttpMethod.PUT, yaml, ResultStatus.class, true);
-
-        return (ResultStatus) commonService.setResultModelWithNextUrl(commonService.setResultObject(resultStatus, ResultStatus.class), Constants.RESULT_STATUS_SUCCESS,
-                Constants.URI_RESOURCE_QUOTAS_DETAIL.replace("{resourceQuotaName:.+}", resourceName));
+                propertyService.getCpMasterApiListResourceQuotasUpdateUrl(), HttpMethod.PUT, ResultStatus.class, params);
+        return (ResultStatus) commonService.setResultModel(resultStatus, Constants.RESULT_STATUS_SUCCESS);
     }
 
 
     /**
      * ResourceQuotas Default Template 목록 조회(Get ResourceQuotas Default Template list)
-     *
-     * @param namespace the namespace
-     * @param offset     the offset
-     * @param limit      the limit
-     * @param orderBy    the orderBy
-     * @param order      the order
-     * @param searchName the searchName
+     * @param params the params
      * @return the resourceQuotas list
      * @throws JsonProcessingException
      */
-    public Object getRqDefaultList(String namespace, int offset, int limit, String orderBy, String order, String searchName) throws JsonProcessingException {
-        ResourceQuotasListAdmin resourceQuotasList = (ResourceQuotasListAdmin) getResourceQuotasListAdmin(namespace, 0, 0, "creationTime", "desc", "");
+    public Object getRqDefaultList(Params params) throws JsonProcessingException {
+        ResourceQuotasList resourceQuotasList = getResourceQuotasList(params);
         ResourceQuotasDefaultList resourceQuotasDefaultList = restTemplateService.send(Constants.TARGET_COMMON_API, "/resourceQuotas", HttpMethod.GET, null, ResourceQuotasDefaultList.class);
 
         ResourceQuotasDefaultList defaultList = new ResourceQuotasDefaultList();
         ResourceQuotasDefault quotasDefault;
         List<ResourceQuotasDefault> quotasDefaultList = new ArrayList<>();
 
-        List<String> k8sRqNameList = resourceQuotasList.getItems().stream().map(ResourceQuotasListAdminItem::getName).collect(Collectors.toList());
-        List<String> dbRqNameList = resourceQuotasDefaultList.getItems().stream().map(ResourceQuotasDefault::getName).collect(Collectors.toList());
+        List<String> k8sRqNameList = resourceQuotasList.getItems().stream().map(ResourceQuotasListItem::getName).collect(Collectors.toList());
+//        List<String> dbRqNameList = resourceQuotasDefaultList.getItems().stream().map(ResourceQuotasDefault::getName).collect(Collectors.toList());
 
         for (ResourceQuotasDefault resourceQuotasDefault : resourceQuotasDefaultList.getItems()) {
             if (!k8sRqNameList.contains(resourceQuotasDefault.getName())) {
@@ -330,7 +200,7 @@ public class ResourceQuotasService {
         }
 
         if (resourceQuotasList.getItems().size() > 0) {
-            for (ResourceQuotasListAdminItem i : resourceQuotasList.getItems()) {
+            for (ResourceQuotasListItem i : resourceQuotasList.getItems()) {
                 ObjectMapper mapper = new ObjectMapper();
                 String status = mapper.writeValueAsString(i.getConvertStatus());
 
@@ -338,47 +208,28 @@ public class ResourceQuotasService {
                 quotasDefaultList.add(quotasDefault);
 
             }
-
-            defaultList.setItems(quotasDefaultList);
-            defaultList = commonService.setResultObject(defaultList, ResourceQuotasDefaultList.class);
-            defaultList = commonService.resourceListProcessing(defaultList, offset, limit, orderBy, order, searchName, ResourceQuotasDefaultList.class);
-
-            return commonService.setResultModel(defaultList, Constants.RESULT_STATUS_SUCCESS);
         }
 
         defaultList.setItems(quotasDefaultList);
         defaultList = commonService.setResultObject(defaultList, ResourceQuotasDefaultList.class);
-        defaultList = commonService.resourceListProcessing(defaultList, offset, limit, orderBy, order, searchName, ResourceQuotasDefaultList.class);
+        defaultList = commonService.resourceListProcessing(defaultList, params, ResourceQuotasDefaultList.class);
 
         return commonService.setResultModel(defaultList, Constants.RESULT_STATUS_SUCCESS);
     }
 
     /**
-     * 전체 Namespaces 의 ResourceQuotas Admin 목록 조회(Get ResourceQuotas Admin list in all namespaces)
-     *
-     * @param offset     the offset
-     * @param limit      the limit
-     * @param orderBy    the orderBy
-     * @param order      the order
-     * @param searchName the searchName
+     * 전체 Namespaces 의 ResourceQuotas 목록 조회(Get ResourceQuotas list in all namespaces)
+     * @param params the params
      * @return the resourceQuotas all list
      */
-    public Object getResourceQuotasListAllNamespacesAdmin(int offset, int limit, String orderBy, String order, String searchName) {
-        HashMap responseMap;
+    public ResourceQuotasList getResourceQuotasListAllNamespaces(Params params) {
+        HashMap responseMap = (HashMap) restTemplateService.send(Constants.TARGET_CP_MASTER_API,
+                propertyService.getCpMasterApiListResourceQuotasListAllNamespacesUrl(),
+                HttpMethod.GET, null, Map.class, params);
 
-        Object response = restTemplateService.sendAdmin(Constants.TARGET_CP_MASTER_API,
-                propertyService.getCpMasterApiListResourceQuotasListAllNamespacesUrl() + commonService.generateFieldSelectorForExceptNamespace(Constants.RESOURCE_NAMESPACE)
-                , HttpMethod.GET, null, Map.class);
+        ResourceQuotasList resourceQuotasList = commonService.setResultObject(responseMap, ResourceQuotasList.class);
+        resourceQuotasList = commonService.resourceListProcessing(resourceQuotasList, params, ResourceQuotasList.class);
 
-        try {
-            responseMap = (HashMap) response;
-        } catch (Exception e) {
-            return response;
-        }
-
-        ResourceQuotasListAdmin resourceQuotasListAdmin = commonService.setResultObject(responseMap, ResourceQuotasListAdmin.class);
-        resourceQuotasListAdmin = commonService.resourceListProcessing(resourceQuotasListAdmin, offset, limit, orderBy, order, searchName, ResourceQuotasListAdmin.class);
-
-        return commonService.setResultModel(resourceQuotasListAdmin, Constants.RESULT_STATUS_SUCCESS);
+        return (ResourceQuotasList) commonService.setResultModel(resourceQuotasList, Constants.RESULT_STATUS_SUCCESS);
     }
 }

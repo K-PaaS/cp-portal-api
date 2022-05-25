@@ -53,6 +53,7 @@ public class Constants {
 
     public static final String NOT_ASSIGNED_ROLE = "NOT_ASSIGNED_ROLE";
     public static final String DEFAULT_CLUSTER_ADMIN_ROLE = "cluster-admin"; // k8s default cluster role's name
+    public static final String DEFAULT_CONFIGMAPS = "kube-root-ca.crt"; // k8s default configMaps name
 
     public static final String NOT_ALLOWED_POD_NAME_NODES = "nodes";
     public static final String NOT_ALLOWED_POD_NAME_RESOURCES= "resources";

@@ -1,93 +1,123 @@
 package org.paasta.container.platform.api.configmaps;
 
+import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import org.paasta.container.platform.api.common.Constants;
-import org.paasta.container.platform.api.common.ResultStatusService;
+import org.paasta.container.platform.api.common.model.CommonResourcesYaml;
+import org.paasta.container.platform.api.common.model.Params;
 import org.paasta.container.platform.api.common.model.ResultStatus;
 import org.paasta.container.platform.api.common.util.ResourceExecuteManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-import springfox.documentation.annotations.ApiIgnore;
 
-import java.util.HashMap;
-
+/**
+ * ConfigMaps Controller 클래스
+ *
+ * @author hkm
+ * @version 1.0
+ * @since 2022.05.25
+ **/
+@Api(value = "ConfigMapsController v1")
 @RestController
 @RequestMapping("/clusters/{cluster:.+}/namespaces/{namespace:.+}/configMaps")
 public class ConfigMapsController {
 
     private final ConfigMapsService configMapsService;
-    private final ResultStatusService resultStatusService;
 
+    /**
+     * Instantiates a new ConfigMaps service
+     *
+     * @param configMapsService the ConfigMaps service
+     */
     @Autowired
-    public ConfigMapsController(ConfigMapsService configMapsService, ResultStatusService resultStatusService){
+    public ConfigMapsController(ConfigMapsService configMapsService){
         this.configMapsService = configMapsService;
-        this.resultStatusService = resultStatusService;
     }
 
-    @GetMapping
-    public Object getConfigMapsList(@PathVariable(value = "cluster") String cluster,
-                                    @PathVariable(value = "namespace") String namespace,
-                                    @RequestParam(required = false, defaultValue = "0") int offset,
-                                    @RequestParam(required = false, defaultValue = "0") int limit,
-                                    @RequestParam(required = false, defaultValue = "creationTime") String orderBy,
-                                    @RequestParam(required = false, defaultValue = "") String order,
-                                    @RequestParam(required = false, defaultValue = "") String searchName,
-                                    @ApiIgnore @RequestParam(required = false, name = "isAdmin") boolean isAdmin) {
-        if (namespace.toLowerCase().equals(Constants.ALL_NAMESPACES)) {
-            if (isAdmin) {
-                return configMapsService.getConfigMapsListAllNamespacesAdmin(offset, limit, orderBy, order, searchName);
-            } else {
-                return resultStatusService.FORBIDDEN_ACCESS_RESULT_STATUS();
-            }
-        }
-        return configMapsService.getConfigMapsList(namespace, offset, limit, orderBy, order, searchName);
-    }
-
-    @GetMapping(value = "/{resourceName:.+}")
-    public Object getConfigMaps(@PathVariable(value = "namespace") String namespace,
-                                 @PathVariable(value = "resourceName") String resourceName,
-                                 @ApiIgnore @RequestParam(required = false, name = "isAdmin") boolean isAdmin) {
-        return configMapsService.getConfigMaps(namespace, resourceName);
-    }
-
-    @ApiOperation(value = "Deployments YAML 조회(Get Deployments yaml)", nickname = "getDeploymentsYaml")
+    @ApiOperation(value = "ConfigMaps 목록 조회(Get ConfigMaps List)", nickname = "getConfigMapsList")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "namespace", value = "네임스페이스 명", required = true, dataType = "string", paramType = "path"),
-            @ApiImplicitParam(name = "resourceName", value = "리소스 명", required = true, dataType = "string", paramType = "path")
+            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body")
+    })
+    @GetMapping
+    public ConfigMapsList getConfigMapsList(Params params) {
+        if (params.namespace.toLowerCase().equals(Constants.ALL_NAMESPACES)) {
+            return configMapsService.getConfigMapsListAllNamespaces(params);
+        }
+        return configMapsService.getConfigMapsList(params);
+    }
+
+    /**
+     * ConfigMaps 상세 조회(Get ConfigMaps Detail)
+     *
+     * @param params the params
+     * @return the ConfigMaps detail
+     */
+    @ApiOperation(value = "ConfigMaps 상세 조회(Get ConfigMaps Detail)", nickname = "getConfigMaps")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body")
+    })
+    @GetMapping(value = "/{resourceName:.+}")
+    public Object getConfigMaps(Params params) {
+        return configMapsService.getConfigMaps(params);
+    }
+
+    @ApiOperation(value = "ConfigMaps YAML 조회(Get ConfigMaps yaml)", nickname = "getConfigMapsYaml")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body")
     })
     @GetMapping(value = "/{resourceName:.+}/yaml")
-    public Object getConfigMapsYaml(@PathVariable(value = "namespace") String namespace,
-                                     @PathVariable(value = "resourceName") String resourceName) {
-        return configMapsService.getConfigMapsYaml(namespace, resourceName, new HashMap<>());
+    public CommonResourcesYaml getConfigMapsYaml(Params params) {
+        return configMapsService.getConfigMapsYaml(params);
     }
 
+    /**
+     * ConfigMaps 생성(Create ConfigMaps)
+     *
+     * @param params the params
+     * @return the resultStatus
+     */
+    @ApiOperation(value = "ConfigMaps 생성(Create ConfigMaps)", nickname = "createConfigMaps")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body")
+    })
     @PostMapping
-    public Object createConfigMaps(@PathVariable(value = "cluster") String cluster,
-                                    @PathVariable(value = "namespace") String namespace,
-                                    @RequestBody String yaml,
-                                    @ApiIgnore @RequestParam(required = false, name = "isAdmin") boolean isAdmin) throws Exception {
-        if (yaml.contains("---")) {
-            Object object = ResourceExecuteManager.commonControllerExecute(namespace, yaml, isAdmin);
+    public Object createConfigMaps(@RequestBody Params params) throws Exception {
+        if (params.getYaml().contains("---")) {
+            Object object = ResourceExecuteManager.commonControllerExecute(params);
             return object;
         }
-        return configMapsService.createConfigMaps(namespace, yaml, isAdmin);
+        return configMapsService.createConfigMaps(params);
     }
 
+    /**
+     * ConfigMaps 삭제(Delete ConfigMaps)
+     *
+     * @param params the params
+     * @return the resultStatus
+     */
+    @ApiOperation(value = "ConfigMaps 삭제(Delete ConfigMaps)", nickname = "deleteConfigMaps")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body")
+    })
     @DeleteMapping("/{resourceName:.+}")
-    public ResultStatus deleteConfigMaps(@PathVariable(value = "namespace") String namespace,
-                                          @PathVariable(value = "resourceName") String resourceName,
-                                          @ApiIgnore @RequestParam(required = false, name = "isAdmin") boolean isAdmin) {
-        return configMapsService.deleteConfigMaps(namespace, resourceName, isAdmin);
+    public ResultStatus deleteConfigMaps(Params params) {
+        return configMapsService.deleteConfigMaps(params);
     }
 
+    /**
+     * ConfigMaps 수정(Update ConfigMaps)
+     *
+     * @param params the params
+     * @return the resultStatus
+     */
+    @ApiOperation(value = "ConfigMaps 수정(Update ConfigMaps)", nickname = "updateConfigMaps")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body")
+    })
     @PutMapping("/{resourceName:.+}")
-    public ResultStatus updateConfigMaps(@PathVariable(value = "cluster") String cluster,
-                                          @PathVariable(value = "namespace") String namespace,
-                                          @PathVariable(value = "resourceName") String resourceName,
-                                          @RequestBody String yaml,
-                                          @ApiIgnore @RequestParam(required = false, name = "isAdmin") boolean isAdmin) {
-        return configMapsService.updateConfigMaps(namespace, resourceName, yaml, isAdmin);
+    public ResultStatus updateConfigMaps(@RequestBody Params params) {
+        return configMapsService.updateConfigMaps(params);
     }
 }

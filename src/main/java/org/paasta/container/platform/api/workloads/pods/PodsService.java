@@ -1,9 +1,12 @@
 package org.paasta.container.platform.api.workloads.pods;
 
 
-import org.paasta.container.platform.api.common.*;
-import org.paasta.container.platform.api.common.model.CommonContainer;
+import org.paasta.container.platform.api.common.CommonService;
+import org.paasta.container.platform.api.common.Constants;
+import org.paasta.container.platform.api.common.PropertyService;
+import org.paasta.container.platform.api.common.RestTemplateService;
 import org.paasta.container.platform.api.common.model.CommonResourcesYaml;
+import org.paasta.container.platform.api.common.model.Params;
 import org.paasta.container.platform.api.common.model.ResultStatus;
 import org.paasta.container.platform.api.workloads.pods.support.ContainerStatusesItem;
 import org.paasta.container.platform.api.workloads.pods.support.PodsStatus;
@@ -21,9 +24,9 @@ import java.util.stream.Collectors;
 /**
  * Pods Service 클래스
  *
- * @author hrjin
+ * @author kjhoon
  * @version 1.0
- * @since 2020.09.09
+ * @since 2022.05.20
  */
 @Service
 public class PodsService {
@@ -47,30 +50,6 @@ public class PodsService {
         this.propertyService = propertyService;
     }
 
-    /**
-     * Pods 목록 조회(Get Pods list)
-     *
-     * @param namespace  the namespace
-     * @param offset     the offset
-     * @param limit      the limit
-     * @param orderBy    the orderBy
-     * @param order      the order
-     * @param searchName the searchName
-     * @return the pods list
-     */
-    public PodsList getPodsList(String namespace, int offset, int limit, String orderBy, String order, String searchName) {
-
-        HashMap responseMap = (HashMap) restTemplateService.send(Constants.TARGET_CP_MASTER_API,
-                propertyService.getCpMasterApiListPodsListUrl()
-                        .replace("{namespace}", namespace)
-                , HttpMethod.GET, null, Map.class);
-
-        PodsList podsList = commonService.setResultObject(responseMap, PodsList.class);
-        podsList = getPodsMetricList(namespace, podsList);
-        podsList = commonService.resourceListProcessing(podsList, offset, limit, orderBy, order, searchName, PodsList.class);
-
-        return (PodsList) commonService.setResultModel(podsList, Constants.RESULT_STATUS_SUCCESS);
-    }
 
     /**
      * Pods Metric 정보 조회(Get Pods Metric List)
@@ -85,17 +64,17 @@ public class PodsService {
                 , HttpMethod.GET, null, Map.class);
         PodsMetric podsMetrics = commonService.setResultObject(responseMap, PodsMetric.class);
 
-        getMergeMetric(podsList, podsMetrics);
+      //  getMergeMetric(podsList, podsMetrics);
 
         return podsList;
     }
 
-    /**
+/*    *//**
      * Pods Metric 정보 병합(Merge Pods Metric List)
      *
      * @param podsList    the podsList
      * @param podsMetrics the podsMetrics
-     */
+     *//*
     public void getMergeMetric(PodsList podsList, PodsMetric podsMetrics) {
         Pods pods = null;
         PodsUsage podsUsage = null;
@@ -122,220 +101,75 @@ public class PodsService {
                 }
             }
         }
-    }
+    }*/
 
     /**
-     * Pods 목록 조회(Get Pods list)
-     * (Admin Portal)
+     * Pods 목록 조회(Get Pods List)
      *
-     * @param namespace  the namespace
-     * @param offset     the offset
-     * @param limit      the limit
-     * @param orderBy    the orderBy
-     * @param order      the order
-     * @param searchName the searchName
+     * @param params the params
      * @return the pods list
      */
-    public Object getPodsListAdmin(String namespace, int offset, int limit, String orderBy, String order, String searchName) {
-        HashMap responseMap = null;
-
-        Object response = restTemplateService.sendAdmin(Constants.TARGET_CP_MASTER_API,
-                propertyService.getCpMasterApiListPodsListUrl()
-                        .replace("{namespace}", namespace), HttpMethod.GET, null, Map.class);
-
-        try {
-            responseMap = (HashMap) response;
-        } catch (Exception e) {
-            return response;
-        }
-
-        PodsListAdmin podsListAdmin = commonService.setResultObject(responseMap, PodsListAdmin.class);
-        podsListAdmin = commonService.resourceListProcessing(podsListAdmin, offset, limit, orderBy, order, searchName, PodsListAdmin.class);
-        podsListAdmin = restartCountProcessing(podsListAdmin);
-
-
-        return commonService.setResultModel(podsListAdmin, Constants.RESULT_STATUS_SUCCESS);
-    }
-
-    /**
-     * Pods 목록 조회(Get Pods selector)
-     *
-     * @param namespace the namespace
-     * @param selector  the selector
-     * @param type the type
-     * @param ownerReferencesUid the ownerReferencesUid
-     * @param offset the offset
-     * @param limit the limit
-     * @param orderBy    the orderBy
-     * @param order      the order
-     * @param searchName the searchName
-     * @return the pods list
-     */
-    PodsList getPodListWithLabelSelector(String namespace, String selector, String type, String ownerReferencesUid, int offset, int limit, String orderBy, String order, String searchName) {
-        String requestSelector = "?labelSelector=" + selector;
-        HashMap resultMap = (HashMap) restTemplateService.send(Constants.TARGET_CP_MASTER_API,
-                propertyService.getCpMasterApiListPodsListUrl().replace("{namespace}", namespace) + requestSelector, HttpMethod.GET, null, Map.class);
-
-        PodsList podsList = commonService.setResultObject(resultMap, PodsList.class);
-        podsList = getPodsMetricList(namespace, podsList);
-
-        // selector by replicaSets
-        if (type.equals(Constants.REPLICASETS_FOR_SELECTOR)) {
-            List<Pods> podsItem;
-            podsItem = podsList.getItems().stream().filter(x -> x.getMetadata().getOwnerReferences().get(0).getUid().matches(ownerReferencesUid)).collect(Collectors.toList());
-            podsList.setItems(podsItem);
-        }
-
-        podsList = commonService.resourceListProcessing(podsList, offset, limit, orderBy, order, searchName, PodsList.class);
-
+    public PodsList getPodsList(Params params) {
+        HashMap responseMap = (HashMap) restTemplateService.send(Constants.TARGET_CP_MASTER_API,
+                propertyService.getCpMasterApiListPodsListUrl(), HttpMethod.GET, null, Map.class, params);
+        PodsList podsList = commonService.setResultObject(responseMap, PodsList.class);
+        podsList =  commonService.resourceListProcessing(podsList, params, PodsList.class);
+        podsList = restartCountProcessing(podsList);
         return (PodsList) commonService.setResultModel(podsList, Constants.RESULT_STATUS_SUCCESS);
     }
 
-    /**
-     * Pods 목록 조회(Get Pods selector)
-     * (Admin portal)
-     *
-     * @param namespace          the namespace
-     * @param selector           the nodeName
-     * @param type               the type
-     * @param ownerReferencesUid the ownerReferencesUid
-     * @param offset             the offset
-     * @param limit              the limit
-     * @param orderBy            the orderBy
-     * @param order              the order
-     * @param searchName         the searchName
-     * @return the pods list
-     */
-    public Object getPodListWithLabelSelectorAdmin(String namespace, String selector, String type, String ownerReferencesUid, int offset, int limit, String orderBy, String order, String searchName) {
-        HashMap responseMap = null;
-
-        String requestSelector = "?labelSelector=" + selector;
-
-        Object response = restTemplateService.sendAdmin(Constants.TARGET_CP_MASTER_API,
-                propertyService.getCpMasterApiListPodsListUrl().replace("{namespace}", namespace) + requestSelector, HttpMethod.GET, null, Map.class);
-
-        try {
-            responseMap = (HashMap) response;
-        } catch (Exception e) {
-            return response;
-        }
-
-        PodsListAdmin podsListAdmin = commonService.setResultObject(responseMap, PodsListAdmin.class);
-
-        if (type.equals(Constants.REPLICASETS_FOR_SELECTOR)) {
-            podsListAdmin = podsFIlterWithOwnerReferences(podsListAdmin, ownerReferencesUid);
-        }
-        podsListAdmin = commonService.resourceListProcessing(podsListAdmin, offset, limit, orderBy, order, searchName, PodsListAdmin.class);
-        podsListAdmin = restartCountProcessing(podsListAdmin);
-
-        return commonService.setResultModel(podsListAdmin, Constants.RESULT_STATUS_SUCCESS);
-    }
 
     /**
-     * Node 명에 따른 Pods 목록 조회(Get Pods node)
+     * Selector 값에 따른 Pods 목록 조회(Get Pods By Selector)
      *
-     * @param namespace the namespace
-     * @param nodeName  the node name
-     * @param offset             the offset
-     * @param limit              the limit
-     * @param orderBy            the orderBy
-     * @param order              the order
-     * @param searchName         the searchName
+     * @param params the params
      * @return the pods list
      */
-    PodsList getPodListByNode(String namespace, String nodeName, int offset, int limit, String orderBy, String order, String searchName) {
-        String requestURL = propertyService.getCpMasterApiListPodsListUrl().replace("{namespace}", namespace)
-                + "?fieldSelector=spec.nodeName=" + nodeName;
-
-        HashMap responseMap = (HashMap) restTemplateService.send(Constants.TARGET_CP_MASTER_API, requestURL,
-                HttpMethod.GET, null, Map.class);
+    public PodsList getPodListWithLabelSelector(Params params) {
+        params.setAddParam("?labelSelector=" + params.getSelector());
+        HashMap responseMap = (HashMap) restTemplateService.send(Constants.TARGET_CP_MASTER_API,
+                propertyService.getCpMasterApiListPodsListUrl() , HttpMethod.GET, null, Map.class, params);
 
         PodsList podsList = commonService.setResultObject(responseMap, PodsList.class);
-        podsList = getPodsMetricList(namespace, podsList);
-        podsList = commonService.resourceListProcessing(podsList, offset, limit, orderBy, order, searchName, PodsList.class);
+
+        if (params.getType().equals(Constants.REPLICASETS_FOR_SELECTOR)) {
+            podsList = podsFIlterWithOwnerReferences(podsList, params.getOwnerReferencesUid());
+        }
+        podsList = commonService.resourceListProcessing(podsList, params, PodsList.class);
+        podsList = restartCountProcessing(podsList);
 
         return (PodsList) commonService.setResultModel(podsList, Constants.RESULT_STATUS_SUCCESS);
     }
 
 
     /**
-     * Node 명에 따른 Pods 목록 조회(Get Pods node)
-     * (Admin portal)
+     * Node 명에 따른 Pods 목록 조회(Get Pods By Node)
      *
-     * @param namespace  the namespace
-     * @param nodeName   the node name
-     * @param offset     the offset
-     * @param limit      the limit
-     * @param orderBy    the orderBy
-     * @param order      the order
-     * @param searchName the searchName
+     * @param params the params
      * @return the pods list
      */
-    public Object getPodsListByNodeAdmin(String namespace, String nodeName, int offset, int limit, String orderBy, String order, String searchName) {
-        HashMap responseMap = null;
-        String requestURL = null;
-
-        if (namespace.toLowerCase().equals(Constants.ALL_NAMESPACES)) {
-            // if all namespace
-            requestURL = propertyService.getCpMasterApiListPodsListAllNamespacesUrl()    // all namespace pods list endpoints
-                    + commonService.generateFieldSelectorForExceptNamespace(Constants.RESOURCE_NAMESPACE) // fieldSelector for exclude namespace
-                    + commonService.generateFieldSelectorForPodsByNode(Constants.PARAM_QUERY_AND, nodeName);  // fieldSelector for node name filter
-        } else {
-            requestURL = propertyService.getCpMasterApiListPodsListUrl().replace("{namespace}", namespace) // pods list endpoints
-                    + commonService.generateFieldSelectorForPodsByNode(Constants.PARAM_QUERY_FIRST, nodeName); // fieldSelector for node name filter
-        }
-
-        Object response = restTemplateService.sendAdmin(Constants.TARGET_CP_MASTER_API, requestURL, HttpMethod.GET, null, Map.class);
-
-        try {
-            responseMap = (HashMap) response;
-        } catch (Exception e) {
-            return response;
-        }
-
-        PodsListAdmin podsListAdmin = commonService.setResultObject(responseMap, PodsListAdmin.class);
-        podsListAdmin = commonService.resourceListProcessing(podsListAdmin, offset, limit, orderBy, order, searchName, PodsListAdmin.class);
-        podsListAdmin = restartCountProcessing(podsListAdmin);
-
-        return commonService.setResultModel(podsListAdmin, Constants.RESULT_STATUS_SUCCESS);
-    }
-
-    /**
-     * Pods 상세 조회(Get Pods detail)
-     *
-     * @param namespace the namespace
-     * @param podsName  the pods name
-     * @return the pods detail
-     */
-    public Pods getPods(String namespace, String podsName) {
+    public PodsList getPodsListByNode(Params params) {
+        params.setAddParam(",spec.nodeName=" + params.getNodeName());
         HashMap responseMap = (HashMap) restTemplateService.send(Constants.TARGET_CP_MASTER_API,
-                propertyService.getCpMasterApiListPodsGetUrl().replace("{namespace}", namespace).replace("{name}", podsName),
-                HttpMethod.GET, null, Map.class);
+                propertyService.getCpMasterApiListPodsListAllNamespacesUrl(), HttpMethod.GET, null, Map.class, params);
 
-        return (Pods) commonService.setResultModel(commonService.setResultObject(responseMap, Pods.class), Constants.RESULT_STATUS_SUCCESS);
+        PodsList podsList = commonService.setResultObject(responseMap, PodsList.class);
+        podsList = commonService.resourceListProcessing(podsList, params, PodsList.class);
+        podsList = restartCountProcessing(podsList);
+        return (PodsList) commonService.setResultModel(podsList, Constants.RESULT_STATUS_SUCCESS);
     }
 
+
+
     /**
-     * Pods 상세 조회(Get Pods detail)
-     * (Admin Portal)
+     * Pods 상세 조회(Get Pods Detail)
      *
-     * @param namespace the namespace
-     * @param podsName  the pods name
+     * @param params the params
      * @return the pods detail
      */
-    public Object getPodsAdmin(String namespace, String podsName) {
-        Object obj = restTemplateService.sendAdmin(Constants.TARGET_CP_MASTER_API,
-                propertyService.getCpMasterApiListPodsGetUrl()
-                        .replace("{namespace}", namespace)
-                        .replace("{name}", podsName)
-                , HttpMethod.GET, null, Map.class);
-        HashMap responseMap;
-
-        try {
-            responseMap = (HashMap) obj;
-        } catch (Exception e) {
-            return obj;
-        }
+    public Pods getPods(Params params) {
+        HashMap responseMap = (HashMap) restTemplateService.send(Constants.TARGET_CP_MASTER_API,
+                propertyService.getCpMasterApiListPodsGetUrl(), HttpMethod.GET, null, Map.class, params);
 
         PodsStatus status = commonService.setResultObject(responseMap.get(STATUS_FIELD_NAME), PodsStatus.class);
 
@@ -350,157 +184,81 @@ public class PodsService {
 
         responseMap.put(STATUS_FIELD_NAME, status);
 
-        PodsAdmin podsAdmin = commonService.setResultObject(responseMap, PodsAdmin.class);
-        podsAdmin = commonService.annotationsProcessing(podsAdmin, PodsAdmin.class);
+        Pods pods = commonService.setResultObject(responseMap, Pods.class);
+        pods = commonService.annotationsProcessing(pods, Pods.class);
 
-        return commonService.setResultModel(podsAdmin, Constants.RESULT_STATUS_SUCCESS);
+        return (Pods) commonService.setResultModel(pods, Constants.RESULT_STATUS_SUCCESS);
 
     }
 
-    /**
-     * Pods YAML 조회(Get Pods yaml)
-     *
-     * @param namespace the namespace
-     * @param podName   the pods name
-     * @param resultMap the result map
-     * @return the pods yaml
-     */
-    public Object getPodsYaml(String namespace, String podName, HashMap resultMap) {
-        String resultString = restTemplateService.send(Constants.TARGET_CP_MASTER_API,
-                propertyService.getCpMasterApiListPodsGetUrl().replace("{namespace}", namespace).replace("{name}", podName),
-                HttpMethod.GET, null, String.class, Constants.ACCEPT_TYPE_YAML);
-        //noinspection unchecked
-        resultMap.put("sourceTypeYaml", resultString);
-
-        return commonService.setResultModel(commonService.setResultObject(resultMap, CommonResourcesYaml.class), Constants.RESULT_STATUS_SUCCESS);
-    }
 
 
     /**
-     * Pods Admin YAML 조회(Get Pods Admin yaml)
+     * Pods YAML 조회(Get Pods Yaml)
      *
-     * @param namespace the namespace
-     * @param podName   the pods name
-     * @param resultMap the result map
+     * @param params the params
      * @return the pods yaml
      */
-    public Object getPodsAdminYaml(String namespace, String podName, HashMap resultMap) {
-        Object response = restTemplateService.sendAdmin(Constants.TARGET_CP_MASTER_API,
-                propertyService.getCpMasterApiListPodsGetUrl().replace("{namespace}", namespace).replace("{name}", podName),
-                HttpMethod.GET, null, String.class, Constants.ACCEPT_TYPE_YAML);
-
-        if (CommonUtils.isResultStatusInstanceCheck(response)) {
-            return response;
-        }
-
-        //noinspection unchecked
-        resultMap.put("sourceTypeYaml", response);
-
-        return commonService.setResultModel(commonService.setResultObject(resultMap, CommonResourcesYaml.class), Constants.RESULT_STATUS_SUCCESS);
+    public CommonResourcesYaml getPodsYaml(Params params) {
+        String resourceYaml = restTemplateService.send(Constants.TARGET_CP_MASTER_API,
+                propertyService.getCpMasterApiListPodsGetUrl(), HttpMethod.GET, null, String.class, Constants.ACCEPT_TYPE_YAML, params);
+        return (CommonResourcesYaml) commonService.setResultModel(new CommonResourcesYaml(resourceYaml), Constants.RESULT_STATUS_SUCCESS);
     }
 
 
     /**
      * Pods 생성(Create Pods)
      *
-     * @param namespace the namespace
-     * @param yaml      the yaml
-     * @param isAdmin the isAdmin
-     * @return return is succeeded
+     * @param params the params
+     * @return the resultStatus
      */
-    public Object createPods(String namespace, String yaml, boolean isAdmin) {
-        Object map = restTemplateService.sendYaml(Constants.TARGET_CP_MASTER_API,
-                propertyService.getCpMasterApiListPodsCreateUrl()
-                        .replace("{namespace}", namespace), HttpMethod.POST, yaml, Object.class, isAdmin);
-
-        return commonService.setResultModelWithNextUrl(commonService.setResultObject(map, ResultStatus.class),
-                Constants.RESULT_STATUS_SUCCESS, Constants.URI_WORKLOAD_PODS);
+    public ResultStatus createPods(Params params) {
+        ResultStatus resultStatus = restTemplateService.sendYaml(Constants.TARGET_CP_MASTER_API,
+                propertyService.getCpMasterApiListPodsCreateUrl(), HttpMethod.POST, ResultStatus.class, params);
+        return (ResultStatus) commonService.setResultModel(resultStatus, Constants.RESULT_STATUS_SUCCESS);
     }
 
-    /**
-     * Pods 삭제(Delete Pods)
-     *
-     * @param namespace    the namespace
-     * @param resourceName the resource name
-     * @param isAdmin      the isAdmin
-     * @return return is succeeded
-     */
-    public ResultStatus deletePods(String namespace, String resourceName, boolean isAdmin) {
-        ResultStatus resultStatus;
 
-        if (isAdmin) {
-            resultStatus = restTemplateService.sendAdmin(Constants.TARGET_CP_MASTER_API,
-                    propertyService.getCpMasterApiListPodsDeleteUrl()
-                            .replace("{namespace}", namespace).replace("{name}", resourceName), HttpMethod.DELETE, null, ResultStatus.class);
-        } else {
-            resultStatus = restTemplateService.send(Constants.TARGET_CP_MASTER_API,
-                    propertyService.getCpMasterApiListPodsDeleteUrl()
-                            .replace("{namespace}", namespace).replace("{name}", resourceName), HttpMethod.DELETE, null, ResultStatus.class);
-        }
-
-        return (ResultStatus) commonService.setResultModelWithNextUrl(commonService.setResultObject(resultStatus, ResultStatus.class), Constants.RESULT_STATUS_SUCCESS, Constants.URI_WORKLOAD_PODS);
-    }
 
     /**
      * Pods 수정(Update Pods)
      *
-     * @param namespace the namespace
-     * @param name      the pods name
-     * @param yaml      the yaml
-     * @param isAdmin      the isAdmin
-     * @return return is succeeded
+     * @param params the params
+     * @return the resultStatus
      */
-    public Object updatePods(String namespace, String name, String yaml, boolean isAdmin) {
-        Object map = restTemplateService.sendYaml(Constants.TARGET_CP_MASTER_API,
-                propertyService.getCpMasterApiListPodsUpdateUrl()
-                        .replace("{namespace}", namespace).replace("{name}", name), HttpMethod.PUT, yaml, Object.class, isAdmin);
-
-        return commonService.setResultModelWithNextUrl(commonService.setResultObject(map, ResultStatus.class),
-                Constants.RESULT_STATUS_SUCCESS, Constants.URI_WORKLOAD_PODS_DETAIL.replace("{podName:.+}", name));
+    public ResultStatus updatePods(Params params) {
+        ResultStatus resultStatus = restTemplateService.sendYaml(Constants.TARGET_CP_MASTER_API,
+                propertyService.getCpMasterApiListPodsUpdateUrl(), HttpMethod.PUT, ResultStatus.class, params);
+        return (ResultStatus) commonService.setResultModel(resultStatus, Constants.RESULT_STATUS_SUCCESS);
     }
+
+
 
 
     /**
-     * 전체 Namespaces 의 Pods Admin 목록 조회(Get Services Admin list in all namespaces)
+     * Pods 삭제(Delete Pods)
      *
-     * @param offset     the offset
-     * @param limit      the limit
-     * @param orderBy    the orderBy
-     * @param order      the order
-     * @param searchName the searchName
-     * @return the pods all list
+     * @param params the params
+     * @return the resultStatus
      */
-    public Object getPodsListAllNamespacesAdmin(int offset, int limit, String orderBy, String order, String searchName) {
-        HashMap responseMap;
-
-        Object response = restTemplateService.sendAdmin(Constants.TARGET_CP_MASTER_API,
-                propertyService.getCpMasterApiListPodsListAllNamespacesUrl() + commonService.generateFieldSelectorForExceptNamespace(Constants.RESOURCE_NAMESPACE)
-                , HttpMethod.GET, null, Map.class);
-
-        try {
-            responseMap = (HashMap) response;
-        } catch (Exception e) {
-            return response;
-        }
-
-        PodsListAdmin podsListAdminList = commonService.setResultObject(responseMap, PodsListAdmin.class);
-        podsListAdminList = commonService.resourceListProcessing(podsListAdminList, offset, limit, orderBy, order, searchName, PodsListAdmin.class);
-        podsListAdminList = restartCountProcessing(podsListAdminList);
-
-
-        return commonService.setResultModel(podsListAdminList, Constants.RESULT_STATUS_SUCCESS);
+    public ResultStatus deletePods(Params params) {
+        ResultStatus resultStatus = restTemplateService.send(Constants.TARGET_CP_MASTER_API,
+                propertyService.getCpMasterApiListPodsDeleteUrl(), HttpMethod.DELETE, null, ResultStatus.class, params);
+        return (ResultStatus) commonService.setResultModel(resultStatus, Constants.RESULT_STATUS_SUCCESS);
     }
+
+
 
 
     /**
      * Pods ContainerStatuses 이 없을 경우 처리 (Handle without Pods ContainerStatus)
      *
-     * @param podsListAdmin the podsListAdmin
+     * @param podsList the pods list
      * @return the pods list
      */
-    public PodsListAdmin restartCountProcessing(PodsListAdmin podsListAdmin) {
+    public PodsList restartCountProcessing(PodsList podsList) {
 
-        for (PodsListAdminList po : podsListAdmin.getItems()) {
+        for (PodsListItem po : podsList.getItems()) {
 
             if (po.getStatus().getContainerStatuses() == null) {
                 List<ContainerStatusesItem> list = new ArrayList<>();
@@ -513,25 +271,25 @@ public class PodsService {
             }
         }
 
-        return podsListAdmin;
+        return podsList;
     }
 
 
     /**
      * 참조 리소스 UID 를 통한 Pod List 필터 처리  (Filters with Reference Resource UID)
      *
-     * @param podsListAdmin      the podsListAdmin
+     * @param podsList      the podsList
      * @param ownerReferencesUid the ownerReferencesUid
      * @return the pods list
      */
-    public PodsListAdmin podsFIlterWithOwnerReferences(PodsListAdmin podsListAdmin, String ownerReferencesUid) {
+    public PodsList podsFIlterWithOwnerReferences(PodsList podsList, String ownerReferencesUid) {
 
-        List<PodsListAdminList> podsItem;
+        List<PodsListItem> podsItem;
 
-        podsItem = podsListAdmin.getItems().stream().filter(x -> x.getMetadata().getOwnerReferences().get(0).getUid().matches(ownerReferencesUid)).collect(Collectors.toList());
-        podsListAdmin.setItems(podsItem);
+        podsItem = podsList.getItems().stream().filter(x -> x.getMetadata().getOwnerReferences().get(0).getUid().matches(ownerReferencesUid)).collect(Collectors.toList());
+        podsList.setItems(podsItem);
 
-        return podsListAdmin;
+        return podsList;
     }
 
 

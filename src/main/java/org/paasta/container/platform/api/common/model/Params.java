@@ -3,6 +3,7 @@ package org.paasta.container.platform.api.common.model;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import org.paasta.container.platform.api.common.Constants;
 
 @Data
 @AllArgsConstructor
@@ -22,8 +23,20 @@ public class Params {
     public String selector;
     public String type;
     public String userId;
+    public String nodeName;
+
+    // request parameter setting
+    public String addParam;
+    public String selectorType;
+
+    //resource yaml
+    public String rs_sa;
+    public String rs_role;
+    public String rs_rq;
+    public String rs_lr;
 
 
+    public
     @JsonProperty("yaml")
     String yaml;
 
@@ -35,7 +48,7 @@ public class Params {
         this.offset = 0;
         this.limit = 0;
         this.orderBy = "creationTime";
-        this.order = "";
+        this.order = "desc";
         this.searchName = "";
         this.yaml ="";
         this.ownerReferencesUid = "";
@@ -43,6 +56,13 @@ public class Params {
         this.selector = "";
         this.type = "";
         this.userId = "";
+        this.nodeName = "";
+        this.addParam = "";
+        this.selectorType = Constants.RESOURCE_NAMESPACE;
+        this.rs_sa ="";
+        this.rs_role ="";
+        this.rs_rq="";
+        this.rs_lr= "";
     }
 
 

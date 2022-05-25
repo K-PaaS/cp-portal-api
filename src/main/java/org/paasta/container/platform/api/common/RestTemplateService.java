@@ -132,16 +132,15 @@ public class RestTemplateService {
         if (reqApi.equals(Constants.TARGET_CP_MASTER_API)) {
             if (httpMethod.equals(HttpMethod.GET) && params.getNamespace().equalsIgnoreCase(Constants.ALL_NAMESPACES)) {
                 reqUrl = reqUrl.replace("namespaces/{namespace}/", "");
-                reqUrl += commonService.generateFieldSelectorForExceptNamespace(Constants.RESOURCE_NAMESPACE);
-                System.out.println("reqUrl::" + reqUrl);
+                reqUrl += commonService.generateFieldSelectorForExceptNamespace(params.getSelectorType());
             }
 
+            reqUrl += params.getAddParam();
             reqUrl = reqUrl.replace("{namespace}", params.getNamespace()).replace("{name}", params.getResourceName()).replace("{userId}", params.getUserId());
         }
 
         return reqUrl;
     }
-
 
     /**
      * t 전송(Send t)
@@ -161,7 +160,6 @@ public class RestTemplateService {
     public <T> T sendAdmin(String reqApi, String reqUrl, HttpMethod httpMethod, Object bodyObject, Class<T> responseType, String acceptType, String contentType, Params params) {
 
         reqUrl = setRequestParameter(reqApi, reqUrl, httpMethod, params);
-        System.out.println("reqUrl::" + reqUrl);
         setApiUrlAuthorizationAdmin(reqApi);
 
         HttpHeaders reqHeaders = new HttpHeaders();

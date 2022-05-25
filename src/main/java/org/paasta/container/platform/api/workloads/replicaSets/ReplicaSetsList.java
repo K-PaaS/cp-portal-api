@@ -1,7 +1,11 @@
 package org.paasta.container.platform.api.workloads.replicaSets;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 import org.paasta.container.platform.api.common.model.CommonItemMetaData;
+import org.paasta.container.platform.api.common.model.CommonMetaData;
+import org.paasta.container.platform.api.common.model.CommonSpec;
+import org.paasta.container.platform.api.common.model.CommonStatus;
 
 import java.util.List;
 import java.util.Map;
@@ -9,9 +13,9 @@ import java.util.Map;
 /**
  * ReplicaSets List Model 클래스
  *
- * @author hrjin
+ * @author kjhoon
  * @version 1.0
- * @since 2020.09.10
+ * @since 2022.05.23
  */
 @Data
 public class ReplicaSetsList {
@@ -20,8 +24,52 @@ public class ReplicaSetsList {
     private String resultMessage;
     private Integer httpStatusCode;
     private String detailMessage;
+
     private Map metadata;
     private CommonItemMetaData itemMetaData;
-    private List<ReplicaSets> items;
+    private List<ReplicaSetsListItem> items;
 
+}
+
+@Data
+class ReplicaSetsListItem {
+    private String name;
+    private String namespace;
+    private int runningPods;
+    private int totalPods;
+    private String image;
+    private String creationTimestamp;
+
+    @JsonIgnore
+    private CommonMetaData metadata;
+
+    @JsonIgnore
+    private CommonSpec spec;
+
+    @JsonIgnore
+    private CommonStatus status;
+
+    public String getName() {
+        return metadata.getName();
+    }
+
+    public String getNamespace() {
+        return metadata.getNamespace();
+    }
+
+    public int getRunningPods() {
+        return status.getAvailableReplicas();
+    }
+
+    public int getTotalPods() {
+        return status.getReplicas();
+    }
+
+    public String getImage() {
+        return spec.getTemplate().getSpec().getContainers().get(0).getImage();
+    }
+
+    public String getCreationTimestamp() {
+        return metadata.getCreationTimestamp();
+    }
 }

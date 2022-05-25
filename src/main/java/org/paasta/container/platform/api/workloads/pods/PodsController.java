@@ -4,32 +4,27 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
-import org.paasta.container.platform.api.common.Constants;
-import org.paasta.container.platform.api.common.ResultStatusService;
+import org.paasta.container.platform.api.common.model.CommonResourcesYaml;
+import org.paasta.container.platform.api.common.model.Params;
 import org.paasta.container.platform.api.common.model.ResultStatus;
 import org.paasta.container.platform.api.common.util.ResourceExecuteManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-import springfox.documentation.annotations.ApiIgnore;
-
-import java.util.HashMap;
 
 /**
  * Pods Controller 클래스
  *
- * @author hrjin
+ * @author kjhoon
  * @version 1.0
- * @since 2020.09.09
+ * @since 2022.05.20
  */
 @Api(value = "PodsController v1")
 @RestController
 @RequestMapping(value = "/clusters/{cluster:.+}/namespaces/{namespace:.+}/pods")
 public class PodsController {
     private final PodsService podsService;
-    private final ResultStatusService resultStatusService;
-
     private static final Logger LOGGER = LoggerFactory.getLogger(PodsController.class);
 
     /**
@@ -38,270 +33,139 @@ public class PodsController {
      * @param podsService the pods service
      */
     @Autowired
-    public PodsController(PodsService podsService, ResultStatusService resultStatusService) {
+    public PodsController(PodsService podsService) {
         this.podsService = podsService;
-        this.resultStatusService = resultStatusService;
     }
 
     /**
-     * Pods 목록 조회(Get Pods list)
+     * Pods 목록 조회(Get Pods List)
      *
-     * @param cluster    the cluster
-     * @param namespace  the namespace
-     * @param offset     the offset
-     * @param limit      the limit
-     * @param orderBy    the orderBy
-     * @param order      the order
-     * @param searchName the searchName
-     * @param isAdmin    the isAdmin
+     * @param params the params
      * @return the pods list
      */
-    @ApiOperation(value = "Pods 목록 조회(Get Pods list)", nickname = "getPodsList")
+    @ApiOperation(value = "Pods 목록 조회(Get Pods List)", nickname = "getPodsList")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "cluster", value = "클러스터 명", required = true, dataType = "string", paramType = "path"),
-            @ApiImplicitParam(name = "namespace", value = "네임스페이스 명", required = true, dataType = "string", paramType = "path"),
-            @ApiImplicitParam(name = "offset", value = "목록 시작지점, 기본값 0", required = false, dataType = "int", paramType = "query"),
-            @ApiImplicitParam(name = "limit", value = "한 페이지에 가져올 리소스 최대 수", required = false, dataType = "int", paramType = "query"),
-            @ApiImplicitParam(name = "orderBy", value = "정렬 기준, 기본값 creationTime(생성날짜)", required = false, dataType = "string", paramType = "query"),
-            @ApiImplicitParam(name = "order", value = "정렬 순서, 기본값 desc(내림차순)", required = false, dataType = "string", paramType = "query"),
-            @ApiImplicitParam(name = "searchName", value = "리소스 명 검색", required = false, dataType = "string", paramType = "query")
+            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body")
     })
     @GetMapping
     @ResponseBody
-    public Object getPodsList(@PathVariable(value = "cluster") String cluster,
-                              @PathVariable(value = "namespace") String namespace,
-                              @RequestParam(required = false, defaultValue = "0") int offset,
-                              @RequestParam(required = false, defaultValue = "0") int limit,
-                              @RequestParam(required = false, defaultValue = "creationTime") String orderBy,
-                              @RequestParam(required = false, defaultValue = "") String order,
-                              @RequestParam(required = false, defaultValue = "") String searchName,
-                              @ApiIgnore @RequestParam(required = false, name = "isAdmin") boolean isAdmin) {
+    public PodsList getPodsList(Params params) {
+        return podsService.getPodsList(params);
 
-        if (namespace.toLowerCase().equals(Constants.ALL_NAMESPACES)) {
-            if (isAdmin) {
-                return podsService.getPodsListAllNamespacesAdmin(offset, limit, orderBy, order, searchName);
-            } else {
-                return resultStatusService.FORBIDDEN_ACCESS_RESULT_STATUS();
-            }
-        }
-
-        if (isAdmin) {
-            return podsService.getPodsListAdmin(namespace, offset, limit, orderBy, order, searchName);
-        }
-        return podsService.getPodsList(namespace, offset, limit, orderBy, order, searchName);
     }
 
 
     /**
-     * Selector 값에 따른 Pods 목록 조회(Get Pods By selector)
+     * Selector 값에 따른 Pods 목록 조회(Get Pods By Selector)
      *
-     * @param cluster            the cluster
-     * @param namespace          the namespace
-     * @param selector           the nodeName
-     * @param type               the type
-     * @param ownerReferencesUid the ownerReferencesUid
-     * @param offset             the offset
-     * @param limit              the limit
-     * @param orderBy            the orderBy
-     * @param order              the order
-     * @param searchName         the searchName
-     * @param isAdmin            the isAdmin
+     * @param params the params
      * @return the pods list
      */
-    @ApiOperation(value = "Selector 값에 따른 Pods 목록 조회(Get Pods By selector)", nickname = "getPodListBySelector")
+    @ApiOperation(value = "Selector 값에 따른 Pods 목록 조회(Get Pods By Selector)", nickname = "getPodListBySelector")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "cluster", value = "클러스터 명", required = true, dataType = "string", paramType = "path"),
-            @ApiImplicitParam(name = "namespace", value = "네임스페이스 명", required = true, dataType = "string", paramType = "path"),
-            @ApiImplicitParam(name = "selector", value = "셀렉터", required = true, dataType = "string", paramType = "query"),
-            @ApiImplicitParam(name = "type", value = "리소스 타입", required = false, dataType = "string", paramType = "query"),
-            @ApiImplicitParam(name = "ownerReferencesUid", value = "참조 리소스의 UID", required = false, dataType = "string", paramType = "query"),
-            @ApiImplicitParam(name = "offset", value = "목록 시작지점, 기본값 0", required = false, dataType = "int", paramType = "query"),
-            @ApiImplicitParam(name = "limit", value = "한 페이지에 가져올 리소스 최대 수", required = false, dataType = "int", paramType = "query"),
-            @ApiImplicitParam(name = "orderBy", value = "정렬 기준, 기본값 creationTime(생성날짜)", required = false, dataType = "string", paramType = "query"),
-            @ApiImplicitParam(name = "order", value = "정렬 순서, 기본값 desc(내림차순)", required = false, dataType = "string", paramType = "query"),
-            @ApiImplicitParam(name = "searchName", value = "리소스 명 검색", required = false, dataType = "string", paramType = "query")
+            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body")
     })
     @GetMapping(value = "/resources")
     @ResponseBody
-    public Object getPodsListBySelector(@PathVariable(value = "cluster") String cluster,
-                                        @PathVariable(value = "namespace") String namespace,
-                                        @RequestParam(name = "selector", required = true, defaultValue = "") String selector,
-                                        @RequestParam(required = false, defaultValue = "default") String type,
-                                        @RequestParam(required = false, defaultValue = "") String ownerReferencesUid,
-                                        @RequestParam(required = false, defaultValue = "0") int offset,
-                                        @RequestParam(required = false, defaultValue = "0") int limit,
-                                        @RequestParam(required = false, defaultValue = "creationTime") String orderBy,
-                                        @RequestParam(required = false, defaultValue = "") String order,
-                                        @RequestParam(required = false, defaultValue = "") String searchName,
-                                        @ApiIgnore @RequestParam(required = false, name = "isAdmin") boolean isAdmin) {
-
-        if (isAdmin) {
-            return podsService.getPodListWithLabelSelectorAdmin(namespace, selector, type, ownerReferencesUid, offset, limit, orderBy, order, searchName);
-        } else
-            return podsService.getPodListWithLabelSelector(namespace, selector, type, ownerReferencesUid, offset, limit, orderBy, order, searchName);
+    public PodsList getPodsListBySelector(Params params) {
+            return podsService.getPodListWithLabelSelector(params);
     }
 
+
     /**
-     * Node 명에 따른 Pods 목록 조회(Get Pods By node)
+     * Node 명에 따른 Pods 목록 조회(Get Pods By Node)
      *
-     * @param cluster    the cluster
-     * @param namespace  the namespace
-     * @param nodeName   the nodeName
-     * @param offset     the offset
-     * @param limit      the limit
-     * @param orderBy    the orderBy
-     * @param order      the order
-     * @param searchName the searchName
-     * @param isAdmin    the isAdmin
+     * @param params the params
      * @return the pods list
      */
-    @ApiOperation(value = "Node명에 따른 Pods 목록 조회(Get Pods By node)", nickname = "getPodListByNode")
+    @ApiOperation(value = "Node 명에 따른 Pods 목록 조회(Get Pods By Node)", nickname = "getPodListByNode")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "cluster", value = "클러스터 명", required = true, dataType = "string", paramType = "path"),
-            @ApiImplicitParam(name = "namespace", value = "네임스페이스 명", required = true, dataType = "string", paramType = "path"),
-            @ApiImplicitParam(name = "nodeName", value = "노드 명", required = true, dataType = "string", paramType = "path"),
-            @ApiImplicitParam(name = "offset", value = "목록 시작지점, 기본값 0", required = false, dataType = "int", paramType = "query"),
-            @ApiImplicitParam(name = "limit", value = "한 페이지에 가져올 리소스 최대 수", required = false, dataType = "int", paramType = "query"),
-            @ApiImplicitParam(name = "orderBy", value = "정렬 기준, 기본값 creationTime(생성날짜)", required = false, dataType = "string", paramType = "query"),
-            @ApiImplicitParam(name = "order", value = "정렬 순서, 기본값 desc(내림차순)", required = false, dataType = "string", paramType = "query"),
-            @ApiImplicitParam(name = "searchName", value = "리소스 명 검색", required = false, dataType = "string", paramType = "query")
+            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body")
     })
     @GetMapping(value = "/nodes/{nodeName:.+}")
-    public Object getPodsListByNode(@PathVariable(value = "cluster") String cluster,
-                                    @PathVariable(value = "namespace") String namespace,
-                                    @PathVariable(value = "nodeName") String nodeName,
-                                    @RequestParam(required = false, defaultValue = "0") int offset,
-                                    @RequestParam(required = false, defaultValue = "0") int limit,
-                                    @RequestParam(required = false, defaultValue = "creationTime") String orderBy,
-                                    @RequestParam(required = false, defaultValue = "") String order,
-                                    @RequestParam(required = false, defaultValue = "") String searchName,
-                                    @ApiIgnore @RequestParam(required = false, name = "isAdmin") boolean isAdmin) {
-
-        if (isAdmin) {
-            return podsService.getPodsListByNodeAdmin(namespace, nodeName, offset, limit, orderBy, order, searchName);
-        }
-        return podsService.getPodListByNode(namespace, nodeName, offset, limit, orderBy, order, searchName);
+    public PodsList getPodsListByNode(Params params) {
+            return podsService.getPodsListByNode(params);
     }
 
     /**
-     * Pods 상세 조회(Get Pods detail)
+     * Pods 상세 조회(Get Pods Detail)
      *
-     * @param namespace    the namespace
-     * @param resourceName the resource name
-     * @param isAdmin      the isAdmin
+     * @param params the params
      * @return the pods detail
      */
-    @ApiOperation(value = "Pods 상세 조회(Get Pods detail)", nickname = "getPods")
+    @ApiOperation(value = "Pods 상세 조회(Get Pods Detail)", nickname = "getPods")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "namespace", value = "네임스페이스 명", required = true, dataType = "string", paramType = "path"),
-            @ApiImplicitParam(name = "resourceName", value = "리소스 명", required = true, dataType = "string", paramType = "path")
+            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body")
     })
     @GetMapping(value = "/{resourceName:.+}")
-    public Object getPods(@PathVariable(value = "namespace") String namespace,
-                          @PathVariable(value = "resourceName") String resourceName,
-                          @ApiIgnore @RequestParam(required = false, name = "isAdmin") boolean isAdmin) {
-        if (isAdmin) {
-            return podsService.getPodsAdmin(namespace, resourceName);
-        }
-        return podsService.getPods(namespace, resourceName);
+    public Pods getPods(Params params) {
+        return podsService.getPods(params);
     }
 
     /**
-     * Pods YAML 조회(Get Pods yaml)
+     * Pods YAML 조회(Get Pods Yaml)
      *
-     * @param namespace    the namespace
-     * @param resourceName the resource name
+     * @param params the params
      * @return the pods yaml
      */
-    @ApiOperation(value = "Pods YAML 조회(Get Pods yaml)", nickname = "getPodsYaml")
+    @ApiOperation(value = "Pods YAML 조회(Get Pods Yaml)", nickname = "getPodsYaml")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "namespace", value = "네임스페이스 명", required = true, dataType = "string", paramType = "path"),
-            @ApiImplicitParam(name = "resourceName", value = "리소스 명", required = true, dataType = "string", paramType = "path")
+            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body")
     })
     @GetMapping(value = "/{resourceName:.+}/yaml")
-    public Object getPodsYaml(@PathVariable(value = "namespace") String namespace,
-                              @PathVariable(value = "resourceName") String resourceName,
-                              @ApiIgnore @RequestParam(required = false, name = "isAdmin") boolean isAdmin) {
-
-        if (isAdmin) {
-            return podsService.getPodsAdminYaml(namespace, resourceName, new HashMap<>());
-        }
-
-        return podsService.getPodsYaml(namespace, resourceName, new HashMap<>());
+    public CommonResourcesYaml getPodsYaml(Params params) {
+            return podsService.getPodsYaml(params);
     }
 
     /**
      * Pods 생성(Create Pods)
      *
-     * @param cluster   the cluster
-     * @param namespace the namespace
-     * @param yaml      the yaml
-     * @param isAdmin   the isAdmin
-     * @return return is succeeded
+     * @param params the params
+     * @return the resultStatus
      */
     @ApiOperation(value = "Pods 생성(Create Pods)", nickname = "createPods")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "cluster", value = "클러스터 명", required = true, dataType = "string", paramType = "path"),
-            @ApiImplicitParam(name = "namespace", value = "네임스페이스 명", required = true, dataType = "string", paramType = "path"),
-            @ApiImplicitParam(name = "yaml", value = "리소스 생성 yaml", required = true, dataType = "string", paramType = "body")
+            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body")
     })
     @PostMapping
-    public Object createPods(@PathVariable(value = "cluster") String cluster,
-                             @PathVariable(value = "namespace") String namespace,
-                             @RequestBody String yaml,
-                             @ApiIgnore @RequestParam(required = false, name = "isAdmin") boolean isAdmin) throws Exception {
-        if (yaml.contains("---")) {
-            Object object = ResourceExecuteManager.commonControllerExecute(namespace, yaml, isAdmin);
+    public Object createPods(@RequestBody Params params) throws Exception {
+        if (params.getYaml().contains("---")) {
+            Object object = ResourceExecuteManager.commonControllerExecute(params);
             return object;
         }
+        return podsService.createPods(params);
 
-        return podsService.createPods(namespace, yaml, isAdmin);
-
-    }
-
-    /**
-     * Pods 삭제(Delete Pods)
-     *
-     * @param namespace    the namespace
-     * @param resourceName the resource name
-     * @param isAdmin      the isAdmin
-     * @return return is succeeded
-     */
-    @ApiOperation(value = "Pods 삭제(Delete Pods)", nickname = "deletePods")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "namespace", value = "네임스페이스 명", required = true, dataType = "string", paramType = "path"),
-            @ApiImplicitParam(name = "resourceName", value = "리소스 명", required = true, dataType = "string", paramType = "path")
-    })
-    @DeleteMapping("/{resourceName:.+}")
-    public ResultStatus deletePods(@PathVariable(value = "namespace") String namespace,
-                                   @PathVariable(value = "resourceName") String resourceName,
-                                   @ApiIgnore @RequestParam(required = false, name = "isAdmin") boolean isAdmin) {
-        return podsService.deletePods(namespace, resourceName, isAdmin);
     }
 
     /**
      * Pods 수정(Update Pods)
      *
-     * @param cluster      the cluster
-     * @param namespace    the namespace
-     * @param resourceName the resource name
-     * @param yaml         the yaml
-     * @param isAdmin      the isAdmin
-     * @return return is succeeded
+     * @param params the params
+     * @return the resultStatus
      */
     @ApiOperation(value = "Pods 수정(Update Pods)", nickname = "updatePods")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "cluster", value = "클러스터 명", required = true, dataType = "string", paramType = "path"),
-            @ApiImplicitParam(name = "namespace", value = "네임스페이스 명", required = true, dataType = "string", paramType = "path"),
-            @ApiImplicitParam(name = "resourceName", value = "리소스 명", required = true, dataType = "string", paramType = "path"),
-            @ApiImplicitParam(name = "yaml", value = "리소스 수정 yaml", required = true, dataType = "string", paramType = "body")
+            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body")
     })
     @PutMapping("/{resourceName:.+}")
-    public Object updatePods(@PathVariable(value = "cluster") String cluster,
-                             @PathVariable(value = "namespace") String namespace,
-                             @PathVariable(value = "resourceName") String resourceName,
-                             @RequestBody String yaml,
-                             @ApiIgnore @RequestParam(required = false, name = "isAdmin") boolean isAdmin) {
-        return podsService.updatePods(namespace, resourceName, yaml, isAdmin);
+    public ResultStatus updatePods(@RequestBody Params params) {
+        return podsService.updatePods(params);
     }
+
+    /**
+     * Pods 삭제(Delete Pods)
+     *
+     * @param params the params
+     * @return the resultStatus
+     */
+    @ApiOperation(value = "Pods 삭제(Delete Pods)", nickname = "deletePods")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body")
+    })
+    @DeleteMapping("/{resourceName:.+}")
+    public ResultStatus deletePods(Params params) {
+        return podsService.deletePods(params);
+    }
+
+
 }

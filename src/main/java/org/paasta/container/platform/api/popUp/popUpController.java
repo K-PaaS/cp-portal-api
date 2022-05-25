@@ -107,10 +107,11 @@ public class popUpController {
     })
     @GetMapping("/users/{userId:.+}/namespacesRolesList")
     public Object getNamespacesRolesTemplateList(Params params) {
-        if (params.namespace.toLowerCase().equals(Constants.ALL_NAMESPACES)) {
-                return rolesService.getNamespacesRolesTemplateList(params);
+        if (params.getNamespace().equalsIgnoreCase(Constants.ALL_NAMESPACES)) {
+            return rolesService.getNamespacesRolesTemplateList(params);
         }
-        return resultStatusService.FORBIDDEN_ACCESS_RESULT_STATUS();
-    }
 
+        return resultStatusService.FORBIDDEN_ACCESS_RESULT_STATUS();
+
+    }
 }

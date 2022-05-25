@@ -608,4 +608,34 @@ public class CommonService {
 
 
 
+
+    /**
+     * User 목록에 대한 검색 및 페이징, 정렬을 위한 공통 메서드(Common Method for searching, paging, ordering about resource's list)
+     *
+     * @param resourceList the resourceList
+     * @param params
+     * @param requestClass the requestClass
+     *
+     * @return the T
+     */
+    public <T> T userListProcessing(Object resourceList, Params params, Class<T> requestClass) {
+
+        Object resourceReturnList = null;
+
+        List resourceItemList = getField("items", resourceList);
+
+        // 1. commonItemMetaData 추가
+        CommonItemMetaData commonItemMetaData = setCommonItemMetaData(resourceItemList, params.getOffset(), params.getLimit());
+        resourceReturnList = setField("itemMetaData", resourceList, commonItemMetaData);
+
+
+        // 2. offset, limit에 따른 리스트 subLIst
+        resourceItemList = subListforLimit(resourceItemList, params.getOffset(), params.getLimit());
+        resourceReturnList = setField("items", resourceReturnList, resourceItemList);
+
+
+        return (T) resourceReturnList;
+    }
+
+
 }

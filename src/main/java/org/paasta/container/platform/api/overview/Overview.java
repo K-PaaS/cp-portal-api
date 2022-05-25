@@ -1,20 +1,19 @@
 package org.paasta.container.platform.api.overview;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import org.paasta.container.platform.api.common.CommonUtils;
-
 import java.util.Map;
+
+import lombok.Data;
+
+import org.paasta.container.platform.api.common.CommonUtils;
 
 /**
  * Overview Model 클래스
  *
- * @author hrjin
+ * @author kjhoon
  * @version 1.0
- * @since 2020.10.30
+ * @since 2022.05.24
  **/
 @Data
-@AllArgsConstructor
 public class Overview {
     private String resultCode;
     private String resultMessage;

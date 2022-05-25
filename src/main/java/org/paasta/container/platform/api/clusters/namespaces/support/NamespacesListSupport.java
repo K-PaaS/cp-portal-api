@@ -7,9 +7,9 @@ import java.util.List;
 /**
  * Namespaces List Model for Select Box 클래스
  *
- * @author jjy
+ * @author kjhoon
  * @version 1.0
- * @since 2020.10.14
+ * @since 2022.05.24
  */
 @Data
 public class NamespacesListSupport{

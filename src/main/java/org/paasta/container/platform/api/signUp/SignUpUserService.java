@@ -35,7 +35,7 @@ public class SignUpUserService {
     private final RestTemplateService restTemplateService;
     private final AccessTokenService accessTokenService;
     private final UsersService usersService;
-    private final ResourceYamlService resourceYamlService;
+    private final ResourceYamlRemoveService resourceYamlService;
     private final ResultStatusService resultStatusService;
 
     /**
@@ -50,7 +50,7 @@ public class SignUpUserService {
      */
     @Autowired
     public SignUpUserService(CommonService commonService, PropertyService propertyService, RestTemplateService restTemplateService,
-                             AccessTokenService accessTokenService, UsersService usersService, ResourceYamlService resourceYamlService, ResultStatusService resultStatusService) {
+                             AccessTokenService accessTokenService, UsersService usersService, ResourceYamlRemoveService resourceYamlService, ResultStatusService resultStatusService) {
         this.commonService = commonService;
         this.propertyService = propertyService;
         this.restTemplateService = restTemplateService;
@@ -128,17 +128,17 @@ public class SignUpUserService {
 
         // PaaS-TA 서비스 형태로 제공되는 CP 포털의 사용자 등록
         // 1. 서비스 인스턴스 아이디 유효성 검사
-            if(users.getServiceInstanceId().equalsIgnoreCase(NULL_REPLACE_TEXT)) {
-                return resultStatusService.INVALID_SERVICE_INSTANCE_ID();
-            }
+        if(users.getServiceInstanceId().equalsIgnoreCase(NULL_REPLACE_TEXT)) {
+            return resultStatusService.INVALID_SERVICE_INSTANCE_ID();
+        }
 
-            findServiceInstance = getServiceInstanceById(users.getServiceInstanceId());
-            if(findServiceInstance.getItems().size() < 1) {
-                return resultStatusService.INVALID_SERVICE_INSTANCE_ID();
-            }
+        findServiceInstance = getServiceInstanceById(users.getServiceInstanceId());
+        if(findServiceInstance.getItems().size() < 1) {
+            return resultStatusService.INVALID_SERVICE_INSTANCE_ID();
+        }
 
         // 2. 해당 계정이 KEYCLOAK 에 존재하는 계정인지 확인
-            UsersList registerUser = checkRegisterUser(users);
+        UsersList registerUser = checkRegisterUser(users);
 
         // 2-1. KEYCLOAK 미등록 사용자인 경우, 결과 메세지 리턴 처리
         if(registerUser.getResultMessage().equals(MessageConstant.USER_NOT_REGISTERED_IN_KEYCLOAK_MESSAGE.getMsg())) {
@@ -146,11 +146,11 @@ public class SignUpUserService {
         }
 
         // 3. 아이디를 통한 사용자 상세 목록 조회
-         UsersList usersListByUserId = getUsersListByUserId(users.getUserId());
-         List<Users> deleteUsers = usersListByUserId.getItems().stream().filter(x-> !x.getUserAuthId().matches(users.getUserAuthId())).collect(Collectors.toList());
+        UsersList usersListByUserId = getUsersListByUserId(users.getUserId());
+        List<Users> deleteUsers = usersListByUserId.getItems().stream().filter(x-> !x.getUserAuthId().matches(users.getUserAuthId())).collect(Collectors.toList());
 
-         // 3-1. KEYCLOAK 에서 삭제된 계정이지만, CP 에 남아있는 동일한 USER ID 의 USER 데이터, K8S SA, ROLEBINDING 삭제 진행
-         for(Users du: deleteUsers) {
+        // 3-1. KEYCLOAK 에서 삭제된 계정이지만, CP 에 남아있는 동일한 USER ID 의 USER 데이터, K8S SA, ROLEBINDING 삭제 진행
+        for(Users du: deleteUsers) {
             usersService.deleteUsers(du);
         }
 
@@ -163,20 +163,20 @@ public class SignUpUserService {
         checkTempNamespace = checkTempNamespace.stream().filter(x-> x.getUserType().matches(AUTH_USER)).collect(Collectors.toList());
 
         if(checkTempNamespace.size() < 1) {
-                users.setCpNamespace(propertyService.getDefaultNamespace());
-                users.setServiceAccountName(users.getUserAuthId());
-                users.setRoleSetCode(NOT_ASSIGNED_ROLE);
-                users.setSaSecret(NULL_REPLACE_TEXT);
-                users.setSaToken(NULL_REPLACE_TEXT);
-                users.setUserType(AUTH_USER);
+            users.setCpNamespace(propertyService.getDefaultNamespace());
+            users.setServiceAccountName(users.getUserAuthId());
+            users.setRoleSetCode(NOT_ASSIGNED_ROLE);
+            users.setSaSecret(NULL_REPLACE_TEXT);
+            users.setSaToken(NULL_REPLACE_TEXT);
+            users.setUserType(AUTH_USER);
 
-                LOGGER.info("CREATE USER WITH [USER] TYPE IN TEMP NAMESPACE...");
-                rsDb = sendSignUpUser(users);
+            LOGGER.info("CREATE USER WITH [USER] TYPE IN TEMP NAMESPACE...");
+            rsDb = sendSignUpUser(users);
 
-                if(Constants.RESULT_STATUS_FAIL.equals(rsDb.getResultCode())) {
-                    LOGGER.info("DATABASE EXECUTE IS FAILED....TEMP NAMESPACE USER CREATE FAILED");
-                    return resultStatusService.CREATE_USERS_FAIL();
-                }
+            if(Constants.RESULT_STATUS_FAIL.equals(rsDb.getResultCode())) {
+                LOGGER.info("DATABASE EXECUTE IS FAILED....TEMP NAMESPACE USER CREATE FAILED");
+                return resultStatusService.CREATE_USERS_FAIL();
+            }
         }
 
         // 5. 접속하려는 네임스페이스가 이미 사용자와 맵핑 되어있는지 체크 후 없으면 맵핑 진행

@@ -30,9 +30,9 @@ import static org.paasta.container.platform.api.common.Constants.*;
 /**
  * Namespaces Service 클래스
  *
- * @author jjy
+ * @author kjhoon
  * @version 1.0
- * @since 2020.10.14
+ * @since 2022.05.24
  */
 @Service
 public class NamespacesService {
@@ -65,7 +65,7 @@ public class NamespacesService {
     @Autowired
     public NamespacesService(RestTemplateService restTemplateService, CommonService commonService, PropertyService propertyService,
                              ResourceYamlService resourceYamlService, UsersService usersService, AccessTokenService accessTokenService,
-                             ResourceQuotasService resourceQuotasService, LimitRangesService limitRangesService,SignUpAdminService signUpAdminService, ResultStatusService resultStatusService) {
+                             ResourceQuotasService resourceQuotasService, LimitRangesService limitRangesService, SignUpAdminService signUpAdminService, ResultStatusService resultStatusService) {
         this.restTemplateService = restTemplateService;
         this.commonService = commonService;
         this.propertyService = propertyService;
@@ -78,164 +78,120 @@ public class NamespacesService {
         this.resultStatusService = resultStatusService;
     }
 
+
+
     /**
-     * Namespaces 상세 조회(Get Namespaces detail)
+     * Namespaces 목록 조회(Get Namespaces List)
      *
-     * @param namespace the namespaces
+     * @param params the params
+     * @return the namespaces list
+     */
+    public NamespacesList getNamespacesList(Params params) {
+        params.setNamespace(ALL_NAMESPACES);
+        params.setSelectorType(RESOURCE_CLUSTER);
+        HashMap responseMap = (HashMap) restTemplateService.send(Constants.TARGET_CP_MASTER_API,
+                propertyService.getCpMasterApiListNamespacesListUrl(), HttpMethod.GET, null, Map.class, params);
+        NamespacesList namespacesList = commonService.setResultObject(responseMap, NamespacesList.class);
+        namespacesList = commonService.resourceListProcessing(namespacesList, params, NamespacesList.class);
+        return (NamespacesList) commonService.setResultModel(namespacesList, Constants.RESULT_STATUS_SUCCESS);
+    }
+
+
+
+    /**
+     * Namespaces 상세 조회(Get Namespaces Detail)
+     *
+     * @param params the params
      * @return the namespaces detail
      */
-    Namespaces getNamespaces(String namespace) {
-        HashMap resultMap = (HashMap) restTemplateService.send(Constants.TARGET_CP_MASTER_API,
-                propertyService.getCpMasterApiListNamespacesGetUrl()
-                        .replace("{namespace}", namespace), HttpMethod.GET, null, Map.class);
-
-        return (Namespaces) commonService.setResultModel(commonService.setResultObject(resultMap, Namespaces.class), Constants.RESULT_STATUS_SUCCESS);
-    }
-
-    /**
-     * NameSpaces 상세 조회(Get NameSpaces Admin detail)
-     *
-     * @param namespace the namespaces
-     * @return the namespaces admin
-     */
-    public Object getNamespacesAdmin(String namespace) {
-        Object obj = restTemplateService.sendAdmin(Constants.TARGET_CP_MASTER_API,
-                propertyService.getCpMasterApiListNamespacesGetUrl()
-                        .replace("{namespace}", namespace), HttpMethod.GET, null, Map.class);
-
-        HashMap responseMap;
-
-        try {
-            responseMap = (HashMap) obj;
-        } catch (Exception e) {
-            return obj;
-        }
-        NamespacesAdmin namespacesAdmin = commonService.setResultObject(responseMap, NamespacesAdmin.class);
-        namespacesAdmin = commonService.annotationsProcessing(namespacesAdmin, NamespacesAdmin.class);
-        return commonService.setResultModel(namespacesAdmin, Constants.RESULT_STATUS_SUCCESS);
+    public Namespaces getNamespaces(Params params) {
+        HashMap responseMap = (HashMap) restTemplateService.send(Constants.TARGET_CP_MASTER_API,
+                propertyService.getCpMasterApiListNamespacesGetUrl(), HttpMethod.GET, null, Map.class, params);
+        Namespaces namespaces = commonService.setResultObject(responseMap, Namespaces.class);
+        namespaces = commonService.annotationsProcessing(namespaces, Namespaces.class);
+        return (Namespaces) commonService.setResultModel(namespaces, Constants.RESULT_STATUS_SUCCESS);
     }
 
 
     /**
-     * NameSpaces Admin 목록 조회(Get NameSpaces Admin list)
+     * Namespaces Yaml 조회(Get Namespaces Yaml)
      *
-     * @param offset     the offset
-     * @param limit      the limit
-     * @param orderBy    the orderBy
-     * @param order      the order
-     * @param searchName the searchName
-     * @return the namespaces admin list
-     */
-    public Object getNamespacesListAdmin(int offset, int limit, String orderBy, String order, String searchName) {
-        HashMap responseMap = null;
-
-        Object response = restTemplateService.sendAdmin(Constants.TARGET_CP_MASTER_API,
-                propertyService.getCpMasterApiListNamespacesListUrl() + commonService.generateFieldSelectorForExceptNamespace(Constants.RESOURCE_CLUSTER)
-                , HttpMethod.GET, null, Map.class);
-
-        try {
-            responseMap = (HashMap) response;
-        } catch (Exception e) {
-            return response;
-        }
-
-        NamespacesListAdmin namespacesListAdmin = commonService.setResultObject(responseMap, NamespacesListAdmin.class);
-        namespacesListAdmin = commonService.resourceListProcessing(namespacesListAdmin, offset, limit, orderBy, order, searchName, NamespacesListAdmin.class);
-
-        return commonService.setResultModel(namespacesListAdmin, Constants.RESULT_STATUS_SUCCESS);
-    }
-
-    /**
-     * NameSpaces Admin YAML 조회(Get NameSpaces yaml)
-     *
-     * @param namespace    the namespace
-     * @param resultMap    the result map
+     * @param params the params
      * @return the namespaces yaml
      */
-    public Object getNamespacesAdminYaml(String namespace, HashMap resultMap) {
+    public CommonResourcesYaml getNamespacesYaml(Params params) {
+        String resourceYaml = restTemplateService.send(Constants.TARGET_CP_MASTER_API,
+                propertyService.getCpMasterApiListNamespacesGetUrl(), HttpMethod.GET, null, String.class, Constants.ACCEPT_TYPE_YAML, params);
+        return (CommonResourcesYaml) commonService.setResultModel(new CommonResourcesYaml(resourceYaml), Constants.RESULT_STATUS_SUCCESS);
 
-        Object response = restTemplateService.sendAdmin(Constants.TARGET_CP_MASTER_API,
-                propertyService.getCpMasterApiListNamespacesGetUrl()
-                        .replace("{namespace}", namespace), HttpMethod.GET, null, String.class, Constants.ACCEPT_TYPE_YAML);
-
-
-        if (CommonUtils.isResultStatusInstanceCheck(response)) {
-            return response;
-        }
-
-        //noinspection unchecked
-        resultMap.put("sourceTypeYaml", response);
-
-        return commonService.setResultModel(commonService.setResultObject(resultMap, CommonResourcesYaml.class), Constants.RESULT_STATUS_SUCCESS);
     }
 
 
     /**
-     * NameSpaces 삭제(Delete NameSpaces)
+     * Namespaces 삭제(Delete Namespaces)
      *
-     * @param cluster the cluster
-     * @param namespace the namespace
-     * @return return is succeeded
+     * @param params the params
+     * @return the resultStatus
      */
-    public ResultStatus deleteNamespaces(String cluster, String namespace) {
-        ResultStatus resultStatus = restTemplateService.sendAdmin(Constants.TARGET_CP_MASTER_API,
-                propertyService.getCpMasterApiListNamespacesDeleteUrl()
-                        .replace("{name}", namespace), HttpMethod.DELETE, null, ResultStatus.class);
+    public ResultStatus deleteNamespaces(Params params) {
+        ResultStatus resultStatus = restTemplateService.send(Constants.TARGET_CP_MASTER_API,
+                propertyService.getCpMasterApiListNamespacesDeleteUrl(), HttpMethod.DELETE, null, ResultStatus.class, params);
 
-        List<String> userNamesList = usersService.getUsersNameListByNamespace(cluster, namespace).get(USERS);
+        List<String> userNamesList = usersService.getUsersNameListByNamespace(params.getCluster(), params.getNamespace()).get(USERS);
         for (String userId : userNamesList) {
-            usersService.deleteUsers(usersService.getUsers(cluster, namespace, userId));
+            usersService.deleteUsers(usersService.getUsers(params.getCluster(), params.getNamespace() , userId));
         }
-
-        return (ResultStatus) commonService.setResultModelWithNextUrl(commonService.setResultObject(resultStatus, ResultStatus.class), Constants.RESULT_STATUS_SUCCESS, Constants.URI_CLUSTER_NAMESPACES);
+        return (ResultStatus) commonService.setResultModel(resultStatus, Constants.RESULT_STATUS_SUCCESS);
     }
 
 
     /**
      * Namespaces 생성(Create Namespaces)
      *
-     * @param cluster the cluster
-     * @param initTemplate the initTemplate
-     * @return return is succeeded
+     * @param params the params
+     * @param initTemplate the init template
+     * @return the resultStatus
      */
-    public ResultStatus createInitNamespaces(String cluster, NamespacesInitTemplate initTemplate) {
+    public ResultStatus createInitNamespaces(Params params, NamespacesInitTemplate initTemplate) {
         String namespace = initTemplate.getName();
         String userId = initTemplate.getNsAdminUserId();
 
-
         Users newNsUser = null;
         try {
-            newNsUser =  usersService.getUsers(cluster, propertyService.getDefaultNamespace(), userId);
+            newNsUser =  usersService.getUsers(params.getCluster(), propertyService.getDefaultNamespace(), userId);
         }
         catch(Exception e){
             return resultStatusService.UNAPPROACHABLE_USERS();
         }
 
         String nsAdminUserSA = newNsUser.getServiceAccountName();
+        params.setRs_sa(nsAdminUserSA);
+        params.setRs_role(propertyService.getAdminRole());
+        params.setNamespace(namespace);
 
         // 1. namespace 생성
-        resourceYamlService.createNamespace(namespace);
+        resourceYamlService.createNamespace(params);
 
         // 2. init-role, admin-role 생성
-        resourceYamlService.createInitRole(namespace);
-        resourceYamlService.createNsAdminRole(namespace);
+        resourceYamlService.createInitRole(params);
+        resourceYamlService.createAdminRole(params);
 
         // 3. namespace 관리자 sa 생성
-        ResultStatus createSAresult = resourceYamlService.createServiceAccount(nsAdminUserSA, namespace);
+        ResultStatus createSAresult = resourceYamlService.createServiceAccount(params);
         if (createSAresult.getResultCode().equalsIgnoreCase(RESULT_STATUS_FAIL)) {
-            resourceYamlService.deleteNamespaceYaml(namespace);
+            resourceYamlService.deleteNamespaceYaml(params);
             return createSAresult;
         }
 
         // 4. namespace 관리자 rb 생성
-        ResultStatus createRBresult = resourceYamlService.createRoleBinding(nsAdminUserSA, namespace, propertyService.getAdminRole());
+        ResultStatus createRBresult = resourceYamlService.createRoleBinding(params);
         if (createRBresult.getResultCode().equalsIgnoreCase(RESULT_STATUS_FAIL)) {
-            resourceYamlService.deleteNamespaceYaml(namespace);
+            resourceYamlService.deleteNamespaceYaml(params);
             return createRBresult;
         }
 
         // 5. namespace 관리자 DB user 생성
-        String saSecretName = restTemplateService.getSecretName(namespace, nsAdminUserSA);
+        String saSecretName = resourceYamlService.getSecretName(params);
 
         newNsUser.setId(0);
         newNsUser.setCpNamespace(namespace);
@@ -248,20 +204,22 @@ public class NamespacesService {
         ResultStatus createCpUserResult = usersService.createUsers(newNsUser);
 
         if (createCpUserResult.getResultCode().equalsIgnoreCase(RESULT_STATUS_FAIL)) {
-            resourceYamlService.deleteNamespaceYaml(namespace);
+            resourceYamlService.deleteNamespaceYaml(params);
             return createCpUserResult;
         }
 
 
         for (String rq : initTemplate.getResourceQuotasList()) {
             if (propertyService.getResourceQuotasList().contains(rq)) {
-                resourceYamlService.createDefaultResourceQuota(namespace, rq);
+                params.setRs_rq(rq);
+                resourceYamlService.createDefaultResourceQuota(params);
             }
         }
 
         for (String lr : initTemplate.getLimitRangesList()) {
             if (propertyService.getLimitRangesList().contains(lr)) {
-                resourceYamlService.createDefaultLimitRanges(namespace, lr);
+                params.setRs_lr(lr);
+                resourceYamlService.createDefaultLimitRanges(params);
             }
         }
 
@@ -272,12 +230,15 @@ public class NamespacesService {
     /**
      * Namespaces 수정(Update Namespaces)
      *
-     * @param cluster the cluster
-     * @param namespace    the namespace
+     * @param params the params
      * @param initTemplate the init template
-     * @return return is succeeded
+     * @return the resultStatus
      */
-    public ResultStatus modifyInitNamespaces(String cluster, String namespace, NamespacesInitTemplate initTemplate) {
+    public ResultStatus modifyInitNamespaces(Params params, NamespacesInitTemplate initTemplate) {
+
+        String cluster = params.getCluster();
+        String namespace = params.getNamespace();
+
 
         // 1. namespace 일치 여부 확인
         if (!namespace.equals(initTemplate.getName())) {
@@ -314,7 +275,7 @@ public class NamespacesService {
 
 
 
-         String updateNsAdminUserSA = newNsUser.getServiceAccountName();
+        String updateNsAdminUserSA = newNsUser.getServiceAccountName();
 
         // 5. 현재 namespace 관리자가 존재하지만, 다른 사용자를 관리자로 변경할 경우
         // 현재 namespace 관리자는 'USER' 권한으로 USER-TYPE 변경
@@ -346,19 +307,20 @@ public class NamespacesService {
             }
 
             // create admin and init role
-            resourceYamlService.createNsAdminRole(namespace);
-            resourceYamlService.createInitRole(namespace);
+            resourceYamlService.createInitRole(params);
+            resourceYamlService.createAdminRole(params);
 
+            params.setRs_sa(updateNsAdminUserSA);
+            params.setRs_role(propertyService.getAdminRole());
 
             // 7. Service Account 생성
-            ResultStatus createSAresult = resourceYamlService.createServiceAccount(updateNsAdminUserSA, namespace);
-
+            ResultStatus createSAresult = resourceYamlService.createServiceAccount(params);
             if (createSAresult.getResultCode().equalsIgnoreCase(RESULT_STATUS_FAIL)) {
                 return createSAresult;
             }
 
             // 8. Role-Binding 생성
-            ResultStatus createRBresult = resourceYamlService.createRoleBinding(updateNsAdminUserSA, namespace, propertyService.getAdminRole());
+            ResultStatus createRBresult = resourceYamlService.createRoleBinding(params);
 
             if (createRBresult.getResultCode().equalsIgnoreCase(RESULT_STATUS_FAIL)) {
                 LOGGER.info("ROLE BINDING EXECUTE IS FAILED. K8S SA AND RB WILL BE REMOVED...");
@@ -366,7 +328,7 @@ public class NamespacesService {
                 return createRBresult;
             }
 
-            String saSecretName = restTemplateService.getSecretName(namespace, updateNsAdminUserSA);
+            String saSecretName = resourceYamlService.getSecretName(params);
 
             newNsUser.setId(0);
             newNsUser.setCpNamespace(namespace);
@@ -375,14 +337,13 @@ public class NamespacesService {
             newNsUser.setSaToken(accessTokenService.getSecrets(namespace, saSecretName).getUserAccessToken());
             newNsUser.setUserType(AUTH_NAMESPACE_ADMIN);
             newNsUser.setIsActive(CHECK_Y);
-
             usersService.createUsers(newNsUser);
 
         }
 
         // Modify ResourceQuotas , LimitRanges
-        modifyResourceQuotas(namespace, initTemplate.getResourceQuotasList());
-        modifyLimitRanges(namespace, initTemplate.getLimitRangesList());
+       // modifyResourceQuotas(namespace, initTemplate.getResourceQuotasList());
+       // modifyLimitRanges(namespace, initTemplate.getLimitRangesList());
 
 
         return (ResultStatus) commonService.setResultModelWithNextUrl(resultStatusService.SUCCESS_RESULT_STATUS(), Constants.RESULT_STATUS_SUCCESS, "YOUR_NAMESPACES_DETAIL_PAGE");
@@ -412,10 +373,9 @@ public class NamespacesService {
             params.setResourceName(deleteRqName);
             resourceQuotasService.deleteResourceQuotas(params);
         }
-
         // add
         for (String rqName : toBeAdd) {
-            resourceYamlService.createDefaultResourceQuota(namespace, rqName);
+           // resourceYamlService.createDefaultResourceQuota(namespace, rqName);
         }
     }
 
@@ -437,36 +397,39 @@ public class NamespacesService {
         ArrayList<String> toBeAdd = commonService.compareArrayList(requestUpdatedLrList, k8sLimitRangesList);
 
         for (String lrName : toBeAdd) {
-            resourceYamlService.createDefaultLimitRanges(namespace, lrName);
+          //  resourceYamlService.createDefaultLimitRanges(namespace, lrName);
         }
 
         for (String deleteLrName : toBeDelete) {
-            limitRangesService.deleteLimitRanges(namespace, deleteLrName);
+          //  limitRangesService.deleteLimitRanges(namespace, deleteLrName);
         }
     }
 
 
     /**
-     * Namespace SelectBox 를 위한 전체 목록 조회(Get all list for NameSpace SelectBox)
+     * Namespaces SelectBox 를 위한 Namespaces 목록 조회(Get Namespaces list for SelectBox)
      *
-     * @return the namespaces admin
+     * @param params the params
+     * @return the namespaces list
      */
-    public Object getNamespacesListForSelectbox() {
-        NamespacesListAdmin namespacesListAdmin = (NamespacesListAdmin) getNamespacesListAdmin(0, 0, "name", "asc", "");
-        List<NamespacesListAdminItem> namespaceItem = namespacesListAdmin.getItems();
+    public Object getNamespacesListForSelectbox(Params params) {
+        params.setOrderBy("name");
+        params.setOrder("asc");
+
+        NamespacesList namespacesList = getNamespacesList(params);
+        List<NamespacesListItem> namespaceItem = namespacesList.getItems();
 
         List<String> returnNamespaceList = new ArrayList<>();
-        NamespacesListSupport namespacesListSupport = new NamespacesListSupport();
 
-        // all namespaces
+        //add 'all'
         returnNamespaceList.add(ALL_NAMESPACES);
 
-        for (NamespacesListAdminItem n : namespaceItem) {
+        for (NamespacesListItem n : namespaceItem) {
             returnNamespaceList.add(n.getName());
         }
 
+        NamespacesListSupport namespacesListSupport = new NamespacesListSupport();
         namespacesListSupport.setItems(returnNamespaceList);
-
 
         return commonService.setResultModel(namespacesListSupport, Constants.RESULT_STATUS_SUCCESS);
     }

@@ -38,7 +38,7 @@ public class UsersService {
     private final RestTemplateService restTemplateService;
     private final PropertyService propertyService;
     private final CommonService commonService;
-    private final ResourceYamlService resourceYamlService;
+    private final ResourceYamlRemoveService resourceYamlService;
     private final AccessTokenService accessTokenService;
     private final ClustersService clustersService;
     private final ResultStatusService resultStatusService;
@@ -54,7 +54,7 @@ public class UsersService {
      * @param clustersService     the clusters service
      */
     @Autowired
-    public UsersService(RestTemplateService restTemplateService, PropertyService propertyService, CommonService commonService, ResourceYamlService resourceYamlService,
+    public UsersService(RestTemplateService restTemplateService, PropertyService propertyService, CommonService commonService, ResourceYamlRemoveService resourceYamlService,
                         AccessTokenService accessTokenService, ClustersService clustersService, ResultStatusService resultStatusService) {
         this.restTemplateService = restTemplateService;
         this.propertyService = propertyService;
@@ -187,7 +187,7 @@ public class UsersService {
 
 
 
-        for (UsersAdmin.UsersDetails usersDetails : usersAdmin.getItems()) {
+            for (UsersAdmin.UsersDetails usersDetails : usersAdmin.getItems()) {
 
                 //serviceAccount 조회
                 Object sa_obj = restTemplateService.sendAdmin(TARGET_CP_MASTER_API, propertyService.getCpMasterApiListUsersGetUrl()
@@ -213,7 +213,7 @@ public class UsersService {
                             .saSecret(secrets.getMetadata().getName())
                             .secretLabels(secrets.getMetadata().getLabels())
                             .secretType(secrets.getType()).build()); }
-        }
+            }
 
         } catch (Exception e) {
             return resultStatusService.NOT_FOUND_RESULT_STATUS();
@@ -658,7 +658,7 @@ public class UsersService {
     public UsersInNamespace getUsersNameListByNamespaceAdmin(String cluster, String namespace) {
 
         UsersInNamespace usersInNamespace = restTemplateService.send(TARGET_COMMON_API, Constants.URI_COMMON_API_NAMESPACE_OR_NOT_CHECK
-                        .replace("{namespace:.+}", namespace), HttpMethod.GET, null, UsersInNamespace.class);
+                .replace("{namespace:.+}", namespace), HttpMethod.GET, null, UsersInNamespace.class);
         usersInNamespace.setNamespace(namespace);
         return (UsersInNamespace) commonService.setResultModel(usersInNamespace, Constants.RESULT_STATUS_SUCCESS);
     }
@@ -733,7 +733,7 @@ public class UsersService {
 
         UsersListAdmin usersListAdmin = restTemplateService.send(TARGET_COMMON_API, Constants.URI_COMMON_API_CLUSTER_ADMIN_INFO
                         .replace("{searchName:.+}", searchName.trim())
-               , HttpMethod.GET, null, UsersListAdmin.class);
+                , HttpMethod.GET, null, UsersListAdmin.class);
 
         usersListAdmin = commonService.userListProcessing(usersListAdmin, 0, 0, "", "", "", UsersListAdmin.class);
 

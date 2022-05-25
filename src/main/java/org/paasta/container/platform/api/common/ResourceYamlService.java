@@ -1,21 +1,23 @@
 package org.paasta.container.platform.api.common;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import org.paasta.container.platform.api.clusters.limitRanges.LimitRangesDefault;
 import org.paasta.container.platform.api.clusters.limitRanges.LimitRangesDefaultList;
 import org.paasta.container.platform.api.clusters.resourceQuotas.ResourceQuotasDefault;
 import org.paasta.container.platform.api.clusters.resourceQuotas.ResourceQuotasDefaultList;
 import org.paasta.container.platform.api.clusters.resourceQuotas.ResourceQuotasService;
+import org.paasta.container.platform.api.common.model.Params;
 import org.paasta.container.platform.api.common.model.ResultStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
-
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.paasta.container.platform.api.common.CommonUtils.yamlMatch;
 import static org.paasta.container.platform.api.common.Constants.*;
 
 /**
@@ -48,116 +50,120 @@ public class ResourceYamlService {
     /**
      * ftl 파일로 Namespace 생성(Create Namespace)
      *
-     * @param namespace
-     * @return the result status
+     * @param params the params
+     * @return the resultStatus
      */
-    public ResultStatus createNamespace(String namespace) {
+    public ResultStatus createNamespace(Params params) {
         Map map = new HashMap();
-        map.put("spaceName", namespace);
+        map.put("spaceName", params.getNamespace());
+        params.setYaml(templateService.convert("create_namespace.ftl", map));
+        ResultStatus  resultStatus = restTemplateService.sendYaml(Constants.TARGET_CP_MASTER_API,
+                propertyService.getCpMasterApiListNamespacesCreateUrl(), HttpMethod.POST, ResultStatus.class, params);
 
-        String nsYaml = templateService.convert("create_namespace.ftl", map);
-        Object nameSpaceResult = restTemplateService.sendYaml(TARGET_CP_MASTER_API, propertyService.getCpMasterApiListNamespacesCreateUrl(), HttpMethod.POST, nsYaml, Object.class, true);
-
-        return (ResultStatus) commonService.setResultModelWithNextUrl(commonService.setResultObject(nameSpaceResult, ResultStatus.class),
-                Constants.RESULT_STATUS_SUCCESS, Constants.URI_INTRO_OVERVIEW);
+        return (ResultStatus) commonService.setResultModel(resultStatus, Constants.RESULT_STATUS_SUCCESS);
     }
 
 
     /**
      * ftl 파일로 Service Account 생성(Create Service Account)
      *
-     * @param username
-     * @param namespace
-     * @return the result status
+     * @param params the params
+     * @return the resultStatus
      */
-    public ResultStatus createServiceAccount(String username, String namespace) {
-        String saYaml = templateService.convert("create_account.ftl", yamlMatch(username, namespace));
-        Object saResult = restTemplateService.sendYaml(TARGET_CP_MASTER_API, propertyService.getCpMasterApiListUsersCreateUrl().replace("{namespace}", namespace), HttpMethod.POST, saYaml, Object.class, true);
+    public ResultStatus createServiceAccount(Params params) {
+        Map map = new HashMap();
+        map.put("userName", params.getRs_sa());
+        map.put("spaceName", params.getNamespace());
+        params.setYaml(templateService.convert("create_account.ftl", map));
+        ResultStatus resultStatus = restTemplateService.sendYaml(Constants.TARGET_CP_MASTER_API,
+                propertyService.getCpMasterApiListUsersCreateUrl(), HttpMethod.POST, ResultStatus.class, params);
 
-        return (ResultStatus) commonService.setResultModelWithNextUrl(commonService.setResultObject(saResult, ResultStatus.class),
-                Constants.RESULT_STATUS_SUCCESS, null);
+        return (ResultStatus) commonService.setResultModel(resultStatus, Constants.RESULT_STATUS_SUCCESS);
     }
+
 
 
     /**
      * ftl 파일로 Role Binding 생성(Create Role Binding)
      *
-     * @param username
-     * @param namespace
-     * @param roleName
-     * @return
+     * @param params the params
+     * @return the resultStatus
      */
-    public ResultStatus createRoleBinding(String username, String namespace, String roleName) {
+    public ResultStatus createRoleBinding(Params params) {
         Map map = new HashMap();
-        String roleBindingYaml;
 
-        if(roleName == null) {
-            map.put("userName", username);
-            map.put("spaceName", namespace);
 
-            roleBindingYaml = templateService.convert("create_clusterRoleBinding.ftl", map);
+        if(params.getRs_role().equalsIgnoreCase("")) {
+            map.put("userName", params.getRs_sa());
+            map.put("spaceName", params.getNamespace());
+            params.setYaml(templateService.convert("create_clusterRoleBinding.ftl", map));
         } else {
-            map.put("userName", username);
-            map.put("roleName", roleName);
-            map.put("spaceName", namespace);
-
-            roleBindingYaml = templateService.convert("create_roleBinding.ftl", map);
+            map.put("userName", params.getRs_sa());
+            map.put("roleName", params.getRs_role());
+            map.put("spaceName", params.getNamespace());
+            params.setYaml(templateService.convert("create_roleBinding.ftl", map));
         }
 
-        Object rbResult = restTemplateService.sendYaml(TARGET_CP_MASTER_API, propertyService.getCpMasterApiListRoleBindingsCreateUrl().replace("{namespace}", namespace), HttpMethod.POST, roleBindingYaml, Object.class, true);
-
-        return (ResultStatus) commonService.setResultModelWithNextUrl(commonService.setResultObject(rbResult, ResultStatus.class),
-                Constants.RESULT_STATUS_SUCCESS, null);
+        ResultStatus resultStatus = restTemplateService.sendYaml(Constants.TARGET_CP_MASTER_API,
+                propertyService.getCpMasterApiListRoleBindingsCreateUrl(), HttpMethod.POST, ResultStatus.class, params);
+        return (ResultStatus) commonService.setResultModel(resultStatus, Constants.RESULT_STATUS_SUCCESS);
     }
 
 
     /**
      * ftl 파일로 init role 생성(Create init role)
      *
-     * @param namespace the namespace
+     * @param params the params
+     * @return the resultStatus
      */
-    public void createInitRole(String namespace) {
+    public ResultStatus createInitRole(Params params) {
         // init role 생성
         Map<String, Object> map = new HashMap();
-        map.put("spaceName", namespace);
+        map.put("spaceName", params.getNamespace());
         map.put("roleName", propertyService.getInitRole());
-        String initRoleYaml = templateService.convert("create_init_role.ftl", map);
 
-        restTemplateService.sendYaml(Constants.TARGET_CP_MASTER_API, propertyService.getCpMasterApiListRolesCreateUrl().replace("{namespace}", namespace), HttpMethod.POST, initRoleYaml, Object.class, true);
+        params.setYaml(templateService.convert("create_init_role.ftl", map));
+        ResultStatus  resultStatus = restTemplateService.sendYaml(Constants.TARGET_CP_MASTER_API,
+                propertyService.getCpMasterApiListRolesCreateUrl(), HttpMethod.POST, ResultStatus.class, params);
+
+        return (ResultStatus) commonService.setResultModel(resultStatus, Constants.RESULT_STATUS_SUCCESS);
     }
 
 
     /**
-     * Namespace Admin Role 생성(Create Namespace Admin Role)
+     * ftl 파일로 admin role 생성(Create admin role)
      *
-     * @param namespace the namespace
+     * @param params the params
+     * @return the resultStatus
      */
-    public void createNsAdminRole(String namespace) {
+    public ResultStatus createAdminRole(Params params) {
         Map<String, Object> map = new HashMap();
-        map.put("spaceName", namespace);
+        map.put("spaceName", params.getNamespace());
         map.put("roleName", propertyService.getAdminRole());
-        String nsAdminRoleYaml = templateService.convert("create_admin_role.ftl", map);
 
-        restTemplateService.sendYaml(Constants.TARGET_CP_MASTER_API, propertyService.getCpMasterApiListRolesCreateUrl().replace("{namespace}", namespace), HttpMethod.POST, nsAdminRoleYaml, Object.class, true);
+        params.setYaml(templateService.convert("create_admin_role.ftl", map));
+
+        ResultStatus  resultStatus = restTemplateService.sendYaml(Constants.TARGET_CP_MASTER_API,
+                propertyService.getCpMasterApiListRolesCreateUrl(), HttpMethod.POST, ResultStatus.class, params);
+
+        return (ResultStatus) commonService.setResultModel(resultStatus, Constants.RESULT_STATUS_SUCCESS);
     }
-
 
     /**
      * Namespace 에 ResourceQuotas 를 할당(Allocate ResourceQuotas to Namespace)
      *
-     * @param reqNamespace the request namespace
-     * @param rqName the request name
+     * @param params the params
+     * @return the resultStatus
      */
-    public void createDefaultResourceQuota(String reqNamespace, String rqName) {
+    public ResultStatus createDefaultResourceQuota(Params params) {
         ResourceQuotasDefaultList resourceQuotasDefaultList = restTemplateService.send(Constants.TARGET_COMMON_API, "/resourceQuotas", HttpMethod.GET, null, ResourceQuotasDefaultList.class);
-        String resourceQuotaYaml = "";
-        String requestCpu = "";
-        String requestMemory = "";
         String limitsCpu = "";
         String limitsMemory = "";
 
+        String rqName = params.getRs_rq();
+
         for (ResourceQuotasDefault d:resourceQuotasDefaultList.getItems()) {
-            if (rqName == null) {
+            if (rqName.equals("")) {
                 rqName = propertyService.getLowResourceQuotas();
             }
 
@@ -170,31 +176,34 @@ public class ResourceYamlService {
         }
         Map<String, Object> model = new HashMap<>();
         model.put("name", rqName);
-        model.put("namespace", reqNamespace);
+        model.put("namespace", params.getNamespace());
         model.put("limits_cpu", limitsCpu);
         model.put("limits_memory", limitsMemory);
 
-        resourceQuotaYaml = templateService.convert("create_resource_quota.ftl", model);
+        params.setYaml(templateService.convert("create_resource_quota.ftl", model));
 
-        restTemplateService.sendYaml(Constants.TARGET_CP_MASTER_API, propertyService.getCpMasterApiListResourceQuotasCreateUrl().replace("{namespace}", reqNamespace), HttpMethod.POST, resourceQuotaYaml, Object.class, true);
+        ResultStatus  resultStatus = restTemplateService.sendYaml(Constants.TARGET_CP_MASTER_API,
+                propertyService.getCpMasterApiListResourceQuotasCreateUrl(), HttpMethod.POST, ResultStatus.class, params);
 
+        return (ResultStatus) commonService.setResultModel(resultStatus, Constants.RESULT_STATUS_SUCCESS);
     }
 
 
     /**
      * Namespace 에 LimitRanges 를 할당(Allocate LimitRanges to Namespace)
      *
-     * @param reqNamespace the request namespace
-     * @param lrName the request name
+     * @param params the params
+     * @return the resultStatus
      */
-    public void createDefaultLimitRanges(String reqNamespace, String lrName) {
+    public ResultStatus createDefaultLimitRanges(Params params) {
         LimitRangesDefaultList limitRangesDefaultList = restTemplateService.send(Constants.TARGET_COMMON_API, "/limitRanges", HttpMethod.GET, null, LimitRangesDefaultList.class);
-        String limitRangeYaml = "";
         String limitsCpu = "";
         String limitsMemory = "";
 
+        String lrName = params.getRs_lr();
+
         for (LimitRangesDefault limitRanges:limitRangesDefaultList.getItems()) {
-            if (lrName == null) {
+            if (lrName.equals("")) {
                 lrName = propertyService.getLowLimitRanges();
             }
 
@@ -209,14 +218,16 @@ public class ResourceYamlService {
 
         Map<String, Object> model = new HashMap<>();
         model.put("name", lrName);
-        model.put("namespace", reqNamespace);
+        model.put("namespace", params.getNamespace());
         model.put("limit_cpu", limitsCpu);
         model.put("limit_memory", limitsMemory);
 
-        limitRangeYaml = templateService.convert("create_limit_range.ftl", model);
+        params.setYaml(templateService.convert("create_limit_range.ftl", model));
 
-        restTemplateService.sendYaml(Constants.TARGET_CP_MASTER_API, propertyService.getCpMasterApiListLimitRangesCreateUrl().replace("{namespace}", reqNamespace), HttpMethod.POST, limitRangeYaml, Object.class, true);
+        ResultStatus  resultStatus = restTemplateService.sendYaml(Constants.TARGET_CP_MASTER_API,
+                propertyService.getCpMasterApiListLimitRangesCreateUrl(), HttpMethod.POST, ResultStatus.class, params);
 
+        return (ResultStatus) commonService.setResultModel(resultStatus, Constants.RESULT_STATUS_SUCCESS);
     }
 
 
@@ -266,11 +277,35 @@ public class ResourceYamlService {
     /**
      * Namespace 삭제 (Delete Namespace)
      *
-     * @param namespace
-     * @return
+     * @param params the params
+     * @return the resultStatus
      */
-    public void deleteNamespaceYaml(String namespace) {
-        restTemplateService.sendAdmin(Constants.TARGET_CP_MASTER_API, propertyService.getCpMasterApiListNamespacesDeleteUrl()
-                .replace("{name}", namespace), HttpMethod.DELETE, null, ResultStatus.class);
+    public ResultStatus deleteNamespaceYaml(Params params) {
+        ResultStatus resultStatus = restTemplateService.send(Constants.TARGET_CP_MASTER_API,
+                propertyService.getCpMasterApiListNamespacesDeleteUrl().replace("{name}", params.getNamespace()), HttpMethod.DELETE, null, ResultStatus.class, params);
+        return (ResultStatus) commonService.setResultModel(resultStatus, Constants.RESULT_STATUS_SUCCESS);
     }
+
+
+
+    /**
+     * service account 의 secret 이름을 조회(Get Secret of Service Account)
+     *
+     * @param params the params
+     * @return the resultStatus
+     */
+    public String getSecretName(Params params) {
+        String jsonObj = restTemplateService.send(Constants.TARGET_CP_MASTER_API,
+                propertyService.getCpMasterApiListUsersGetUrl().replace("{namespace}", params.getNamespace())
+                        .replace("{name}", params.getRs_sa()), HttpMethod.GET, null, String.class, params);
+
+        JsonObject jsonObject = JsonParser.parseString(jsonObj).getAsJsonObject();
+        JsonElement element = jsonObject.getAsJsonObject().get("secrets");
+        element = element.getAsJsonArray().get(0);
+        String token = element.getAsJsonObject().get("name").toString();
+        token = token.replaceAll("\"", "");
+        return token;
+    }
+
+
 }

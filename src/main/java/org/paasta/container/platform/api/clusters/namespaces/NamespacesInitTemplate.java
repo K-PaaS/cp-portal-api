@@ -8,9 +8,9 @@ import java.util.List;
 /**
  * Namespaces Init Template Model 클래스
  *
- * @author hrjin
+ * @author kjhoon
  * @version 1.0
- * @since 2020.10.29
+ * @since 2022.05.24
  **/
 @Data
 public class NamespacesInitTemplate {

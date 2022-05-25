@@ -99,8 +99,8 @@ public class OverviewService {
         // replicaSets count
         ReplicaSetsList replicaSetsList = getReplicaSetsList(params);
 
-        // users count (수정 필요)
-        int usersCnt =  getUsersListByNamespaceByOverview(params.getCluster() , propertyService.getDefaultNamespace());
+        params.setNamespace(propertyService.getDefaultNamespace());
+        int usersCnt =  getUsersListByNamespaceByOverview(params);
 
         // deployments usage
         Map<String, Object> deploymentsUsage = getDeploymentsUsage(deploymentsList);
@@ -142,7 +142,7 @@ public class OverviewService {
         ReplicaSetsList replicaSetsList = getReplicaSetsList(params);
 
         // users count
-        int usersCnt = getUsersListByNamespaceByOverview(params.getCluster(), params.getNamespace());
+        int usersCnt = getUsersListByNamespaceByOverview(params);
 
         // deployments usage
         Map<String, Object> deploymentsUsage = getDeploymentsUsage(deploymentsList);
@@ -325,19 +325,16 @@ public class OverviewService {
     /**
      * 각 Namespace 별 Users 목록 조회(Get Users namespace list)
      *
-     * @param cluster   the cluster
-     * @param namespace the namespace
+     * @param params the params
      * @return the users list
      */
-    public Integer getUsersListByNamespaceByOverview(String cluster, String namespace) {
+    public Integer getUsersListByNamespaceByOverview(Params params) {
         UsersList usersList =  restTemplateService.send(Constants.TARGET_COMMON_API, Constants.URI_COMMON_API_USERS_LIST_BY_NAMESPACE
-                .replace("{cluster:.+}", cluster)
-                .replace("{namespace:.+}", namespace), HttpMethod.GET, null, UsersList.class);
+                .replace("{cluster:.+}", params.getCluster())
+                .replace("{namespace:.+}", params.getNamespace()), HttpMethod.GET, null, UsersList.class, params);
 
         List<String> overviewUserList = usersList.getItems().stream().map(Users::getUserId).collect(Collectors.toList());
         overviewUserList = overviewUserList.stream().distinct().collect(Collectors.toList());
-
         return overviewUserList.size();
     }
-
 }

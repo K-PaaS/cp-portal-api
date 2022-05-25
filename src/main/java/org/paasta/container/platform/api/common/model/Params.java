@@ -23,6 +23,8 @@ public class Params {
     public String selector;
     public String type;
     public String userId;
+    public String userType;
+    public String isActive;
     public String nodeName;
 
     // request parameter setting
@@ -56,6 +58,8 @@ public class Params {
         this.selector = "";
         this.type = "";
         this.userId = "";
+        this.userType = Constants.SELECTED_ADMINISTRATOR;
+        this.isActive = "true";
         this.nodeName = "";
         this.addParam = "";
         this.selectorType = Constants.RESOURCE_NAMESPACE;

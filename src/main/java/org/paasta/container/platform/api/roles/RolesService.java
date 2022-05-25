@@ -167,30 +167,33 @@ public class RolesService {
      * @return return is succeeded
      */
     public Object getNamespacesRolesTemplateList(Params params) {
+
         HashMap responseMap = (HashMap) restTemplateService.send(Constants.TARGET_CP_MASTER_API,
-                propertyService.getCpMasterApiListRolesListAllNamespacesUrl(),
-                HttpMethod.GET, null, Map.class, params);
+                propertyService.getCpMasterApiListRolesListAllNamespacesUrl(), HttpMethod.GET, null, Map.class, params);
+
 
         RolesListAllNamespaces rolesListAllNamespaces = commonService.setResultObject(responseMap, RolesListAllNamespaces.class);
 
-        List<RolesListAllNamespaces.RolesListAllNamespacesItem> rolesListItems = new ArrayList<>();
+        List<RolesListAllNamespaces.RolesListAllNamespacesItem> rolesListAdminItems = new ArrayList<>();
 
         for (RolesListAllNamespaces.RolesListAllNamespacesItem item : rolesListAllNamespaces.getItems()) {
             if (!propertyService.getIgnoreNamespaceList().contains(item.getNamespace())) {
-                rolesListItems.add(item);
+                rolesListAdminItems.add(item);
             }
         }
 
-        rolesListAllNamespaces.setItems(rolesListItems);
+        rolesListAllNamespaces.setItems(rolesListAdminItems);
 
-        if (params.userId.equals(Constants.ALL_USER_ID)) {
+        if (params.getUserId().equals(Constants.ALL_USER_ID)) {
             for (RolesListAllNamespaces.RolesListAllNamespacesItem item : rolesListAllNamespaces.getItems()) {
                 item.setCheckYn(Constants.CHECK_N);
                 item.setUserType(Constants.NOT_ASSIGNED_ROLE);
             }
         } else {
-            UsersList usersList = restTemplateService.send(Constants.TARGET_COMMON_API, URI_COMMON_API_NAMESPACES_ROLE_BY_CLUSTER_NAME_USER_ID,
-                    HttpMethod.GET, null, UsersList.class);
+            UsersList usersList = restTemplateService.send(Constants.TARGET_COMMON_API, URI_COMMON_API_NAMESPACES_ROLE_BY_CLUSTER_NAME_USER_ID
+                    .replace("{cluster:.+}", params.getCluster())
+                    .replace("{userId:.+}", params.getUserId()), HttpMethod.GET, null, UsersList.class, params);
+
             for (RolesListAllNamespaces.RolesListAllNamespacesItem item : rolesListAllNamespaces.getItems()) {
                 item.setCheckYn(Constants.CHECK_N);
                 item.setUserType(Constants.NOT_ASSIGNED_ROLE);

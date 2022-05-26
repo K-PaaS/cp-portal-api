@@ -25,6 +25,7 @@ public class ConfigMapsService {
     private final CommonService commonService;
     private final PropertyService propertyService;
 
+
     /**
      * Instantiates a new ConfigMaps service
      *
@@ -38,6 +39,7 @@ public class ConfigMapsService {
         this.commonService = commonService;
         this.propertyService = propertyService;
     }
+
 
     /**
      * ConfigMaps 목록 조회(Get ConfigMaps List)
@@ -65,6 +67,7 @@ public class ConfigMapsService {
         return (ConfigMaps) commonService.setResultModel(configMaps, Constants.RESULT_STATUS_SUCCESS);
     }
 
+
     /**
      * ConfigMaps YAML 조회(Get ConfigMaps Yaml)
      *
@@ -78,6 +81,7 @@ public class ConfigMapsService {
 
     }
 
+
     /**
      * ConfigMaps 생성(Create ConfigMaps)
      *
@@ -89,6 +93,7 @@ public class ConfigMapsService {
                 propertyService.getCpMasterApiListConfigMapsCreateUrl(), HttpMethod.POST, ResultStatus.class, params);
         return (ResultStatus) commonService.setResultModel(resultStatus, Constants.RESULT_STATUS_SUCCESS);
     }
+
 
     /**
      * ConfigMaps 삭제(Delete ConfigMaps)
@@ -102,6 +107,7 @@ public class ConfigMapsService {
         return (ResultStatus) commonService.setResultModel(resultStatus, Constants.RESULT_STATUS_SUCCESS);
     }
 
+
     /**
      * ConfigMaps 수정(Update ConfigMaps)
      *
@@ -112,19 +118,6 @@ public class ConfigMapsService {
         ResultStatus resultStatus = restTemplateService.sendYaml(Constants.TARGET_CP_MASTER_API,
                 propertyService.getCpMasterApiListConfigMapsUpdateUrl(), HttpMethod.PUT, ResultStatus.class, params);
         return (ResultStatus) commonService.setResultModel(resultStatus, Constants.RESULT_STATUS_SUCCESS);
-    }
-
-    /**
-     * 전체 Namespaces 의 ConfigMaps 목록 조회(Get ConfigMaps list in all namespaces)
-     *
-     * @param params the params
-     * @return the ConfigMaps all list
-     */
-    public ConfigMapsList getConfigMapsListAllNamespaces(Params params) {
-        HashMap responseMap = (HashMap) restTemplateService.send(Constants.TARGET_CP_MASTER_API,
-                propertyService.getCpMasterApiListConfigMapsListAllNamespacesUrl(),
-                HttpMethod.GET, null, Map.class, params);
-        return procConfigMapsList(responseMap, params);
     }
 
 

@@ -4,7 +4,6 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
-import org.paasta.container.platform.api.common.Constants;
 import org.paasta.container.platform.api.common.model.CommonResourcesYaml;
 import org.paasta.container.platform.api.common.model.Params;
 import org.paasta.container.platform.api.common.model.ResultStatus;
@@ -26,6 +25,7 @@ public class ConfigMapsController {
 
     private final ConfigMapsService configMapsService;
 
+
     /**
      * Instantiates a new ConfigMaps service
      *
@@ -36,17 +36,22 @@ public class ConfigMapsController {
         this.configMapsService = configMapsService;
     }
 
+
+    /**
+     * ConfigMaps 리스트 조회(Get ConfigMaps List)
+     *
+     * @param params the params
+     * @return the ConfigMaps detail
+     */
     @ApiOperation(value = "ConfigMaps 목록 조회(Get ConfigMaps List)", nickname = "getConfigMapsList")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body")
     })
     @GetMapping
     public ConfigMapsList getConfigMapsList(Params params) {
-        if (params.namespace.toLowerCase().equals(Constants.ALL_NAMESPACES)) {
-            return configMapsService.getConfigMapsListAllNamespaces(params);
-        }
         return configMapsService.getConfigMapsList(params);
     }
+
 
     /**
      * ConfigMaps 상세 조회(Get ConfigMaps Detail)
@@ -63,6 +68,13 @@ public class ConfigMapsController {
         return configMapsService.getConfigMaps(params);
     }
 
+
+    /**
+     * ConfigMaps YAML 조회(Get ConfigMaps YAML)
+     *
+     * @param params the params
+     * @return the ConfigMaps yaml
+     */
     @ApiOperation(value = "ConfigMaps YAML 조회(Get ConfigMaps yaml)", nickname = "getConfigMapsYaml")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body")
@@ -71,6 +83,7 @@ public class ConfigMapsController {
     public CommonResourcesYaml getConfigMapsYaml(Params params) {
         return configMapsService.getConfigMapsYaml(params);
     }
+
 
     /**
      * ConfigMaps 생성(Create ConfigMaps)
@@ -91,6 +104,7 @@ public class ConfigMapsController {
         return configMapsService.createConfigMaps(params);
     }
 
+
     /**
      * ConfigMaps 삭제(Delete ConfigMaps)
      *
@@ -105,6 +119,7 @@ public class ConfigMapsController {
     public ResultStatus deleteConfigMaps(Params params) {
         return configMapsService.deleteConfigMaps(params);
     }
+
 
     /**
      * ConfigMaps 수정(Update ConfigMaps)

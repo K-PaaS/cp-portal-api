@@ -59,7 +59,6 @@ public class PersistentVolumeClaimsService {
 
     /**
      * PersistentVolumeClaims 상세 조회(Get PersistentVolumeClaims detail)
-     * (Admin Portal)
      *
      * @param params the params
      * @return the persistentVolumeClaims detail
@@ -73,7 +72,7 @@ public class PersistentVolumeClaimsService {
     }
 
     /**
-     * PersistentVolumeClaims YAML 조회(Get PersistentVolumeClaims Admin yaml)
+     * PersistentVolumeClaims YAML 조회(Get PersistentVolumeClaims yaml)
      *
      * @param params the params
      * @return the persistentVolumeClaims yaml
@@ -122,18 +121,4 @@ public class PersistentVolumeClaimsService {
         return (ResultStatus) commonService.setResultModel(resultStatus, Constants.RESULT_STATUS_SUCCESS);
     }
 
-    /**
-     * 전체 Namespaces 의 PersistentVolumeClaims Admin 목록 조회(Get PersistentVolumeClaims Admin list in all namespaces)
-     *
-     * @param params the params
-     * @return the persistentVolumeClaims all list
-     */
-    public PersistentVolumeClaimsList getPersistentVolumeClaimsListAllNamespaces(Params params) {
-        HashMap responseMap = (HashMap) restTemplateService.send(Constants.TARGET_CP_MASTER_API,
-                propertyService.getCpMasterApiListPersistentVolumeClaimsListAllNamespacesUrl(),
-                HttpMethod.GET, null, Map.class, params);
-        PersistentVolumeClaimsList persistentVolumeClaimsList = commonService.setResultObject(responseMap, PersistentVolumeClaimsList.class);
-        persistentVolumeClaimsList = commonService.resourceListProcessing(persistentVolumeClaimsList, params, PersistentVolumeClaimsList.class);
-        return (PersistentVolumeClaimsList) commonService.setResultModel(persistentVolumeClaimsList, Constants.RESULT_STATUS_SUCCESS);
-    }
 }

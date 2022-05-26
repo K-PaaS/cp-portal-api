@@ -13,7 +13,7 @@ import org.paasta.container.platform.api.common.model.CommonSpec;
 import org.paasta.container.platform.api.common.model.CommonStatus;
 
 /**
- * StorageClasses List Admin Model 클래스
+ * StorageClasses List Model 클래스
  *
  * @author hkm
  * @version 1.0

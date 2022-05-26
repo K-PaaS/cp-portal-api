@@ -1,7 +1,6 @@
 package org.paasta.container.platform.api.storages.persistentVolumeClaims;
 
 import io.swagger.annotations.*;
-import org.paasta.container.platform.api.common.Constants;
 import org.paasta.container.platform.api.common.ResultStatusService;
 import org.paasta.container.platform.api.common.model.CommonResourcesYaml;
 import org.paasta.container.platform.api.common.model.Params;
@@ -48,11 +47,6 @@ public class PersistentVolumeClaimsController {
     })
     @GetMapping
     public PersistentVolumeClaimsList getPersistentVolumeClaimsList(Params params) {
-
-        if (params.namespace.toLowerCase().equals(Constants.ALL_NAMESPACES)) {
-            return persistentVolumeClaimsService.getPersistentVolumeClaimsListAllNamespaces(params);
-
-        }
         return persistentVolumeClaimsService.getPersistentVolumeClaimsList(params);
     }
 

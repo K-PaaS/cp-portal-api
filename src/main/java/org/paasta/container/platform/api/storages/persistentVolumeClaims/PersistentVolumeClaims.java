@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * PersistentVolumeClaims Admin Model 클래스
+ * PersistentVolumeClaims Model 클래스
  *
  * @author hkm
  * @version 1.0

@@ -14,7 +14,7 @@ import org.paasta.container.platform.api.storages.persistentVolumeClaims.support
 import org.paasta.container.platform.api.storages.persistentVolumeClaims.support.PersistentVolumeClaimsStatus;
 
 /**
- * PersistentVolumeClaims List Admin Model 클래스
+ * PersistentVolumeClaims List Model 클래스
  *
  * @author hkm
  * @version 1.0

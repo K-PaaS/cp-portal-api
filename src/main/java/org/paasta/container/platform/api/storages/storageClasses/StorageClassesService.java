@@ -4,8 +4,6 @@ import org.paasta.container.platform.api.common.*;
 import org.paasta.container.platform.api.common.model.CommonResourcesYaml;
 import org.paasta.container.platform.api.common.model.Params;
 import org.paasta.container.platform.api.common.model.ResultStatus;
-import org.paasta.container.platform.api.workloads.deployments.Deployments;
-import org.paasta.container.platform.api.workloads.deployments.DeploymentsList;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
@@ -44,7 +42,6 @@ public class StorageClassesService {
 
     /**
      * StorageClasses 목록 조회(Get StorageClasses list)
-     * (Admin Portal)
      *
      * @param params the params
      * @return the storageClasses list

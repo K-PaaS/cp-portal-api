@@ -9,7 +9,7 @@ import org.paasta.container.platform.api.common.model.CommonMetaData;
 import java.util.List;
 
 /**
- * StorageClasses Admin Model 클래스
+ * StorageClasses Model 클래스
  *
  * @author hkm
  * @version 1.0

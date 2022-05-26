@@ -7,8 +7,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.paasta.container.platform.api.accessInfo.AccessToken;
 import org.paasta.container.platform.api.accessInfo.AccessTokenService;
-import org.paasta.container.platform.api.clusters.limitRanges.LimitRanges;
-import org.paasta.container.platform.api.clusters.limitRanges.LimitRangesList;
 import org.paasta.container.platform.api.clusters.limitRanges.LimitRangesService;
 import org.paasta.container.platform.api.clusters.namespaces.support.NamespacesListSupport;
 import org.paasta.container.platform.api.clusters.resourceQuotas.ResourceQuotas;

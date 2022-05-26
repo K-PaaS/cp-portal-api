@@ -32,8 +32,8 @@ public class EventsServiceTest {
     private static EventsList gResultListModel = null;
     private static EventsList gFinalResultListModel = null;
 
-    private static EventsListAdmin gResultListAdminModel = null;
-    private static EventsListAdmin gFinalResultListAdminModel = null;
+    private static EventsList gResultListAdminModel = null;
+    private static EventsList gFinalResultListAdminModel = null;
 
     @Mock
     RestTemplateService restTemplateService;
@@ -58,8 +58,8 @@ public class EventsServiceTest {
         gFinalResultListModel = new EventsList();
         gFinalResultListModel.setResultCode(Constants.RESULT_STATUS_SUCCESS);
 
-        gResultListAdminModel = new EventsListAdmin();
-        gFinalResultListAdminModel = new EventsListAdmin();
+        gResultListAdminModel = new EventsList();
+        gFinalResultListAdminModel = new EventsList();
         gFinalResultListAdminModel.setResultCode(Constants.RESULT_STATUS_SUCCESS);
     }
 
@@ -97,11 +97,11 @@ public class EventsServiceTest {
         when(eventsServiceMock.generateCpMasterApiListEventsList(TYPE, RESOURCE_UID)).thenReturn("/api/v1/events");
         when(eventsServiceMock.generateLimitParam()).thenReturn("?limit=" + Constants.EVENT_DEFAULT_LIMIT);
         when(restTemplateService.sendAdmin(Constants.TARGET_CP_MASTER_API, "/api/v1/events?limit=5&fieldSelector=involvedObject.name=" + RESOURCE_UID, HttpMethod.GET, null, Map.class)).thenReturn(gResultMap);
-        when(commonService.setResultObject(gResultMap, EventsListAdmin.class)).thenReturn(gResultListAdminModel);
+        when(commonService.setResultObject(gResultMap, EventsList.class)).thenReturn(gResultListAdminModel);
         when(commonService.setResultModel(gResultListAdminModel, Constants.RESULT_STATUS_SUCCESS)).thenReturn(gFinalResultListAdminModel);
 
         // when
-        EventsListAdmin resultList = (EventsListAdmin) eventsService.getEventsListAdmin(NAMESPACE, RESOURCE_UID, TYPE);
+        EventsList resultList = (EventsList) eventsService.getEventsListAdmin(NAMESPACE, RESOURCE_UID, TYPE);
 
         // then
         assertEquals(Constants.RESULT_STATUS_SUCCESS, resultList.getResultCode());
@@ -134,11 +134,11 @@ public class EventsServiceTest {
         // given
         when(propertyService.getCpMasterApiListEventsListUrl()).thenReturn("/api/v1/namespaces/{namespace}/events");
         when(restTemplateService.sendAdmin(Constants.TARGET_CP_MASTER_API, "/api/v1/namespaces/" + NAMESPACE + "/events?limit=5", HttpMethod.GET, null, Map.class)).thenReturn(gResultMap);
-        when(commonService.setResultObject(gResultMap, EventsListAdmin.class)).thenReturn(gResultListAdminModel);
+        when(commonService.setResultObject(gResultMap, EventsList.class)).thenReturn(gResultListAdminModel);
         when(commonService.setResultModel(gResultListAdminModel, Constants.RESULT_STATUS_SUCCESS)).thenReturn(gFinalResultListAdminModel);
 
         // when
-        EventsListAdmin resultList = (EventsListAdmin) eventsService.getNamespaceEventsListAdmin(NAMESPACE);
+        EventsList resultList = (EventsList) eventsService.getNamespaceEventsListAdmin(NAMESPACE);
 
         // then
         assertEquals(Constants.RESULT_STATUS_SUCCESS, resultList.getResultCode());

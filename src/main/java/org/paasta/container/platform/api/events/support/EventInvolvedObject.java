@@ -5,9 +5,9 @@ import lombok.Data;
 /**
  * Event Involved Object 클래스
  *
- * @author kjhoon
+ * @author jjy
  * @version 1.0
- * @since 2020.11.06
+ * @since 2022.05.24
  */
 @Data
 public class EventInvolvedObject {

@@ -1,19 +1,18 @@
 package org.paasta.container.platform.api.endpoints;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
-import org.paasta.container.platform.api.common.model.CommonMetaData;
-import org.paasta.container.platform.api.common.model.CommonSpec;
-import org.paasta.container.platform.api.common.model.CommonStatus;
-import org.paasta.container.platform.api.common.model.CommonSubset;
+import org.paasta.container.platform.api.endpoints.support.EndPointsDetailsItem;
+import org.paasta.container.platform.api.endpoints.support.EndpointSubset;
 
 import java.util.List;
 
 /**
- * Endpoints Model 클래스
+ * Endpoints Admin Model 클래스
  *
- * @author hrjin
+ * @author jjy
  * @version 1.0
- * @since 2020.09.17
+ * @since 2022.05.24
  */
 @Data
 public class Endpoints {
@@ -22,10 +21,10 @@ public class Endpoints {
     private String resultMessage;
     private Integer httpStatusCode;
     private String detailMessage;
+    private List<EndPointsDetailsItem> endpoints;
 
-    private CommonMetaData metadata;
-    private CommonSpec spec;
-    private CommonStatus status;
-    private List<CommonSubset> subsets;
+    @JsonIgnore
+    private List<EndpointSubset> subsets;
+
 
 }

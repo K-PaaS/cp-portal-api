@@ -1,42 +1,42 @@
-package org.paasta.container.platform.api.clusters.nodes;
+package org.paasta.container.platform.api.customServices.ingresses;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-
-import java.util.List;
-
 import lombok.Data;
-
-import org.paasta.container.platform.api.clusters.nodes.support.NodesAddress;
-import org.paasta.container.platform.api.clusters.nodes.support.NodesStatus;
-import org.paasta.container.platform.api.clusters.nodes.support.NodesSystemInfo;
 import org.paasta.container.platform.api.common.CommonUtils;
 import org.paasta.container.platform.api.common.model.CommonAnnotations;
 import org.paasta.container.platform.api.common.model.CommonMetaData;
 import org.paasta.container.platform.api.common.model.CommonSpec;
+import org.paasta.container.platform.api.common.model.CommonStatus;
+
+import java.util.List;
 
 /**
- * Nodes Admin Model 클래스
+ * Ingresses List Model 클래스
  *
- * @author hrjin
+ * @author jjy
  * @version 1.0
- * @since 2020.09.01
+ * @since 2022.05.24
  */
 @Data
-public class NodesAdmin {
+public class Ingresses {
     private String resultCode;
     private String resultMessage;
     private Integer httpStatusCode;
     private String detailMessage;
 
+    //Details
     private String name;
     private String uid;
+    private String namespace;
     private Object labels;
     private List<CommonAnnotations> annotations;
     private String creationTimestamp;
 
-    private String podsCIDR;
-    private List<NodesAddress> addresses;
-    private NodesSystemInfo info;
+    //Resource Info
+    private String type;
+    private String clusterIP;
+    private String sessionAffinity;
+    private Object selector;
 
     @JsonIgnore
     private CommonMetaData metadata;
@@ -45,7 +45,7 @@ public class NodesAdmin {
     private CommonSpec spec;
 
     @JsonIgnore
-    private NodesStatus status;
+    private CommonStatus status;
 
     public String getName() {
         return name = metadata.getName();
@@ -55,23 +55,15 @@ public class NodesAdmin {
         return uid = metadata.getUid();
     }
 
+    public String getNamespace() {
+        return namespace = metadata.getNamespace();
+    }
+
     public Object getLabels() {
         return CommonUtils.procReplaceNullValue(metadata.getLabels());
     }
 
     public String getCreationTimestamp() {
         return creationTimestamp = metadata.getCreationTimestamp();
-    }
-
-    public String getPodsCIDR() {
-        return podsCIDR = spec.getPodCIDR();
-    }
-
-    public List<NodesAddress> getAddresses() {
-        return addresses = status.getAddresses();
-    }
-
-    public NodesSystemInfo getInfo() {
-        return info = status.getNodeInfo();
     }
 }

@@ -6,11 +6,11 @@ import org.paasta.container.platform.api.common.model.CommonItemMetaData;
 import java.util.List;
 
 /**
- * Endpoints List Model 클래스
+ * Endpoints List Admin Model 클래스
  *
- * @author hrjin
+ * @author jjy
  * @version 1.0
- * @since 2020.09.17
+ * @since 2022.05.24
  */
 @Data
 public class EndpointsList {
@@ -21,5 +21,4 @@ public class EndpointsList {
     private String detailMessage;
     private CommonItemMetaData itemMetaData;
     private List<Endpoints> items;
-
 }

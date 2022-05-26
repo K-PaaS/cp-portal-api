@@ -1,41 +1,37 @@
-package org.paasta.container.platform.api.customServices.services;
+package org.paasta.container.platform.api.customServices.ingresses;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-
-import java.util.List;
-import java.util.Map;
-
 import lombok.Data;
-
 import org.paasta.container.platform.api.common.model.CommonItemMetaData;
 import org.paasta.container.platform.api.common.model.CommonMetaData;
 import org.paasta.container.platform.api.common.model.CommonSpec;
 import org.paasta.container.platform.api.common.model.CommonStatus;
 
+import java.util.List;
+import java.util.Map;
+
 /**
- * CustomServices List Admin Model 클래스
+ * Ingresses Model 클래스
  *
- * @author kjh
+ * @author jjy
  * @version 1.0
- * @since 2020.09.10
+ * @since 2022.05.24
  */
 @Data
-public class CustomServicesListAdmin {
+public class IngressesList {
     private String resultCode;
     private String resultMessage;
     private Integer httpStatusCode;
     private String detailMessage;
     private Map metadata;
     private CommonItemMetaData itemMetaData;
-    private List<CustomServicesListAdminItem> items;
+    private List<IngressesListItem> items;
 }
 
 @Data
-class CustomServicesListAdminItem {
+class IngressesListItem {
     private String name;
     private String namespace;
-    private String type;
-    private String clusterIP;
     private String creationTimestamp;
 
     @JsonIgnore
@@ -48,22 +44,14 @@ class CustomServicesListAdminItem {
     private CommonStatus status;
 
     public String getName() {
-        return metadata.getName();
+        return name = metadata.getName();
     }
 
     public String getNamespace() {
-        return metadata.getNamespace();
-    }
-
-    public String getType() {
-        return spec.getType();
-    }
-
-    public String getClusterIP() {
-        return spec.getClusterIP();
+        return namespace = metadata.getNamespace();
     }
 
     public String getCreationTimestamp() {
-        return metadata.getCreationTimestamp();
+        return creationTimestamp = metadata.getCreationTimestamp();
     }
 }

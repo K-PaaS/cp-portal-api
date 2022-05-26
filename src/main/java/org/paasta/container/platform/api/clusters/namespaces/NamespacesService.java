@@ -391,7 +391,7 @@ public class NamespacesService {
                 propertyService.getCpMasterApiListLimitRangesListUrl().replace("{namespace}", namespace),
                 HttpMethod.GET, null, LimitRangesList.class);
 
-        List<String> k8sLimitRangesList = limitRangesList.getItems().stream().map(lr -> lr.getMetadata().getName()).collect(Collectors.toList());
+        List<String> k8sLimitRangesList = limitRangesList.getItem().stream().map(lr -> lr.getMetadata().getName()).collect(Collectors.toList());
 
         ArrayList<String> toBeDelete = commonService.compareArrayList(k8sLimitRangesList, requestUpdatedLrList);
         ArrayList<String> toBeAdd = commonService.compareArrayList(requestUpdatedLrList, k8sLimitRangesList);

@@ -5,7 +5,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.paasta.container.platform.api.clusters.nodes.NodesAdmin;
+import org.paasta.container.platform.api.clusters.nodes.Nodes;
 import org.paasta.container.platform.api.clusters.nodes.NodesService;
 import org.paasta.container.platform.api.clusters.nodes.support.NodesStatus;
 import org.paasta.container.platform.api.common.CommonService;
@@ -14,7 +14,7 @@ import org.paasta.container.platform.api.common.PropertyService;
 import org.paasta.container.platform.api.common.RestTemplateService;
 import org.paasta.container.platform.api.common.model.CommonCondition;
 import org.paasta.container.platform.api.common.model.ResultStatus;
-import org.paasta.container.platform.api.endpoints.support.EndPointsDetailsItemAdmin;
+import org.paasta.container.platform.api.endpoints.support.EndPointsDetailsItem;
 import org.paasta.container.platform.api.endpoints.support.EndpointAddress;
 import org.paasta.container.platform.api.endpoints.support.EndpointPort;
 import org.paasta.container.platform.api.endpoints.support.EndpointSubset;
@@ -41,10 +41,10 @@ public class EndpointsServiceTest {
     private static Endpoints gResultModel = null;
     private static Endpoints gFinalResultModel = null;
 
-    private static EndpointsAdmin gResultAdminModel = null;
-    private static EndpointsAdmin gFinalResultAdminModel = null;
+    private static Endpoints gResultAdminModel = null;
+    private static Endpoints gFinalResultAdminModel = null;
 
-    private static List<EndPointsDetailsItemAdmin> endpoints =null;
+    private static List<EndPointsDetailsItem> endpoints =null;
     private static EndpointSubset gResultSubsetModel = null;
     private static EndpointSubset gFinalResultSubsetModel = null;
 
@@ -52,7 +52,7 @@ public class EndpointsServiceTest {
 
     private static List<EndpointSubset> gResultSubsetListModel;
 
-    private static NodesAdmin gResultNodeAdminModel =null;
+    private static Nodes gResultNodeAdminModel =null;
     @Mock
     RestTemplateService restTemplateService;
 
@@ -79,20 +79,20 @@ public class EndpointsServiceTest {
         gFinalResultModel = new Endpoints();
         gFinalResultModel.setResultCode(Constants.RESULT_STATUS_SUCCESS);
 
-        gResultAdminModel = new EndpointsAdmin();
+        gResultAdminModel = new Endpoints();
         endpoints = new ArrayList<>();
         gResultAdminModel.setEndpoints(endpoints);
 
-        gFinalResultAdminModel = new EndpointsAdmin();
+        gFinalResultAdminModel = new Endpoints();
 
         gFinalResultAdminModel.setResultCode(Constants.RESULT_STATUS_SUCCESS);
 
         gResultSubsetListModel = new ArrayList<>();
 
-        gResultNodeAdminModel = new NodesAdmin();
+        gResultNodeAdminModel = new Nodes();
         gResultNodeAdminModel.setResultCode(Constants.RESULT_STATUS_SUCCESS);
 
-        gResultAdminModel = new EndpointsAdmin();
+        gResultAdminModel = new Endpoints();
         gResultAdminModel.setResultCode("SUCCESS");
         gResultAdminModel.setHttpStatusCode(200);
 
@@ -123,7 +123,7 @@ public class EndpointsServiceTest {
 
         String nodeName = "paasta-cp-k8s-worker-001";
 
-        NodesAdmin nodesDetails = new NodesAdmin();
+        Nodes nodesDetails = new Nodes();
         nodesDetails.setResultCode("SUCCESS");
 
 
@@ -140,8 +140,8 @@ public class EndpointsServiceTest {
         when(nodesService.getNodesAdmin(nodeName)).thenReturn(nodesDetails);
 
 
-        List<EndPointsDetailsItemAdmin> endPointsDetailsItemAdminsList = new ArrayList<>();
-        EndPointsDetailsItemAdmin endPointsDetailsItem = new EndPointsDetailsItemAdmin();
+        List<EndPointsDetailsItem> endPointsDetailsItemAdminsList = new ArrayList<>();
+        EndPointsDetailsItem endPointsDetailsItem = new EndPointsDetailsItem();
         endPointsDetailsItem.setHost("10.244.1.11");
         endPointsDetailsItem.setPorts(ports);
         endPointsDetailsItem.setNodes(nodeName);
@@ -185,7 +185,7 @@ public class EndpointsServiceTest {
         when(restTemplateService.sendAdmin(Constants.TARGET_CP_MASTER_API, "/api/v1/namespaces/"+ NAMESPACE + "/endpoints/" + ENDPOINTS_NAME,
                 HttpMethod.GET, null, Map.class)).thenReturn(gResultMap);
 
-        when(commonService.setResultObject(gResultMap, EndpointsAdmin.class)).thenReturn(gResultAdminModel);
+        when(commonService.setResultObject(gResultMap, Endpoints.class)).thenReturn(gResultAdminModel);
         when(commonService.setResultModel(gResultAdminModel, Constants.RESULT_STATUS_SUCCESS)).thenReturn(gFinalResultAdminModel);
 
         ResultStatus resultStatus = (ResultStatus)  endpointsService.getEndpointsAdmin(NAMESPACE, ENDPOINTS_NAME) ;
@@ -200,7 +200,7 @@ public class EndpointsServiceTest {
     @Test
     public void endpointsAdminProcessing_Valid_ReturnModel() {
 
-        EndpointsAdmin result = endpointsService.endpointsAdminProcessing(gResultAdminModel);
+        Endpoints result = endpointsService.endpointsAdminProcessing(gResultAdminModel);
 
         assertEquals(null, result.getResultCode());
 

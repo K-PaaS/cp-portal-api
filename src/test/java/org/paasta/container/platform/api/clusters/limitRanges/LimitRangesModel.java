@@ -173,35 +173,35 @@ public class LimitRangesModel {
         return limitsList;
     }
 
-    public static LimitRangesAdmin getLimitRangesAdminContainerMemory() {
-        LimitRangesAdmin limitRangesAdmin = new LimitRangesAdmin();
+    public static LimitRanges getLimitRangesAdminContainerMemory() {
+        LimitRanges limitRanges = new LimitRanges();
 
-        limitRangesAdmin.setName(getMetadata().getName());
-        limitRangesAdmin.setCreationTimestamp(CREATION_TIME);
-        limitRangesAdmin.setMetadata(getMetadata());
-        limitRangesAdmin.setSpec(getSpec());
+        limitRanges.setName(getMetadata().getName());
+        limitRanges.setCreationTimestamp(CREATION_TIME);
+        limitRanges.setMetadata(getMetadata());
+        limitRanges.setSpec(getSpec());
 
-        return limitRangesAdmin;
+        return limitRanges;
     }
 
-    public static LimitRangesListAdmin getLimitRangesListAdmin() {
-        LimitRangesListAdmin finalResultListAdminModel = new LimitRangesListAdmin();
+    public static LimitRangesList getLimitRangesListAdmin() {
+        LimitRangesList finalResultListAdminModel = new LimitRangesList();
 
-        LimitRangesListAdminItem listAdminItem = new LimitRangesListAdminItem();
+        LimitRangesListItem listAdminItem = new LimitRangesListItem();
         listAdminItem.setMetadata(getMetadata());
         listAdminItem.setSpec(getSpec());
         listAdminItem.setName(LOW_LIMIT_NAME);
         listAdminItem.setNamespace(NAMESPACE);
         listAdminItem.setCreationTimestamp(CREATION_TIME);
 
-        LimitRangesListAdminItem k8sListAdminItem = new LimitRangesListAdminItem();
+        LimitRangesListItem k8sListAdminItem = new LimitRangesListItem();
         k8sListAdminItem.setMetadata(getMetadata_k8s());
         k8sListAdminItem.setSpec(getSpec_k8s());
         k8sListAdminItem.setName(K8S_LIMIT_NAME);
         k8sListAdminItem.setNamespace(NAMESPACE);
         k8sListAdminItem.setCreationTimestamp(CREATION_TIME);
 
-        List<LimitRangesListAdminItem> items = new ArrayList<>();
+        List<LimitRangesListItem> items = new ArrayList<>();
         items.add(listAdminItem);
         items.add(k8sListAdminItem);
 

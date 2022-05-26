@@ -54,17 +54,17 @@ public class NodesServiceTest {
     private static Nodes gResultModel = null;
     private static Nodes gFinalResultModel = null;
 
-    private static NodesAdmin gResultAdminModel = null;
-    private static NodesAdmin gFinalResultAdminModel = null;
-    private static NodesAdmin gFinalResultAdminFailModel = null;
+    private static Nodes gResultAdminModel = null;
+    private static Nodes gFinalResultAdminModel = null;
+    private static Nodes gFinalResultAdminFailModel = null;
 
     private static NodesList gResultListModel = null;
     private static NodesList gFinalResultListModel = null;
     private static NodesList gFinalResultListFailModel = null;
 
-    private static NodesListAdmin gResultListAdminModel = null;
-    private static NodesListAdmin gFinalResultListAdminModel = null;
-    private static NodesListAdmin gFinalResultListAdminFailModel = null;
+    private static NodesList gResultListAdminModel = null;
+    private static NodesList gFinalResultListAdminModel = null;
+    private static NodesList gFinalResultListAdminFailModel = null;
 
     @Mock
     RestTemplateService restTemplateService;
@@ -125,24 +125,24 @@ public class NodesServiceTest {
 
         // 리스트가져옴
         gResultAdminMap = new HashMap();
-        gResultListAdminModel = new NodesListAdmin();
-        gFinalResultListAdminModel = new NodesListAdmin();
+        gResultListAdminModel = new NodesList();
+        gFinalResultListAdminModel = new NodesList();
 
-        gFinalResultListAdminModel = new NodesListAdmin();
+        gFinalResultListAdminModel = new NodesList();
         gFinalResultListAdminModel.setResultCode(Constants.RESULT_STATUS_SUCCESS);
         gFinalResultListAdminModel.setResultMessage(Constants.RESULT_STATUS_SUCCESS);
         gFinalResultListAdminModel.setHttpStatusCode(CommonStatusCode.OK.getCode());
         gFinalResultListAdminModel.setDetailMessage(CommonStatusCode.OK.getMsg());
 
-        gFinalResultListAdminFailModel = new NodesListAdmin();
+        gFinalResultListAdminFailModel = new NodesList();
         gFinalResultListAdminFailModel.setResultCode(Constants.RESULT_STATUS_FAIL);
         gFinalResultListAdminFailModel.setResultMessage(Constants.RESULT_STATUS_FAIL);
         gFinalResultListAdminFailModel.setHttpStatusCode(CommonStatusCode.NOT_FOUND.getCode());
         gFinalResultListAdminFailModel.setDetailMessage(CommonStatusCode.NOT_FOUND.getMsg());
 
         // 하나만 가져옴
-        gResultAdminModel = new NodesAdmin();
-        gFinalResultAdminModel = new NodesAdmin();
+        gResultAdminModel = new Nodes();
+        gFinalResultAdminModel = new Nodes();
         gFinalResultAdminModel.setResultCode(Constants.RESULT_STATUS_SUCCESS);
         gFinalResultAdminModel.setResultMessage(Constants.RESULT_STATUS_SUCCESS);
         gFinalResultAdminModel.setHttpStatusCode(CommonStatusCode.OK.getCode());
@@ -164,7 +164,7 @@ public class NodesServiceTest {
         gResultAdminModel.setAnnotations(commonAnnotationsList);
 
 
-        gFinalResultAdminFailModel = new NodesAdmin();
+        gFinalResultAdminFailModel = new Nodes();
         gFinalResultAdminFailModel.setResultCode(Constants.RESULT_STATUS_FAIL);
         gFinalResultAdminFailModel.setResultMessage(Constants.RESULT_STATUS_FAIL);
         gFinalResultAdminFailModel.setHttpStatusCode(CommonStatusCode.NOT_FOUND.getCode());
@@ -194,12 +194,12 @@ public class NodesServiceTest {
         when(propertyService.getCpMasterApiListNodesListUrl()).thenReturn("/api/v1/nodes");
         when(restTemplateService.sendAdmin(Constants.TARGET_CP_MASTER_API, "/api/v1/nodes", HttpMethod.GET, null, Map.class)).thenReturn(gResultAdminMap);
 
-        when(commonService.setResultObject(gResultAdminMap, NodesListAdmin.class)).thenReturn(gResultListAdminModel);
-        when(commonService.resourceListProcessing(gResultListAdminModel, OFFSET, LIMIT, ORDER_BY, ORDER, SEARCH_NAME, NodesListAdmin.class)).thenReturn(gResultListAdminModel);
+        when(commonService.setResultObject(gResultAdminMap, NodesList.class)).thenReturn(gResultListAdminModel);
+        when(commonService.resourceListProcessing(gResultListAdminModel, OFFSET, LIMIT, ORDER_BY, ORDER, SEARCH_NAME, NodesList.class)).thenReturn(gResultListAdminModel);
         when(commonService.setResultModel(gResultListAdminModel, Constants.RESULT_STATUS_SUCCESS)).thenReturn(gFinalResultListAdminModel);
 
         //call method
-        NodesListAdmin resultList = (NodesListAdmin) nodesService.getNodesListAdmin(OFFSET, LIMIT, ORDER_BY, ORDER, SEARCH_NAME);
+        NodesList resultList = (NodesList) nodesService.getNodesListAdmin(OFFSET, LIMIT, ORDER_BY, ORDER, SEARCH_NAME);
 
         //compare result
         assertThat(resultList).isNotNull();
@@ -227,12 +227,12 @@ public class NodesServiceTest {
         //when
         when(propertyService.getCpMasterApiListNodesGetUrl()).thenReturn("/api/v1/nodes/{name}");
         when(restTemplateService.sendAdmin(Constants.TARGET_CP_MASTER_API, "/api/v1/nodes/" + NODE_NAME, HttpMethod.GET, null, Map.class)).thenReturn(gResultMap);
-        when(commonService.setResultObject(gResultMap, NodesAdmin.class)).thenReturn(gResultAdminModel);
-        when(commonService.annotationsProcessing(gResultAdminModel, NodesAdmin.class)).thenReturn(gResultAdminModel);
+        when(commonService.setResultObject(gResultMap, Nodes.class)).thenReturn(gResultAdminModel);
+        when(commonService.annotationsProcessing(gResultAdminModel, Nodes.class)).thenReturn(gResultAdminModel);
         when(commonService.setResultModel(gResultAdminModel, Constants.RESULT_STATUS_SUCCESS)).thenReturn(gFinalResultAdminModel);
 
         //call method
-        NodesAdmin result = (NodesAdmin) nodesService.getNodesAdmin(NODE_NAME);
+        Nodes result = (Nodes) nodesService.getNodesAdmin(NODE_NAME);
 
         //compare result
         assertThat(result).isNotNull();

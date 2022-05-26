@@ -1,12 +1,15 @@
 package org.paasta.container.platform.api.events;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 import org.paasta.container.platform.api.common.CommonUtils;
 import org.paasta.container.platform.api.common.model.CommonMetaData;
 import org.paasta.container.platform.api.common.model.CommonObjectReference;
+import org.paasta.container.platform.api.common.model.CommonSpec;
+import org.paasta.container.platform.api.common.model.CommonStatus;
 
 /**
- * Events Model 클래스
+ * Events Admin Model 클래스
  *
  * @author hrjin
  * @version 1.0
@@ -20,14 +23,12 @@ public class Events {
     private Integer httpStatusCode;
     private String detailMessage;
 
-    private CommonMetaData metadata;
     private int count;
     private String firstTimestamp;
     private String lastTimestamp;
     private String message;
-    private EventSource source;
-    private String type;
-    private CommonObjectReference involvedObject;
+    private Events.EventSource source;
+    private String subObject;
 
     public String getFirstTimestamp() {
         return CommonUtils.procSetTimestamp(firstTimestamp);
@@ -36,10 +37,22 @@ public class Events {
         return CommonUtils.procSetTimestamp(lastTimestamp);
     }
 
+    @JsonIgnore
+    private CommonMetaData metadata;
+
+    @JsonIgnore
+    private CommonObjectReference involvedObject;
 
     @Data
     public class EventSource {
         private String component;
         private String host;
+    }
+
+    public String getSubObject() {
+        return involvedObject.getFieldPath();
+    }
+    public void setSubObject(String subObject) {
+        this.subObject = subObject;
     }
 }

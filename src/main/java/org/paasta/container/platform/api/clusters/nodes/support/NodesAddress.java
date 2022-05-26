@@ -5,9 +5,9 @@ import lombok.Data;
 /**
  * Nodes Address Model 클래스
  *
- * @author hrjin
+ * @author jjy
  * @version 1.0
- * @since 2020.08.31
+ * @since 2022.05.24
  */
 @Data
 public class NodesAddress {

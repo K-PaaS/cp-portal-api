@@ -41,7 +41,6 @@ public class PersistentVolumesService {
 
     /**
      * PersistentVolumes 목록 조회(Get PersistentVolumes list)
-     * (Admin Portal)
      *
      * @param params the params
      * @return the persistentVolumes list
@@ -52,7 +51,7 @@ public class PersistentVolumesService {
                 , HttpMethod.GET, null, Map.class, params);
 
         PersistentVolumesList persistentVolumesList = commonService.setResultObject(responseMap, PersistentVolumesList.class);
-        persistentVolumesList = commonService.resourceListProcessing(persistentVolumesList, params.offset, params.limit, params.orderBy, params.order, params.searchName, PersistentVolumesList.class);
+        persistentVolumesList = commonService.resourceListProcessing(persistentVolumesList, params, PersistentVolumesList.class);
         return (PersistentVolumesList) commonService.setResultModel(persistentVolumesList, Constants.RESULT_STATUS_SUCCESS);
     }
 
@@ -109,7 +108,6 @@ public class PersistentVolumesService {
 
     /**
      * PersistentVolumes 상세 조회(Get PersistentVolumes detail)
-     * (Admin Portal)
      *
      * @param params the params
      * @return the persistentVolumes detail

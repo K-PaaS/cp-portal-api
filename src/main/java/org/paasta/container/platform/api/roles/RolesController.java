@@ -1,7 +1,6 @@
 package org.paasta.container.platform.api.roles;
 
 import io.swagger.annotations.*;
-import org.paasta.container.platform.api.common.Constants;
 import org.paasta.container.platform.api.common.ResultStatusService;
 import org.paasta.container.platform.api.common.model.CommonResourcesYaml;
 import org.paasta.container.platform.api.common.model.Params;
@@ -50,9 +49,6 @@ public class RolesController {
     })
     @GetMapping
     public RolesList getRolesList(Params params) {
-        if (params.namespace.toLowerCase().equals(Constants.ALL_NAMESPACES)) {
-            return rolesService.getRolesListAllNamespaces(params);
-        }
         return rolesService.getRolesList(params);
     }
 

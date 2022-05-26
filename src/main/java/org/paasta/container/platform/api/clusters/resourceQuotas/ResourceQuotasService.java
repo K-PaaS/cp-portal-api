@@ -33,6 +33,7 @@ public class ResourceQuotasService {
     private final CommonService commonService;
     private final PropertyService propertyService;
 
+
     /**
      * Instantiates a new ResourceQuotas service
      *
@@ -46,6 +47,7 @@ public class ResourceQuotasService {
         this.commonService = commonService;
         this.propertyService = propertyService;
     }
+
 
     /**
      * ResourceQuotas 목록 조회(Get ResourceQuotas list)
@@ -89,6 +91,7 @@ public class ResourceQuotasService {
         return (ResourceQuotasList) commonService.setResultModel(resourceQuotasList, Constants.RESULT_STATUS_SUCCESS);
     }
 
+
     /**
      * ResourceQuotas 상세 조회(Get ResourceQuotas detail)
      * @param params the params
@@ -123,6 +126,7 @@ public class ResourceQuotasService {
         return (ResourceQuotas) commonService.setResultModel(resourceQuotas, Constants.RESULT_STATUS_SUCCESS);
     }
 
+
     /**
      * ResourceQuotas YAML 조회(Get ResourceQuotas yaml)
      * @param params the params
@@ -133,6 +137,7 @@ public class ResourceQuotasService {
                 propertyService.getCpMasterApiListResourceQuotasGetUrl(), HttpMethod.GET, null, String.class, Constants.ACCEPT_TYPE_YAML, params);
         return (CommonResourcesYaml) commonService.setResultModel(new CommonResourcesYaml(resourceYaml), Constants.RESULT_STATUS_SUCCESS);
     }
+
 
     /**
      * ResourceQuotas 생성(Create ResourceQuotas)
@@ -156,6 +161,7 @@ public class ResourceQuotasService {
                 propertyService.getCpMasterApiListResourceQuotasDeleteUrl(), HttpMethod.DELETE, null, ResultStatus.class, params);
         return (ResultStatus) commonService.setResultModel(resultStatus, Constants.RESULT_STATUS_SUCCESS);
     }
+
 
     /**
      * ResourceQuotas 수정(Update ResourceQuotas)
@@ -215,21 +221,5 @@ public class ResourceQuotasService {
         defaultList = commonService.resourceListProcessing(defaultList, params, ResourceQuotasDefaultList.class);
 
         return commonService.setResultModel(defaultList, Constants.RESULT_STATUS_SUCCESS);
-    }
-
-    /**
-     * 전체 Namespaces 의 ResourceQuotas 목록 조회(Get ResourceQuotas list in all namespaces)
-     * @param params the params
-     * @return the resourceQuotas all list
-     */
-    public ResourceQuotasList getResourceQuotasListAllNamespaces(Params params) {
-        HashMap responseMap = (HashMap) restTemplateService.send(Constants.TARGET_CP_MASTER_API,
-                propertyService.getCpMasterApiListResourceQuotasListAllNamespacesUrl(),
-                HttpMethod.GET, null, Map.class, params);
-
-        ResourceQuotasList resourceQuotasList = commonService.setResultObject(responseMap, ResourceQuotasList.class);
-        resourceQuotasList = commonService.resourceListProcessing(resourceQuotasList, params, ResourceQuotasList.class);
-
-        return (ResourceQuotasList) commonService.setResultModel(resourceQuotasList, Constants.RESULT_STATUS_SUCCESS);
     }
 }

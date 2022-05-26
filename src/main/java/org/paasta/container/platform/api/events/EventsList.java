@@ -3,6 +3,7 @@ package org.paasta.container.platform.api.events;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 import org.paasta.container.platform.api.common.CommonUtils;
+import org.paasta.container.platform.api.common.model.CommonItemMetaData;
 import org.paasta.container.platform.api.common.model.CommonMetaData;
 import org.paasta.container.platform.api.events.support.EventInvolvedObject;
 import org.paasta.container.platform.api.events.support.EventSource;
@@ -10,24 +11,24 @@ import org.paasta.container.platform.api.events.support.EventSource;
 import java.util.List;
 
 /**
- * Events List Admin Model 클래스
+ * Events List Model 클래스
  *
- * @author jjy
+ * @author kjhoon
  * @version 1.0
- * @since 2022.05.24
+ * @since 2022.05.25
  */
 @Data
 public class EventsList {
-
     private String resultCode;
     private String resultMessage;
     private Integer httpStatusCode;
     private String detailMessage;
-    private List<EventsItem> items;
+    private CommonItemMetaData itemMetaData;
+    private List<EventsListItem> items;
 }
 
 
-class EventsItem {
+class EventsListItem {
 
     private String message;
     private EventSource source;
@@ -35,6 +36,7 @@ class EventsItem {
     private Integer count;
     private String firstTimestamp;
     private String lastTimestamp;
+    private String creationTimestamp;
 
     @JsonIgnore
     private CommonMetaData metadata;
@@ -58,7 +60,7 @@ class EventsItem {
     }
 
     public String getFilePath() {
-        return  CommonUtils.procReplaceNullValue(involvedObject.getFieldPath());
+        return CommonUtils.procReplaceNullValue(involvedObject.getFieldPath());
     }
 
     public void setFilePath(String filePath) {
@@ -66,7 +68,9 @@ class EventsItem {
     }
 
     public Integer getCount() {
-        if(count == null) { count = 0; }
+        if (count == null) {
+            count = 0;
+        }
         return count;
     }
 
@@ -104,5 +108,13 @@ class EventsItem {
 
     public void setInvolvedObject(EventInvolvedObject involvedObject) {
         this.involvedObject = involvedObject;
+    }
+
+    public String getCreationTimestamp() {
+        return CommonUtils.procReplaceNullValue(creationTimestamp);
+    }
+
+    public void setCreationTimestamp(String creationTimestamp) {
+        this.creationTimestamp = creationTimestamp;
     }
 }

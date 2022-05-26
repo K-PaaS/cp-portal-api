@@ -5,15 +5,13 @@ import lombok.Data;
 import org.paasta.container.platform.api.common.CommonUtils;
 import org.paasta.container.platform.api.common.model.CommonMetaData;
 import org.paasta.container.platform.api.common.model.CommonObjectReference;
-import org.paasta.container.platform.api.common.model.CommonSpec;
-import org.paasta.container.platform.api.common.model.CommonStatus;
 
 /**
- * Events Admin Model 클래스
+ * Events Model 클래스
  *
- * @author hrjin
+ * @author kjhoon
  * @version 1.0
- * @since 2020.09.17
+ * @since 2022.05.25
  */
 @Data
 public class Events {
@@ -27,7 +25,7 @@ public class Events {
     private String firstTimestamp;
     private String lastTimestamp;
     private String message;
-    private Events.EventSource source;
+    private EventSource source;
     private String subObject;
 
     public String getFirstTimestamp() {

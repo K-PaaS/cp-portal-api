@@ -21,6 +21,7 @@ public class Constants {
     public static final String CHECK_TRUE = "true";
     public static final String CHECK_FALSE = "false";
 
+    public static final String EMPTY_STRING ="";
 
     // for kubernetes cli user
     public static final String CHECK_K8S = "K";

@@ -26,6 +26,7 @@ public class Params {
     public String userType;
     public String isActive;
     public String nodeName;
+    public String resourceUid;
 
     // request parameter setting
     public String addParam;
@@ -44,29 +45,30 @@ public class Params {
 
 
     public Params() {
-        this.cluster = "";
-        this.namespace = "";
-        this.resourceName = "";
+        this.cluster = Constants.EMPTY_STRING;
+        this.namespace = Constants.EMPTY_STRING;
+        this.resourceName = Constants.EMPTY_STRING;
         this.offset = 0;
         this.limit = 0;
         this.orderBy = "creationTime";
         this.order = "desc";
-        this.searchName = "";
-        this.yaml ="";
-        this.ownerReferencesUid = "";
-        this.ownerReferencesName = "";
-        this.selector = "";
-        this.type = "";
-        this.userId = "";
+        this.searchName = Constants.EMPTY_STRING;
+        this.yaml =Constants.EMPTY_STRING;
+        this.ownerReferencesUid = Constants.EMPTY_STRING;
+        this.ownerReferencesName = Constants.EMPTY_STRING;
+        this.selector = Constants.EMPTY_STRING;
+        this.type = Constants.EMPTY_STRING;
+        this.userId = Constants.EMPTY_STRING;
         this.userType = Constants.SELECTED_ADMINISTRATOR;
         this.isActive = "true";
-        this.nodeName = "";
-        this.addParam = "";
+        this.nodeName = Constants.EMPTY_STRING;
+        this.resourceUid = Constants.EMPTY_STRING;
+        this.addParam = Constants.EMPTY_STRING;
         this.selectorType = Constants.RESOURCE_NAMESPACE;
-        this.rs_sa ="";
-        this.rs_role ="";
-        this.rs_rq="";
-        this.rs_lr= "";
+        this.rs_sa =Constants.EMPTY_STRING;
+        this.rs_role =Constants.EMPTY_STRING;
+        this.rs_rq=Constants.EMPTY_STRING;
+        this.rs_lr= Constants.EMPTY_STRING;
     }
 
 

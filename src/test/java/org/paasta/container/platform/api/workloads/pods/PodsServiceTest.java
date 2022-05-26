@@ -22,8 +22,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
-import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 
 @RunWith(SpringRunner.class)
@@ -49,25 +49,16 @@ public class PodsServiceTest {
     private static final String ORDER = "desc";
     private static final String SEARCH_NAME = "";
     private static final String UID = "81f2c76c-4d39-40d7-a4e5-3f7a99ae9c63";
-    private static final boolean isAdmin = true;
-    private static final boolean isNotAdmin = false;
 
     private static HashMap gResultMap = null;
 
     private static PodsList gResultListModel = null;
     private static PodsList gFinalResultListModel = null;
 
-    private static PodsListAdmin gResultListAdminModel = null;
-    private static PodsListAdmin gFinalResultListAdminModel = null;
-
-    private static PodsListAdminList gResultListAdminListModel = null;
-    private static PodsListAdminList gFinalResultListAdminListModel = null;
 
     private static Pods gResultModel = null;
     private static Pods gFinalResultModel = null;
 
-    private static PodsAdmin gResultAdminModel = null;
-    private static PodsAdmin gFinalResultAdminModel = null;
 
     private static CommonResourcesYaml gResultYamlModel = null;
     private static CommonResourcesYaml gFinalResultYamlModel = null;
@@ -79,9 +70,10 @@ public class PodsServiceTest {
     private static List<ContainerStatusesItem> containerStatuses = null;
     private static ContainerStatusesItem containerStatusesItem = null;
 
-    private static List<PodsListAdminList> podsItemListAdmin = null;
+    private static List<PodsList> podsItemListAdmin = null;
     private static List<Pods> podsItemListUser = null;
-    private static PodsListAdminList podsListAdminList = null;
+
+    private static Params gParams = null;
 
     private static  PodsMetric podsMetric = null;
     @Mock
@@ -101,15 +93,10 @@ public class PodsServiceTest {
     public void setUp() {
         gResultMap = new HashMap();
 
-        podsListAdminList = new PodsListAdminList();
         podsStatus = new PodsStatus();
 
         gFinalResultListModel = new PodsList();
         gFinalResultListModel.setResultCode(Constants.RESULT_STATUS_SUCCESS);
-
-
-
-
 
         CommonMetaData metaData = new CommonMetaData();
         List<CommonOwnerReferences> ownerReferences = new ArrayList<>();
@@ -124,7 +111,7 @@ public class PodsServiceTest {
         hm.put("memory", "");
 
         //PodsList.item
-        List<Pods> items = new ArrayList<>();
+        List<PodsListItem> items = new ArrayList<>();
         List<CommonContainer> containers = new ArrayList<>();
         CommonContainer commonContainer = new CommonContainer();
 
@@ -135,10 +122,10 @@ public class PodsServiceTest {
         containers.add(commonContainer);
         CommonSpec commonSpec = new CommonSpec();
         commonSpec.setContainers(containers);
-        Pods pods = new Pods();
-        pods.setMetadata(metaData);
-        pods.setSpec(commonSpec);
-        items.add(pods);
+//        Pods pods = new Pods();
+//        pods.setMetadata(metaData);
+//        pods.setSpec(commonSpec);
+//        items.add(pods);
 
 
         PodsUsage podsUsage = new PodsUsage();
@@ -170,33 +157,9 @@ public class PodsServiceTest {
         gResultListModel.setItems(items);
         gFinalResultListModel.setItems(items);
 
-
-        //admin
-        podsItemListAdmin = new ArrayList<>();
-        PodsListAdminList podsitemAdmin = new PodsListAdminList();
-        PodsStatus podsStatus = new PodsStatus();
-        podsitemAdmin.setStatus(podsStatus);
-        podsitemAdmin.setMetadata(metaData);
-
-        podsItemListAdmin.add(podsitemAdmin);
-        gResultListAdminModel = new PodsListAdmin();
-        gResultListAdminModel.setItems(podsItemListAdmin);
-
-
-        gFinalResultListAdminModel = new PodsListAdmin();
-        gFinalResultListAdminModel.setResultCode(Constants.RESULT_STATUS_SUCCESS);
-
-        gResultListAdminListModel = new PodsListAdminList();
-        gFinalResultListAdminListModel = new PodsListAdminList();
-
         gResultModel = new Pods();
         gFinalResultModel = new Pods();
         gFinalResultModel.setResultCode(Constants.RESULT_STATUS_SUCCESS);
-
-        gResultAdminModel = new PodsAdmin();
-        gFinalResultAdminModel = new PodsAdmin();
-        gFinalResultAdminModel.setResultCode(Constants.RESULT_STATUS_SUCCESS);
-
 
         CommonMetaData commonMetaData = new CommonMetaData();
         Map<String, String> annotations = new HashMap<>();
@@ -210,11 +173,9 @@ public class PodsServiceTest {
 
         List<CommonAnnotations> commonAnnotationsList = new ArrayList<>();
         commonAnnotationsList.add(commonAnnotations);
-        gResultAdminModel.setAnnotations(commonAnnotationsList);
 
-
-        gResultYamlModel = new CommonResourcesYaml();
-        gFinalResultYamlModel = new CommonResourcesYaml();
+        gResultYamlModel = new CommonResourcesYaml("");
+        gFinalResultYamlModel = new CommonResourcesYaml("");
         gFinalResultYamlModel.setResultCode(Constants.RESULT_STATUS_SUCCESS);
         gFinalResultYamlModel.setSourceTypeYaml(YAML_STRING);
 
@@ -222,32 +183,42 @@ public class PodsServiceTest {
         gFinalResultStatusModel = new ResultStatus();
         gFinalResultStatusModel.setResultCode(Constants.RESULT_STATUS_SUCCESS);
 
-        ContainerStatusesItem containerStatusesItem = new ContainerStatusesItem();
+        gParams = new Params();
 
+        //Params setting
+        gParams.setCluster(CLUSTER);
+        gParams.setNamespace(NAMESPACE);
+        gParams.setOffset(OFFSET);
+        gParams.setLimit(LIMIT);
+        gParams.setOrderBy(ORDER_BY);
+        gParams.setOrder(ORDER);
+        gParams.setSearchName(SEARCH_NAME);
+        gParams.setResourceName(PODS_NAME);
+        gParams.setYaml(YAML_STRING);
 
     }
 
 
     /**
      * Pods 목록 조회(Get Pods list) Test
-     * (Admin Portal)
      */
     @Test
-    public void getPodsListAdmin_Valid_ReturnModel() {
+    public void getPodsList_Valid_ReturnModel() {
         // given
         when(propertyService.getCpMasterApiListPodsListUrl()).thenReturn("/api/v1/namespaces/{namespace}/pods");
-        when(restTemplateService.sendAdmin(Constants.TARGET_CP_MASTER_API, "/api/v1/namespaces/" + NAMESPACE + "/pods", HttpMethod.GET, null, Map.class))
-                .thenReturn(gResultMap);
-        when(commonService.setResultObject(gResultMap, PodsListAdmin.class)).thenReturn(gResultListAdminModel);
-        when(commonService.resourceListProcessing(gResultListAdminModel, OFFSET, LIMIT, ORDER_BY, ORDER, SEARCH_NAME, PodsListAdmin.class)).thenReturn(gResultListAdminModel);
-        when(commonService.setResultModel(gResultListAdminModel, Constants.RESULT_STATUS_SUCCESS))
-                .thenReturn(gResultListAdminModel);
+        when(restTemplateService.send(Constants.TARGET_CP_MASTER_API,
+                "/api/v1/namespaces/{namespace}/pods", HttpMethod.GET, null, Map.class, gParams)).thenReturn(gResultMap);
+        when(commonService.setResultObject(gResultMap, PodsList.class)).thenReturn(gResultListModel);
+        when(commonService.resourceListProcessing(gResultListModel, gParams, PodsList.class)).thenReturn(gResultListModel);
+        when(podsService.restartCountProcessing(gResultListModel)).thenReturn(gResultListModel);
+        when(commonService.setResultModel(gResultListModel, Constants.RESULT_STATUS_SUCCESS)).thenReturn(gFinalResultListModel);
 
         // when
-        PodsListAdmin resultList = (PodsListAdmin) podsService.getPodsListAdmin(NAMESPACE, OFFSET, LIMIT, ORDER_BY, ORDER, SEARCH_NAME);
+        PodsList resultList = podsService.getPodsList(gParams);
 
         // then
-        assertEquals(gResultListAdminModel, resultList);
+        assertThat(resultList).isNotNull();
+        assertEquals(Constants.RESULT_STATUS_SUCCESS, resultList.getResultCode());
     }
 
     /**
@@ -256,32 +227,20 @@ public class PodsServiceTest {
     @Test
     public void getPodListWithLabelSelector_Valid_ReturnModel() {
         // given
+        gParams.setAddParam("/pods?labelSelector=" + SELECTOR);
         when(propertyService.getCpMasterApiListPodsListUrl()).thenReturn("/api/v1/namespaces/{namespace}/pods");
-        when(restTemplateService.send(Constants.TARGET_CP_MASTER_API, "/api/v1/namespaces/" + NAMESPACE + "/pods?labelSelector=" + SELECTOR, HttpMethod.GET, null, Map.class)).thenReturn(gResultMap);
+        when(restTemplateService.send(Constants.TARGET_CP_MASTER_API, "/api/v1/namespaces/{namespace}/pods", HttpMethod.GET, null, Map.class, gParams)).thenReturn(gResultMap);
         when(commonService.setResultObject(gResultMap, PodsList.class)).thenReturn(gResultListModel);
-        when(commonService.resourceListProcessing(gResultListModel, OFFSET, LIMIT, ORDER_BY, ORDER, SEARCH_NAME, PodsList.class)).thenReturn(gResultListModel);
-        when(commonService.setResultModel(gResultListModel, Constants.RESULT_STATUS_SUCCESS)).thenReturn(gResultListModel);
-    }
-
-    /**
-     * Pods 목록 조회(Get Pods selector) Test
-     */
-    @Test
-    public void getPodListWithLabelSelectorAdmin_Valid_ReturnModel() {
-        String type = "replicaSets";
-        // given
-        when(propertyService.getCpMasterApiListPodsListUrl()).thenReturn("/api/v1/namespaces/{namespace}/pods");
-        when(restTemplateService.sendAdmin(Constants.TARGET_CP_MASTER_API, "/api/v1/namespaces/" + NAMESPACE + "/pods?labelSelector=" + SELECTOR, HttpMethod.GET, null, Map.class)).thenReturn(gResultMap);
-        when(commonService.setResultObject(gResultMap, PodsListAdmin.class)).thenReturn(gResultListAdminModel);
-        when(commonService.resourceListProcessing(gResultListAdminModel, OFFSET, LIMIT, ORDER_BY, ORDER, SEARCH_NAME, PodsListAdmin.class)).thenReturn(gResultListAdminModel);
-        when(commonService.setResultModel(gResultListAdminModel, Constants.RESULT_STATUS_SUCCESS)).
-                thenReturn(gResultListAdminModel);
+        when(commonService.resourceListProcessing(gResultListModel, gParams, PodsList.class)).thenReturn(gResultListModel);
+        when(podsService.restartCountProcessing(gResultListModel)).thenReturn(gResultListModel);
+        when(commonService.setResultModel(gResultListModel, Constants.RESULT_STATUS_SUCCESS)).thenReturn(gFinalResultListModel);
 
         // when
-        PodsListAdmin resultList = (PodsListAdmin) podsService.getPodListWithLabelSelectorAdmin(NAMESPACE, SELECTOR, "replicaSets", UID, OFFSET, LIMIT, ORDER_BY, ORDER, SEARCH_NAME);
+        PodsList resultList = podsService.getPodListWithLabelSelector(gParams);
 
         // then
-        assertEquals(gResultListAdminModel, resultList);
+        assertThat(resultList).isNotNull();
+        assertEquals(Constants.RESULT_STATUS_SUCCESS, resultList.getResultCode());
     }
 
     /**
@@ -290,93 +249,30 @@ public class PodsServiceTest {
     @Test
     public void getPodListByNode_Valid_ReturnModel() {
         // given
-
-        String requestURL = "/api/v1/namespaces/" + NAMESPACE + "/pods?fieldSelector=spec.nodeName=" + NODE_NAME;
-
-        when(propertyService.getCpMasterApiListPodsListUrl()).thenReturn("/api/v1/namespaces/{namespace}/pods");
-        when(restTemplateService.send(Constants.TARGET_CP_MASTER_API, requestURL, HttpMethod.GET, null, Map.class)).thenReturn(gResultMap);
-        when(commonService.setResultObject(gResultMap, PodsList.class)).thenReturn(gResultListModel);
-        when(commonService.resourceListProcessing(gResultListModel, OFFSET, LIMIT, ORDER_BY, ORDER, SEARCH_NAME, PodsList.class)).thenReturn(gResultListModel);
-        when(commonService.setResultModel(gResultListModel, Constants.RESULT_STATUS_SUCCESS)).thenReturn(gFinalResultListModel);
-    }
-
-    /**
-     * Pods 목록 조회(Get Pods node) Test
-     * (Admin portal)
-     */
-    @Test
-    public void getPodsListByNodeAdmin_Valid_ReturnModel() {
-        // given
-
-        String requestURL = "/api/v1/namespaces/" + NAMESPACE + "/pods?fieldSelector=spec.nodeName=" + NODE_NAME;
-
-        when(propertyService.getCpMasterApiListPodsListUrl()).thenReturn("/api/v1/namespaces/{namespace}/pods");
-        when(commonService.generateFieldSelectorForPodsByNode(Constants.PARAM_QUERY_FIRST, NODE_NAME)).thenReturn("?fieldSelector=spec.nodeName=" + NODE_NAME);
-        when(restTemplateService.sendAdmin(Constants.TARGET_CP_MASTER_API, requestURL, HttpMethod.GET, null, Map.class)).thenReturn(gResultMap);
-        when(commonService.setResultObject(gResultMap, PodsListAdmin.class)).thenReturn(gResultListAdminModel);
-        when(commonService.resourceListProcessing(gResultListAdminModel, OFFSET, LIMIT, ORDER_BY, ORDER, SEARCH_NAME, PodsListAdmin.class)).thenReturn(gResultListAdminModel);
-        when(commonService.setResultModel(gResultListAdminModel, Constants.RESULT_STATUS_SUCCESS))
-                .thenReturn(gResultListAdminModel);
-
-        // when
-        PodsListAdmin resultList = (PodsListAdmin) podsService.getPodsListByNodeAdmin(NAMESPACE, NODE_NAME, OFFSET, LIMIT, ORDER_BY, ORDER, SEARCH_NAME);
-
-        // then
-        assertEquals(gResultListAdminModel, resultList);
-    }
-
-
-    /**
-     * Pods 목록 조회(Get Pods node) Test
-     * (Admin portal)
-     */
-    @Test
-    public void getPodsListByNodeAdmin_allNamespace_Valid_ReturnModel() {
-        // given
-        String ignoreNamesapceQuery = "?fieldSelector=metadata.namespace!=kubernetes-dashboard,metadata.namespace!=kube-node-lease,metadata.namespace!=kube-public,metadata.namespace!=kube-system,metadata.namespace!=default,metadata.namespace!=paas-ta-container-platform-temp-namespace,metadata.namespace!=temp-namespace";
-        String nodeNameQuery =",spec.nodeName="+NODE_NAME;
-        String requestURL = "/api/v1/pods" + ignoreNamesapceQuery + nodeNameQuery;
-
+        gParams.setAddParam(",spec.nodeName=" + NODE_NAME);
         when(propertyService.getCpMasterApiListPodsListAllNamespacesUrl()).thenReturn("/api/v1/pods");
-        when(commonService.generateFieldSelectorForExceptNamespace(Constants.RESOURCE_NAMESPACE)).thenReturn(ignoreNamesapceQuery);
-        when(commonService.generateFieldSelectorForPodsByNode(Constants.PARAM_QUERY_AND, NODE_NAME)).thenReturn(nodeNameQuery);
-        when(restTemplateService.sendAdmin(Constants.TARGET_CP_MASTER_API, requestURL, HttpMethod.GET, null, Map.class)).thenReturn(gResultMap);
-        when(commonService.setResultObject(gResultMap, PodsListAdmin.class)).thenReturn(gResultListAdminModel);
-        when(commonService.resourceListProcessing(gResultListAdminModel, OFFSET, LIMIT, ORDER_BY, ORDER, SEARCH_NAME, PodsListAdmin.class)).thenReturn(gResultListAdminModel);
-        when(commonService.setResultModel(gResultListAdminModel, Constants.RESULT_STATUS_SUCCESS))
-                .thenReturn(gResultListAdminModel);
+        when(restTemplateService.send(Constants.TARGET_CP_MASTER_API, "/api/v1/pods", HttpMethod.GET, null, Map.class, gParams)).thenReturn(gResultMap);
+        when(commonService.setResultObject(gResultMap, PodsList.class)).thenReturn(gResultListModel);
+        when(commonService.resourceListProcessing(gResultListModel, gParams, PodsList.class)).thenReturn(gResultListModel);
+        when(podsService.restartCountProcessing(gResultListModel)).thenReturn(gResultListModel);
+        when(commonService.setResultModel(gResultListModel, Constants.RESULT_STATUS_SUCCESS)).thenReturn(gFinalResultListModel);
 
         // when
-        PodsListAdmin resultList = (PodsListAdmin) podsService.getPodsListByNodeAdmin("all", NODE_NAME, OFFSET, LIMIT, ORDER_BY, ORDER, SEARCH_NAME);
+        PodsList resultList = podsService.getPodsListByNode(gParams);
 
         // then
-        assertEquals(gResultListAdminModel, resultList);
+        assertThat(resultList).isNotNull();
+        assertEquals(Constants.RESULT_STATUS_SUCCESS, resultList.getResultCode());
     }
+
+
 
     /**
      * Pods 상세 조회(Get Pods detail) Test
      */
+
     @Test
     public void getPods_Valid_ReturnModel() {
-        // given
-        when(propertyService.getCpMasterApiListPodsGetUrl()).thenReturn("/api/v1/namespaces/{namespace}/pods/{name}");
-        when(restTemplateService.send(Constants.TARGET_CP_MASTER_API, "/api/v1/namespaces/" + NAMESPACE + "/pods/" + PODS_NAME, HttpMethod.GET, null, Map.class)).thenReturn(gResultMap);
-        when(commonService.setResultObject(gResultMap, Pods.class)).thenReturn(gResultModel);
-        when(commonService.setResultModel(gResultModel, Constants.RESULT_STATUS_SUCCESS)).thenReturn(gFinalResultModel);
-
-        // when
-        Pods result = podsService.getPods(NAMESPACE, PODS_NAME);
-
-        // then
-        assertEquals(Constants.RESULT_STATUS_SUCCESS, result.getResultCode());
-    }
-
-    /**
-     * Pods 상세 조회(Get Pods detail) Test
-     * (Admin Portal)
-     */
-    @Test
-    public void getPodsAdmin_Valid_ReturnModel() {
         PodsStatus originStatus = new PodsStatus();
         originStatus.setPodIP("aaa");
         originStatus.setQosClass("aaa");
@@ -387,7 +283,7 @@ public class PodsServiceTest {
 
         // given
         when(propertyService.getCpMasterApiListPodsGetUrl()).thenReturn("/api/v1/namespaces/{namespace}/pods/{name}");
-        when(restTemplateService.sendAdmin(Constants.TARGET_CP_MASTER_API, "/api/v1/namespaces/" + NAMESPACE + "/pods/" + PODS_NAME, HttpMethod.GET, null, Map.class)).thenReturn(gResultMap);
+        when(restTemplateService.send(Constants.TARGET_CP_MASTER_API, "/api/v1/namespaces/{namespace}/pods/{name}", HttpMethod.GET, null, Map.class, gParams)).thenReturn(gResultMap);
 
         PodsStatus status = new PodsStatus();
 
@@ -401,15 +297,12 @@ public class PodsServiceTest {
         status.setPhase("aaa");
 
         when(commonService.setResultObject(gResultMap.get("status"), PodsStatus.class)).thenReturn(status);
-
-
-        // try catch
-        when(commonService.setResultObject(gResultMap, PodsAdmin.class)).thenReturn(gResultAdminModel);
-        when(commonService.annotationsProcessing(gResultAdminModel, PodsAdmin.class)).thenReturn(gResultAdminModel);
-        when(commonService.setResultModel(gResultAdminModel, Constants.RESULT_STATUS_SUCCESS)).thenReturn(gFinalResultAdminModel);
+        when(commonService.setResultObject(gResultMap, Pods.class)).thenReturn(gResultModel);
+        when(commonService.annotationsProcessing(gResultModel, Pods.class)).thenReturn(gResultModel);
+        when(commonService.setResultModel(gResultModel, Constants.RESULT_STATUS_SUCCESS)).thenReturn(gFinalResultModel);
 
         // when
-        PodsAdmin result = (PodsAdmin) podsService.getPodsAdmin(NAMESPACE, PODS_NAME);
+        Pods result = podsService.getPods(gParams);
 
         // then
         assertEquals(Constants.RESULT_STATUS_SUCCESS, result.getResultCode());
@@ -422,32 +315,12 @@ public class PodsServiceTest {
     public void getPodsYaml_Valid_ReturnModel() {
         // given
         when(propertyService.getCpMasterApiListPodsGetUrl()).thenReturn("/api/v1/namespaces/{namespace}/pods/{name}");
-        when(restTemplateService.send(Constants.TARGET_CP_MASTER_API, "/api/v1/namespaces/" + NAMESPACE + "/pods/" + PODS_NAME, HttpMethod.GET, null, String.class, Constants.ACCEPT_TYPE_YAML)).thenReturn(YAML_STRING);
-        when(commonService.setResultObject(gResultMap, CommonResourcesYaml.class)).thenReturn(gResultYamlModel);
-        when(commonService.setResultModel(gResultYamlModel, Constants.RESULT_STATUS_SUCCESS)).thenReturn(gFinalResultYamlModel);
+        when(restTemplateService.send(Constants.TARGET_CP_MASTER_API, "/api/v1/namespaces/{namespace}/pods/{name}", HttpMethod.GET, null, String.class, Constants.ACCEPT_TYPE_YAML, gParams)).thenReturn(YAML_STRING);
+
+        when(commonService.setResultModel(new CommonResourcesYaml(YAML_STRING), Constants.RESULT_STATUS_SUCCESS)).thenReturn(gFinalResultYamlModel);
 
         // when
-        CommonResourcesYaml result = (CommonResourcesYaml) podsService.getPodsYaml(NAMESPACE, PODS_NAME, gResultMap);
-
-        // then
-        assertEquals(YAML_STRING, result.getSourceTypeYaml());
-        assertEquals(Constants.RESULT_STATUS_SUCCESS, result.getResultCode());
-    }
-
-    /**
-     * Pods Admin YAML 조회(Get Pods Admin yaml) Test
-     */
-    @Test
-    public void getPodsAdminYaml_Valid_ReturnModel() {
-        // given
-        when(propertyService.getCpMasterApiListPodsGetUrl()).thenReturn("/api/v1/namespaces/{namespace}/pods/{name}");
-        when(restTemplateService.send(Constants.TARGET_CP_MASTER_API, "/api/v1/namespaces/" + NAMESPACE + "/pods/" + PODS_NAME, HttpMethod.GET, null, String.class, Constants.ACCEPT_TYPE_YAML)).thenReturn(YAML_STRING);
-
-        when(commonService.setResultObject(gResultMap, CommonResourcesYaml.class)).thenReturn(gResultYamlModel);
-        when(commonService.setResultModel(gResultYamlModel, Constants.RESULT_STATUS_SUCCESS)).thenReturn(gFinalResultYamlModel);
-
-        // when
-        CommonResourcesYaml result = (CommonResourcesYaml) podsService.getPodsAdminYaml(NAMESPACE, PODS_NAME, gResultMap);
+        CommonResourcesYaml result = podsService.getPodsYaml(gParams);
 
         // then
         assertEquals(YAML_STRING, result.getSourceTypeYaml());
@@ -461,48 +334,28 @@ public class PodsServiceTest {
     public void createPods_Valid_ReturnModel() {
         // given
         when(propertyService.getCpMasterApiListPodsCreateUrl()).thenReturn("/api/v1/namespaces/{namespace}/pods");
-        when(restTemplateService.sendYaml(Constants.TARGET_CP_MASTER_API, "/api/v1/namespaces/" + NAMESPACE + "/pods", HttpMethod.POST, YAML_STRING, Object.class, isAdmin)).thenReturn(gResultStatusModel);
-        when(commonService.setResultObject(gResultStatusModel, ResultStatus.class)).thenReturn(gResultStatusModel);
-        when(commonService.setResultModelWithNextUrl(gResultStatusModel, Constants.RESULT_STATUS_SUCCESS, Constants.URI_WORKLOAD_PODS)).thenReturn(gFinalResultStatusModel);
+        when(restTemplateService.sendYaml(Constants.TARGET_CP_MASTER_API, "/api/v1/namespaces/{namespace}/pods", HttpMethod.POST, ResultStatus.class, gParams)).thenReturn(gResultStatusModel);
+        when(commonService.setResultModel(gResultStatusModel, Constants.RESULT_STATUS_SUCCESS)).thenReturn(gFinalResultStatusModel);
 
         // when
-        ResultStatus result = (ResultStatus) podsService.createPods(NAMESPACE, YAML_STRING, isAdmin);
+        ResultStatus result = podsService.createPods(gParams);
 
         // then
         assertEquals(gFinalResultStatusModel, result);
     }
 
     /**
-     * Pods 삭제(Delete Pods) Admin Test
+     * Pods 삭제(Delete Pods) Test
      */
     @Test
-    public void deletePods_Admin_Valid_ReturnModel() {
+    public void deletePods_Valid_ReturnModel() {
         // given
         when(propertyService.getCpMasterApiListPodsDeleteUrl()).thenReturn("/api/v1/namespaces/{namespace}/pods/{name}");
-        when(restTemplateService.sendAdmin(Constants.TARGET_CP_MASTER_API, "/api/v1/namespaces/" + NAMESPACE + "/pods/" + PODS_NAME, HttpMethod.DELETE, null, ResultStatus.class)).thenReturn(gResultStatusModel);
-        when(commonService.setResultObject(gResultStatusModel, ResultStatus.class)).thenReturn(gResultStatusModel);
-        when(commonService.setResultModelWithNextUrl(gResultStatusModel, Constants.RESULT_STATUS_SUCCESS, Constants.URI_WORKLOAD_PODS)).thenReturn(gFinalResultStatusModel);
+        when(restTemplateService.send(Constants.TARGET_CP_MASTER_API, "/api/v1/namespaces/{namespace}/pods/{name}", HttpMethod.DELETE, null, ResultStatus.class, gParams)).thenReturn(gResultStatusModel);
+        when(commonService.setResultModel(gResultStatusModel, Constants.RESULT_STATUS_SUCCESS)).thenReturn(gFinalResultStatusModel);
 
         // when
-        ResultStatus result = podsService.deletePods(NAMESPACE, PODS_NAME, isAdmin);
-
-        // then
-        assertEquals(gFinalResultStatusModel, result);
-    }
-
-    /**
-     * Pods 삭제(Delete Pods) Not Admin Test
-     */
-    @Test
-    public void deletePods_Not_Admin_Valid_ReturnModel() {
-        // given
-        when(propertyService.getCpMasterApiListPodsDeleteUrl()).thenReturn("/api/v1/namespaces/{namespace}/pods/{name}");
-        when(restTemplateService.send(Constants.TARGET_CP_MASTER_API, "/api/v1/namespaces/" + NAMESPACE + "/pods/" + PODS_NAME, HttpMethod.DELETE, null, ResultStatus.class)).thenReturn(gResultStatusModel);
-        when(commonService.setResultObject(gResultStatusModel, ResultStatus.class)).thenReturn(gResultStatusModel);
-        when(commonService.setResultModelWithNextUrl(gResultStatusModel, Constants.RESULT_STATUS_SUCCESS, Constants.URI_WORKLOAD_PODS)).thenReturn(gFinalResultStatusModel);
-
-        // when
-        ResultStatus result = podsService.deletePods(NAMESPACE, PODS_NAME, isNotAdmin);
+        ResultStatus result = podsService.deletePods(gParams);
 
         // then
         assertEquals(gFinalResultStatusModel, result);
@@ -515,69 +368,43 @@ public class PodsServiceTest {
     public void updatePods_Valid_ReturnModel() {
         // given
         when(propertyService.getCpMasterApiListPodsUpdateUrl()).thenReturn("/api/v1/namespaces/{namespace}/pods/{name}");
-        when(restTemplateService.sendYaml(Constants.TARGET_CP_MASTER_API, "/api/v1/namespaces/" + NAMESPACE + "/pods/" + PODS_NAME, HttpMethod.PUT, YAML_STRING, Object.class, isAdmin)).thenReturn(gResultStatusModel);
-        when(commonService.setResultObject(gResultStatusModel, ResultStatus.class)).thenReturn(gResultStatusModel);
-        when(commonService.setResultModelWithNextUrl(gResultStatusModel, Constants.RESULT_STATUS_SUCCESS, Constants.URI_WORKLOAD_PODS_DETAIL.replace("{podName:.+}", PODS_NAME))).thenReturn(gFinalResultStatusModel);
+        when(restTemplateService.sendYaml(Constants.TARGET_CP_MASTER_API, "/api/v1/namespaces/{namespace}/pods/{name}", HttpMethod.PUT, ResultStatus.class, gParams)).thenReturn(gResultStatusModel);
+        when(commonService.setResultModel(gResultStatusModel, Constants.RESULT_STATUS_SUCCESS)).thenReturn(gFinalResultStatusModel);
 
         // when
-        ResultStatus result = (ResultStatus) podsService.updatePods(NAMESPACE, PODS_NAME, YAML_STRING, isAdmin);
+        ResultStatus result = podsService.updatePods(gParams);
 
         // then
         assertEquals(gFinalResultStatusModel, result);
     }
-
-    /**
-     * 전체 Namespaces 의 Pods Admin 목록 조회(Get Services Admin list in all namespaces) Test
-     */
-    @Test
-    public void getPodsListAllNamespacesAdmin_Valid_ReturnModel() {
-        // given
-        when(propertyService.getCpMasterApiListPodsListAllNamespacesUrl())
-                .thenReturn("/api/v1/pods");
-        when(commonService.generateFieldSelectorForExceptNamespace(Constants.RESOURCE_NAMESPACE))
-                .thenReturn(FIELD_SELECTOR);
-        when(restTemplateService.sendAdmin(Constants.TARGET_CP_MASTER_API, "/api/v1/pods" + FIELD_SELECTOR, HttpMethod.GET, null, Map.class))
-                .thenReturn(gResultMap);
-        when(commonService.setResultObject(gResultMap, PodsListAdmin.class))
-                .thenReturn(gResultListAdminModel);
-        when(commonService.resourceListProcessing(gResultListAdminModel, OFFSET, LIMIT, ORDER_BY, ORDER, SEARCH_NAME, PodsListAdmin.class))
-                .thenReturn(gResultListAdminModel);
-        when(commonService.setResultModel(gResultListAdminModel, Constants.RESULT_STATUS_SUCCESS))
-                .thenReturn(gResultListAdminModel);
-
-
-        // when
-        PodsListAdmin resultList = (PodsListAdmin) podsService.getPodsListAllNamespacesAdmin(OFFSET, LIMIT, ORDER_BY, ORDER, SEARCH_NAME);
-
-        // then
-        assertEquals(gResultListAdminModel, resultList);
-    }
-
-    /**
-     * 참조자 UID에 의한 Pods 목록 필터 (Get Services Admin list in all namespaces) Test
-     */
-    @Test
-    public void podsFIlterWithOwnerReferences_Valid_ReturnModel() {
-
-        PodsListAdmin resultList =  podsService.podsFIlterWithOwnerReferences(gResultListAdminModel, UID);
-        assertEquals(gResultListAdminModel, resultList);
-
-    }
-
-
-
-    @Test
-    public void getMergeMetric_Valid_ReturnModel() {
-        podsService.getMergeMetric(gResultListModel, podsMetric);
-    }
-
-    @Test
-    public void getPodsMetricList_Valid_ReturnModel() {
-        when(restTemplateService.sendAdmin(Constants.TARGET_CP_MASTER_API, "/apis/metrics.k8s.io/v1beta1/namespaces/"+ NAMESPACE + "/pods", HttpMethod.GET, null, Map.class)).thenReturn(gResultMap);
-        when(commonService.setResultObject(gResultMap, PodsMetric.class)).thenReturn(podsMetric);
-    }
-
-
+//
+//    /**
+//     * 전체 Namespaces 의 Pods Admin 목록 조회(Get Services Admin list in all namespaces) Test
+//     */
+//    @Test
+//    public void getPodsListAllNamespacesAdmin_Valid_ReturnModel() {
+//        // given
+//        when(propertyService.getCpMasterApiListPodsListAllNamespacesUrl())
+//                .thenReturn("/api/v1/pods");
+//        when(commonService.generateFieldSelectorForExceptNamespace(Constants.RESOURCE_NAMESPACE))
+//                .thenReturn(FIELD_SELECTOR);
+//        when(restTemplateService.sendAdmin(Constants.TARGET_CP_MASTER_API, "/api/v1/pods" + FIELD_SELECTOR, HttpMethod.GET, null, Map.class))
+//                .thenReturn(gResultMap);
+//        when(commonService.setResultObject(gResultMap, PodsListAdmin.class))
+//                .thenReturn(gResultListAdminModel);
+//        when(commonService.resourceListProcessing(gResultListAdminModel, OFFSET, LIMIT, ORDER_BY, ORDER, SEARCH_NAME, PodsListAdmin.class))
+//                .thenReturn(gResultListAdminModel);
+//        when(commonService.setResultModel(gResultListAdminModel, Constants.RESULT_STATUS_SUCCESS))
+//                .thenReturn(gResultListAdminModel);
+//
+//
+//        // when
+//        PodsListAdmin resultList = (PodsListAdmin) podsService.getPodsListAllNamespacesAdmin(OFFSET, LIMIT, ORDER_BY, ORDER, SEARCH_NAME);
+//
+//        // then
+//        assertEquals(gResultListAdminModel, resultList);
+//    }
+//
 
 }
 

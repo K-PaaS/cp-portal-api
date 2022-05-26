@@ -33,6 +33,8 @@ public class RolesService {
     private final PropertyService propertyService;
     private final SignUpAdminService signUpAdminService;
     private final ResultStatusService resultStatusService;
+
+
     /**
      * Instantiates a new Roles service
      *
@@ -48,6 +50,7 @@ public class RolesService {
         this.signUpAdminService = signUpAdminService;
         this.resultStatusService = resultStatusService;
     }
+
 
     /**
      * Roles 목록 조회(Get Roles list)
@@ -77,6 +80,7 @@ public class RolesService {
         roles = commonService.annotationsProcessing(roles, Roles.class);
         return (Roles) commonService.setResultModel(roles, Constants.RESULT_STATUS_SUCCESS);
     }
+
 
     /**
      * Roles YAML 조회(Get Roles yaml)
@@ -131,32 +135,6 @@ public class RolesService {
         ResultStatus resultStatus = restTemplateService.sendYaml(Constants.TARGET_CP_MASTER_API,
                 propertyService.getCpMasterApiListRolesUpdateUrl(), HttpMethod.PUT, ResultStatus.class, params);
         return (ResultStatus) commonService.setResultModel(resultStatus, Constants.RESULT_STATUS_SUCCESS);
-    }
-
-
-    /**
-     * 전체 Namespaces 의 Roles 목록 조회(Get Roles list in all namespaces)
-     *
-     * @param params the params
-     * @return the roles list
-     */
-    public RolesList getRolesListAllNamespaces(Params params) {
-        HashMap responseMap = (HashMap) restTemplateService.send(Constants.TARGET_CP_MASTER_API,
-                propertyService.getCpMasterApiListRolesListAllNamespacesUrl(),
-                HttpMethod.GET, null, Map.class, params);
-        RolesList rolesList = commonService.setResultObject(responseMap, RolesList.class);
-        List<RolesListItem> rolesListItems = new ArrayList<>();
-
-        for (RolesListItem item : rolesList.getItems()) {
-            if (!propertyService.getDefaultNamespace().equals(item.getNamespace()) && !item.getNamespace().startsWith("kube") && !item.getNamespace().equals("default")) {
-                rolesListItems.add(item);
-            }
-        }
-
-        rolesList.setItems(rolesListItems);
-
-        rolesList = commonService.resourceListProcessing(rolesList, params, RolesList.class);
-        return (RolesList) commonService.setResultModel(rolesList, Constants.RESULT_STATUS_SUCCESS);
     }
 
 

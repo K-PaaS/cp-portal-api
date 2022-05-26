@@ -5,7 +5,6 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
-import org.paasta.container.platform.api.common.Constants;
 import org.paasta.container.platform.api.common.ResultStatusService;
 import org.paasta.container.platform.api.common.model.CommonResourcesYaml;
 import org.paasta.container.platform.api.common.model.Params;
@@ -13,9 +12,6 @@ import org.paasta.container.platform.api.common.model.ResultStatus;
 import org.paasta.container.platform.api.common.util.ResourceExecuteManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-import springfox.documentation.annotations.ApiIgnore;
-
-import java.util.HashMap;
 
 /**
  * ResourceQuotas Controller 클래스
@@ -31,6 +27,7 @@ public class ResourceQuotasController {
     private final ResourceQuotasService resourceQuotasService;
     private final ResultStatusService resultStatusService;
 
+
     /**
      * Instantiates a ResourceQuotas Controller
      *
@@ -41,6 +38,7 @@ public class ResourceQuotasController {
         this.resourceQuotasService = resourceQuotasService;
         this.resultStatusService = resultStatusService;
     }
+
 
     /**
      * ResourceQuotas 목록 조회(Get ResourceQuotas list)
@@ -53,11 +51,9 @@ public class ResourceQuotasController {
     })
     @GetMapping
     public ResourceQuotasList getResourceQuotasList(Params params) {
-        if (params.namespace.toLowerCase().equals(Constants.ALL_NAMESPACES)) {
-                return resourceQuotasService.getResourceQuotasListAllNamespaces(params);
-        }
         return resourceQuotasService.getResourceQuotasList(params);
     }
+
 
     /**
      * ResourceQuotas 상세 조회(Get ResourceQuotas detail)
@@ -88,6 +84,7 @@ public class ResourceQuotasController {
         return resourceQuotasService.getResourceQuotasYaml(params);
     }
 
+
     /**
      * ResourceQuotas 생성(Create ResourceQuotas)
      * @param params the params
@@ -107,6 +104,7 @@ public class ResourceQuotasController {
 
     }
 
+
     /**
      * ResourceQuotas 삭제(Delete ResourceQuotas)
      * @param params the params
@@ -120,6 +118,7 @@ public class ResourceQuotasController {
     public ResultStatus deleteResourceQuotas(Params params) {
         return resourceQuotasService.deleteResourceQuotas(params);
     }
+
 
     /**
      * ResourceQuotas 수정(Update ResourceQuotas)

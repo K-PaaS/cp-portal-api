@@ -63,30 +63,6 @@ public class LimitRangesService {
     }
 
     /**
-     * LimitRanges 목록 조회(Get LimitRanges list)
-     *
-     * @param namespace  the namespace
-     * @param offset     the offset
-     * @param limit      the limit
-     * @param orderBy    the orderBy
-     * @param order      the order
-     * @param searchName the searchName
-     * @return the limitRanges list
-     */
-    public LimitRangesList getLimitRangesList(String namespace, int offset, int limit, String orderBy, String order, String searchName) {
-
-        HashMap responseMap = (HashMap) restTemplateService.send(Constants.TARGET_CP_MASTER_API,
-                propertyService.getCpMasterApiListLimitRangesListUrl()
-                        .replace("{namespace}", namespace),
-                HttpMethod.GET, null, Map.class);
-
-        LimitRangesList limitRangesList = commonService.setResultObject(responseMap, LimitRangesList.class);
-        limitRangesList = commonService.resourceListProcessing(limitRangesList, offset, limit, orderBy, order, searchName, LimitRangesList.class);
-
-        return (LimitRangesList) commonService.setResultModel(limitRangesList, Constants.RESULT_STATUS_SUCCESS);
-    }
-
-    /**
      * 전체 Namespaces 의 LimitRanges 목록 조회(Get LimitRanges list in all namespaces)
      *
      * @param params the params
@@ -194,7 +170,7 @@ public class LimitRangesService {
     public ResultStatus deleteLimitRanges(Params params) {
         ResultStatus resultStatus = restTemplateService.send(Constants.TARGET_CP_MASTER_API,
                 propertyService.getCpMasterApiListLimitRangesDeleteUrl(), HttpMethod.DELETE, null, ResultStatus.class, params);
-        return (ResultStatus) commonService.setResultModelWithNextUrl(commonService.setResultObject(resultStatus, ResultStatus.class), Constants.RESULT_STATUS_SUCCESS, Constants.URI_LIMIT_RANGES);
+        return (ResultStatus) commonService.setResultModel(resultStatus, Constants.RESULT_STATUS_SUCCESS);
     }
 
 

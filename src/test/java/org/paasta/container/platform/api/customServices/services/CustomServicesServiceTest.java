@@ -1,4 +1,4 @@
-package org.paasta.container.platform.api.clusters.nodes;
+package org.paasta.container.platform.api.customServices.services;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -25,10 +25,10 @@ import static org.mockito.Mockito.when;
 
 @RunWith(SpringRunner.class)
 @TestPropertySource("classpath:application.yml")
-public class NodesServiceTest {
+public class CustomServicesServiceTest {
     private static final String CLUSTER = "cp-cluster";
     private static final String NAMESPACE = "cp-namespace";
-    private static final String NODE_NAME = "test-node-name";
+    private static final String SERVICE_NAME = "test-service-name";
     private static final String YAML_STRING = "test-yaml-string";
     private static final String KUBE_ANNOTATIONS = "kubectl.kubernetes.io/";
     private static final int OFFSET = 0;
@@ -39,12 +39,12 @@ public class NodesServiceTest {
 
     private static HashMap gResultMap = null;
 
-    private static NodesList gResultListModel = null;
-    private static NodesList gFinalResultListModel = null;
-    private static NodesList gFinalResultListFailModel = null;
+    private static CustomServicesList gResultListModel = null;
+    private static CustomServicesList gFinalResultListModel = null;
+    private static CustomServicesList gFinalResultListFailModel = null;
 
-    private static Nodes gResultModel = null;
-    private static Nodes gFinalResultModel = null;
+    private static CustomServices gResultModel = null;
+    private static CustomServices gFinalResultModel = null;
 
     private static CommonResourcesYaml gFinalResultYamlModel = null;
 
@@ -64,10 +64,10 @@ public class NodesServiceTest {
     PropertyService propertyService;
 
     @InjectMocks
-    NodesService nodesService;
+    CustomServicesService customServicesService;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         gResultMap = new HashMap();
         gParams = new Params();
 
@@ -82,20 +82,20 @@ public class NodesServiceTest {
         gFinalResultStatusModel.setResultMessage(Constants.RESULT_STATUS_SUCCESS);
         gFinalResultStatusModel.setHttpStatusCode(CommonStatusCode.OK.getCode());
         gFinalResultStatusModel.setDetailMessage(CommonStatusCode.OK.getMsg());
-        gFinalResultStatusModel.setNextActionUrl(Constants.URI_CLUSTER_NODES);
+        gFinalResultStatusModel.setNextActionUrl(Constants.URI_SERVICES);
 
         // 리스트가져옴
-        gResultListModel = new NodesList();
+        gResultListModel = new CustomServicesList();
 
-        gFinalResultListModel = new NodesList();
+        gFinalResultListModel = new CustomServicesList();
         gFinalResultListModel.setResultCode(Constants.RESULT_STATUS_SUCCESS);
 
-        gFinalResultListFailModel = new NodesList();
+        gFinalResultListFailModel = new CustomServicesList();
         gFinalResultListFailModel.setResultCode(Constants.RESULT_STATUS_FAIL);
 
         // 하나만 가져옴
-        gResultModel = new Nodes();
-        gFinalResultModel = new Nodes();
+        gResultModel = new CustomServices();
+        gFinalResultModel = new CustomServices();
         gFinalResultModel.setResultCode(Constants.RESULT_STATUS_SUCCESS);
 
         gResultFailModel = new ResultStatus();
@@ -132,43 +132,97 @@ public class NodesServiceTest {
         gParams.setOrderBy(ORDER_BY);
         gParams.setOrder(ORDER);
         gParams.setSearchName(SEARCH_NAME);
-        gParams.setResourceName(NODE_NAME);
+        gParams.setResourceName(SERVICE_NAME);
         gParams.setYaml(YAML_STRING);
     }
 
     @Test
-    public void getNodesList() {
+    public void getCustomServicesList_Valid_ReturnModel() {
         //when
-        when(propertyService.getCpMasterApiListNodesListUrl()).thenReturn("/api/v1/nodes");
-        when(restTemplateService.send(Constants.TARGET_CP_MASTER_API, "/api/v1/nodes", HttpMethod.GET, null, Map.class, gParams)).thenReturn(gResultMap);
-        when(commonService.setResultObject(gResultMap, NodesList.class)).thenReturn(gResultListModel);
-        when(commonService.resourceListProcessing(gResultListModel, gParams, NodesList.class)).thenReturn(gResultListModel);
+        when(propertyService.getCpMasterApiListServicesListUrl()).thenReturn("/api/v1/namespaces/{namespace}/services");
+        when(restTemplateService.send(Constants.TARGET_CP_MASTER_API, "/api/v1/namespaces/{namespace}/services", HttpMethod.GET, null, Map.class, gParams)).thenReturn(gResultMap);
+        when(commonService.setResultObject(gResultMap, CustomServicesList.class)).thenReturn(gResultListModel);
+        when(commonService.resourceListProcessing(gResultListModel, gParams, CustomServicesList.class)).thenReturn(gResultListModel);
         when(commonService.setResultModel(gResultListModel, Constants.RESULT_STATUS_SUCCESS)).thenReturn(gFinalResultListModel);
 
         //call method
-        NodesList resultList = nodesService.getNodesList(gParams);
+        CustomServicesList resultList = customServicesService.getCustomServicesList(gParams);
 
         //compare result
         assertThat(resultList).isNotNull();
         assertEquals(Constants.RESULT_STATUS_SUCCESS, resultList.getResultCode());
     }
 
+
     @Test
-    public void getNodes() {
+    public void getCustomServices_Valid_ReturnModel() {
         //when
-        when(propertyService.getCpMasterApiListNodesGetUrl()).thenReturn("/api/v1/nodes/{name}");
-        when(restTemplateService.send(Constants.TARGET_CP_MASTER_API, "/api/v1/nodes/{name}", HttpMethod.GET, null, Map.class, gParams)).thenReturn(gResultMap);
-        when(commonService.setResultObject(gResultMap, Nodes.class)).thenReturn(gResultModel);
-        when(commonService.annotationsProcessing(gResultModel, Nodes.class)).thenReturn(gResultModel);
+        when(propertyService.getCpMasterApiListServicesGetUrl()).thenReturn("/api/v1/namespaces/{namespace}/services/{name}");
+        when(restTemplateService.send(Constants.TARGET_CP_MASTER_API, "/api/v1/namespaces/{namespace}/services/{name}", HttpMethod.GET, null, Map.class, gParams)).thenReturn(gResultMap);
+        when(commonService.setResultObject(gResultMap, CustomServices.class)).thenReturn(gResultModel);
+        when(commonService.annotationsProcessing(gResultModel, CustomServices.class)).thenReturn(gResultModel);
         when(commonService.setResultModel(gResultModel, Constants.RESULT_STATUS_SUCCESS)).thenReturn(gFinalResultModel);
 
         //call method
-        Nodes result = nodesService.getNodes(gParams);
+        CustomServices result = customServicesService.getCustomServices(gParams);
 
         //compare result
         assertThat(result).isNotNull();
         assertEquals(Constants.RESULT_STATUS_SUCCESS, result.getResultCode());
     }
 
+    @Test
+    public void getCustomServices_Yaml_Valid_ReturnModel() {
+        //when
+        when(propertyService.getCpMasterApiListServicesGetUrl()).thenReturn("/api/v1/namespaces/{namespace}/services/{name}");
+        when(restTemplateService.send(Constants.TARGET_CP_MASTER_API, "/api/v1/namespaces/{namespace}/services/{name}", HttpMethod.GET, null, String.class, Constants.ACCEPT_TYPE_YAML, gParams)).thenReturn(YAML_STRING);
+        when(commonService.setResultModel(new CommonResourcesYaml(YAML_STRING), Constants.RESULT_STATUS_SUCCESS)).thenReturn(gFinalResultYamlModel);
 
+        //call method
+        CommonResourcesYaml result = customServicesService.getCustomServicesYaml(gParams);
+
+        //compare result
+        assertThat(result).isNotNull();
+        assertEquals(YAML_STRING, result.getSourceTypeYaml());
+        assertEquals(Constants.RESULT_STATUS_SUCCESS, result.getResultCode());
+    }
+
+    @Test
+    public void createServices() {
+        //when
+        when(propertyService.getCpMasterApiListServicesCreateUrl()).thenReturn("/api/v1/namespaces/{namespace}/services");
+        when(restTemplateService.sendYaml(Constants.TARGET_CP_MASTER_API, "/api/v1/namespaces/{namespace}/services", HttpMethod.POST, ResultStatus.class, gParams)).thenReturn(gResultStatusModel);
+        when(commonService.setResultModel(gResultStatusModel, Constants.RESULT_STATUS_SUCCESS)).thenReturn(gFinalResultStatusModel);
+
+        ResultStatus result = customServicesService.createServices(gParams);
+
+        //compare result
+        assertEquals(gFinalResultStatusModel, result);
+    }
+
+    @Test
+    public void deleteServices_Valid() {
+        //when
+        when(propertyService.getCpMasterApiListServicesDeleteUrl()).thenReturn("/api/v1/namespaces/{namespace}/services/{name}");
+        when(restTemplateService.send(Constants.TARGET_CP_MASTER_API, "/api/v1/namespaces/{namespace}/services/{name}", HttpMethod.DELETE, null, ResultStatus.class, gParams)).thenReturn(gResultStatusModel);
+        when(commonService.setResultModel(gResultStatusModel, Constants.RESULT_STATUS_SUCCESS)).thenReturn(gFinalResultStatusModel);
+
+        ResultStatus result = customServicesService.deleteServices(gParams);
+
+        //compare result
+        assertEquals(gFinalResultStatusModel, result);
+    }
+
+    @Test
+    public void updateServices() {
+        //when
+        when(propertyService.getCpMasterApiListServicesUpdateUrl()).thenReturn("/api/v1/namespaces/{namespace}/services/{name}");
+        when(restTemplateService.sendYaml(Constants.TARGET_CP_MASTER_API, "/api/v1/namespaces/{namespace}/services/{name}", HttpMethod.PUT, ResultStatus.class, gParams)).thenReturn(gResultStatusModel);
+        when(commonService.setResultModel(gResultStatusModel, Constants.RESULT_STATUS_SUCCESS)).thenReturn(gFinalResultStatusModel);
+
+        ResultStatus result = customServicesService.updateServices(gParams);
+
+        //compare result
+        assertEquals(gFinalResultStatusModel, result);
+    }
 }

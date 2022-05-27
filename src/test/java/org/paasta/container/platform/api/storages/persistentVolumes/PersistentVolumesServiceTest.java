@@ -30,19 +30,14 @@ public class PersistentVolumesServiceTest {
     private static final String NAMESPACE = "cp-namespace";
     private static final String PERSISTENT_VOLUME_NAME = "test-persistent-volume-name";
     private static final String YAML_STRING = "test-yaml-string";
-    private static final String FIELD_SELECTOR = "?fieldSelector=metadata.namespace!=kubernetes-dashboard,metadata.namespace!=kube-node-lease,metadata.namespace!=kube-public,metadata.namespace!=kube-system,metadata.namespace!=temp-namespace";
     private static final String KUBE_ANNOTATIONS = "kubectl.kubernetes.io/";
     private static final int OFFSET = 0;
     private static final int LIMIT = 0;
     private static final String ORDER_BY = "creationTime";
     private static final String ORDER = "desc";
     private static final String SEARCH_NAME = "";
-    private static final boolean isAdmin = true;
-    private static final boolean isNotAdmin = false;
 
     private static HashMap gResultMap = null;
-    private static HashMap gResultAdminMap = null;
-    private static HashMap gResultAdminFailMap = null;
 
     private static PersistentVolumesList gResultListModel = null;
     private static PersistentVolumesList gFinalResultListModel = null;
@@ -51,20 +46,14 @@ public class PersistentVolumesServiceTest {
     private static PersistentVolumes gResultModel = null;
     private static PersistentVolumes gFinalResultModel = null;
 
-    private static PersistentVolumesListAdmin gResultListAdminModel = null;
-    private static PersistentVolumesListAdmin gFinalResultListAdminModel = null;
-    private static PersistentVolumesListAdmin gFinalResultListAdminFailModel = null;
-
-    private static PersistentVolumesAdmin gResultAdminModel = null;
-    private static PersistentVolumesAdmin gFinalResultAdminModel = null;
-    private static PersistentVolumesAdmin gFinalResultAdminFailModel = null;
-
     private static CommonResourcesYaml gResultYamlModel = null;
     private static CommonResourcesYaml gFinalResultYamlModel = null;
 
     private static ResultStatus gResultStatusModel = null;
     private static ResultStatus gResultFailModel = null;
     private static ResultStatus gFinalResultStatusModel = null;
+
+    private static Params gParams = null;
 
     @Mock
     RestTemplateService restTemplateService;
@@ -115,8 +104,8 @@ public class PersistentVolumesServiceTest {
         gResultFailModel.setHttpStatusCode(CommonStatusCode.NOT_FOUND.getCode());
         gResultFailModel.setDetailMessage(CommonStatusCode.NOT_FOUND.getMsg());
 
-        gResultYamlModel = new CommonResourcesYaml();
-        gFinalResultYamlModel = new CommonResourcesYaml();
+        gResultYamlModel = new CommonResourcesYaml("");
+        gFinalResultYamlModel = new CommonResourcesYaml("");
         gFinalResultYamlModel.setResultCode(Constants.RESULT_STATUS_SUCCESS);
         gFinalResultYamlModel.setResultMessage(Constants.RESULT_STATUS_SUCCESS);
         gFinalResultYamlModel.setHttpStatusCode(CommonStatusCode.OK.getCode());
@@ -124,30 +113,9 @@ public class PersistentVolumesServiceTest {
         gFinalResultYamlModel.setSourceTypeYaml(YAML_STRING);
 
         // 리스트가져옴
-        gResultAdminMap = new HashMap();
-        gResultListAdminModel = new PersistentVolumesListAdmin();
-        gFinalResultListAdminModel = new PersistentVolumesListAdmin();
-
-        gFinalResultListAdminModel = new PersistentVolumesListAdmin();
-        gFinalResultListAdminModel.setResultCode(Constants.RESULT_STATUS_SUCCESS);
-        gFinalResultListAdminModel.setResultMessage(Constants.RESULT_STATUS_SUCCESS);
-        gFinalResultListAdminModel.setHttpStatusCode(CommonStatusCode.OK.getCode());
-        gFinalResultListAdminModel.setDetailMessage(CommonStatusCode.OK.getMsg());
-
-        gFinalResultListAdminFailModel = new PersistentVolumesListAdmin();
-        gFinalResultListAdminFailModel.setResultCode(Constants.RESULT_STATUS_FAIL);
-        gFinalResultListAdminFailModel.setResultMessage(Constants.RESULT_STATUS_FAIL);
-        gFinalResultListAdminFailModel.setHttpStatusCode(CommonStatusCode.NOT_FOUND.getCode());
-        gFinalResultListAdminFailModel.setDetailMessage(CommonStatusCode.NOT_FOUND.getMsg());
 
 
         // 하나만 가져옴
-        gResultAdminModel = new PersistentVolumesAdmin();
-        gFinalResultAdminModel = new PersistentVolumesAdmin();
-        gFinalResultAdminModel.setResultCode(Constants.RESULT_STATUS_SUCCESS);
-        gFinalResultAdminModel.setResultMessage(Constants.RESULT_STATUS_SUCCESS);
-        gFinalResultAdminModel.setHttpStatusCode(CommonStatusCode.OK.getCode());
-        gFinalResultAdminModel.setDetailMessage(CommonStatusCode.OK.getMsg());
 
         CommonMetaData commonMetaData = new CommonMetaData();
         Map<String, String> annotations = new HashMap<>();
@@ -161,28 +129,34 @@ public class PersistentVolumesServiceTest {
 
         List<CommonAnnotations> commonAnnotationsList = new ArrayList<>();
         commonAnnotationsList.add(commonAnnotations);
-        gResultAdminModel.setAnnotations(commonAnnotationsList);
 
-        gFinalResultAdminFailModel = new PersistentVolumesAdmin();
-        gFinalResultAdminFailModel.setResultCode(Constants.RESULT_STATUS_FAIL);
-        gFinalResultAdminFailModel.setResultMessage(Constants.RESULT_STATUS_FAIL);
-        gFinalResultAdminFailModel.setHttpStatusCode(CommonStatusCode.NOT_FOUND.getCode());
-        gFinalResultAdminFailModel.setDetailMessage(CommonStatusCode.NOT_FOUND.getMsg());
+        gParams = new Params();
+
+        //Params setting
+        gParams.setCluster(CLUSTER);
+        gParams.setNamespace(NAMESPACE);
+        gParams.setOffset(OFFSET);
+        gParams.setLimit(LIMIT);
+        gParams.setOrderBy(ORDER_BY);
+        gParams.setOrder(ORDER);
+        gParams.setSearchName(SEARCH_NAME);
+        gParams.setResourceName(PERSISTENT_VOLUME_NAME);
+        gParams.setYaml(YAML_STRING);
     }
 
     @Test
-    public void getPersistentVolumesListAdmin_Valid_ReturnModel() {
+    public void getPersistentVolumesList_Valid_ReturnModel() {
         //when
         when(propertyService.getCpMasterApiListPersistentVolumesListUrl()).thenReturn("/api/v1/persistentvolumes");
-        when(restTemplateService.sendAdmin(Constants.TARGET_CP_MASTER_API, "/api/v1/persistentvolumes", HttpMethod.GET, null, Map.class)).thenReturn(gResultAdminMap);
+        when(restTemplateService.send(Constants.TARGET_CP_MASTER_API, "/api/v1/persistentvolumes", HttpMethod.GET, null, Map.class, gParams)).thenReturn(gResultMap);
 
 
-        when(commonService.setResultObject(gResultAdminMap, PersistentVolumesListAdmin.class)).thenReturn(gResultListAdminModel);
-        when(commonService.resourceListProcessing(gResultListAdminModel, OFFSET, LIMIT, ORDER_BY, ORDER, SEARCH_NAME, PersistentVolumesListAdmin.class)).thenReturn(gResultListAdminModel);
-        when(commonService.setResultModel(gResultListAdminModel, Constants.RESULT_STATUS_SUCCESS)).thenReturn(gFinalResultListAdminModel);
+        when(commonService.setResultObject(gResultMap, PersistentVolumesList.class)).thenReturn(gResultListModel);
+        when(commonService.resourceListProcessing(gResultListModel, gParams, PersistentVolumesList.class)).thenReturn(gResultListModel);
+        when(commonService.setResultModel(gResultListModel, Constants.RESULT_STATUS_SUCCESS)).thenReturn(gFinalResultListModel);
 
         //call method
-        PersistentVolumesListAdmin resultList = (PersistentVolumesListAdmin) persistentVolumesService.getPersistentVolumesListAdmin(NAMESPACE, OFFSET, LIMIT, ORDER_BY, ORDER, SEARCH_NAME);
+        PersistentVolumesList resultList = persistentVolumesService.getPersistentVolumesList(gParams);
 
         //compare result
         assertThat(resultList).isNotNull();
@@ -194,12 +168,11 @@ public class PersistentVolumesServiceTest {
 
         //when
         when(propertyService.getCpMasterApiListPersistentVolumesGetUrl()).thenReturn("/api/v1/persistentvolumes/{name}");
-        when(restTemplateService.send(Constants.TARGET_CP_MASTER_API, "/api/v1/persistentvolumes/" + PERSISTENT_VOLUME_NAME, HttpMethod.GET, null, String.class, Constants.ACCEPT_TYPE_YAML)).thenReturn(YAML_STRING);
-        when(commonService.setResultObject(gResultMap, CommonResourcesYaml.class)).thenReturn(gResultYamlModel);
-        when(commonService.setResultModel(gResultYamlModel, Constants.RESULT_STATUS_SUCCESS)).thenReturn(gFinalResultYamlModel);
+        when(restTemplateService.send(Constants.TARGET_CP_MASTER_API, "/api/v1/persistentvolumes/{name}", HttpMethod.GET, null, String.class, Constants.ACCEPT_TYPE_YAML, gParams)).thenReturn(YAML_STRING);
+        when(commonService.setResultModel(new CommonResourcesYaml(YAML_STRING), Constants.RESULT_STATUS_SUCCESS)).thenReturn(gFinalResultYamlModel);
 
         //call method
-        CommonResourcesYaml result = (CommonResourcesYaml) persistentVolumesService.getPersistentVolumesAdminYaml(PERSISTENT_VOLUME_NAME, gResultMap);
+        CommonResourcesYaml result = persistentVolumesService.getPersistentVolumesYaml(gParams);
 
         //compare result
         assertEquals(YAML_STRING, result.getSourceTypeYaml());
@@ -210,11 +183,10 @@ public class PersistentVolumesServiceTest {
     public void createPersistentVolumes() {
         //when
         when(propertyService.getCpMasterApiListPersistentVolumesCreateUrl()).thenReturn("/api/v1/persistentvolumes");
-        when(restTemplateService.sendYaml(Constants.TARGET_CP_MASTER_API, "/api/v1/persistentvolumes", HttpMethod.POST, YAML_STRING, Object.class, isAdmin)).thenReturn(gResultStatusModel);
-        when(commonService.setResultObject(gResultStatusModel, ResultStatus.class)).thenReturn(gResultStatusModel);
-        when(commonService.setResultModelWithNextUrl(gResultStatusModel, Constants.RESULT_STATUS_SUCCESS, Constants.URI_STORAGES_PERSISTENT_VOLUMES)).thenReturn(gFinalResultStatusModel);
+        when(restTemplateService.sendYaml(Constants.TARGET_CP_MASTER_API, "/api/v1/persistentvolumes", HttpMethod.POST, ResultStatus.class, gParams)).thenReturn(gResultStatusModel);
+        when(commonService.setResultModel(gResultStatusModel, Constants.RESULT_STATUS_SUCCESS)).thenReturn(gFinalResultStatusModel);
 
-        ResultStatus result = (ResultStatus) persistentVolumesService.createPersistentVolumes(NAMESPACE, YAML_STRING, isAdmin);
+        ResultStatus result = persistentVolumesService.createPersistentVolumes(gParams);
 
         //compare result
         assertEquals(gFinalResultStatusModel, result);
@@ -224,11 +196,10 @@ public class PersistentVolumesServiceTest {
     public void deletePersistentVolumes() {
         //when
         when(propertyService.getCpMasterApiListPersistentVolumesDeleteUrl()).thenReturn("/api/v1/persistentvolumes/{name}");
-        when(restTemplateService.sendAdmin(Constants.TARGET_CP_MASTER_API, "/api/v1/persistentvolumes/" + PERSISTENT_VOLUME_NAME, HttpMethod.DELETE, null, ResultStatus.class)).thenReturn(gResultStatusModel);
-        when(commonService.setResultObject(gResultStatusModel, ResultStatus.class)).thenReturn(gResultStatusModel);
-        when(commonService.setResultModelWithNextUrl(gResultStatusModel, Constants.RESULT_STATUS_SUCCESS, Constants.URI_STORAGES_PERSISTENT_VOLUMES)).thenReturn(gFinalResultStatusModel);
+        when(restTemplateService.send(Constants.TARGET_CP_MASTER_API, "/api/v1/persistentvolumes/{name}", HttpMethod.DELETE, null, ResultStatus.class, gParams)).thenReturn(gResultStatusModel);
+        when(commonService.setResultModel(gResultStatusModel, Constants.RESULT_STATUS_SUCCESS)).thenReturn(gFinalResultStatusModel);
 
-        ResultStatus result = persistentVolumesService.deletePersistentVolumes(NAMESPACE, PERSISTENT_VOLUME_NAME);
+        ResultStatus result = persistentVolumesService.deletePersistentVolumes(gParams);
 
         //compare result
         assertEquals(gFinalResultStatusModel, result);
@@ -237,33 +208,29 @@ public class PersistentVolumesServiceTest {
 
     @Test
     public void updatePersistentVolumes() {
-        String nextUrl = Constants.URI_STORAGES_PERSISTENT_VOLUMES_DETAIL.replace("{persistentVolumeName:.+}", PERSISTENT_VOLUME_NAME);
-        gFinalResultStatusModel.setNextActionUrl(nextUrl);
-
         //when
         when(propertyService.getCpMasterApiListPersistentVolumesUpdateUrl()).thenReturn("/api/v1/persistentvolumes/{name}");
-        when(restTemplateService.sendYaml(Constants.TARGET_CP_MASTER_API, "/api/v1/persistentvolumes/" + PERSISTENT_VOLUME_NAME, HttpMethod.PUT, YAML_STRING, ResultStatus.class, isAdmin)).thenReturn(gResultStatusModel);
-        when(commonService.setResultObject(gResultStatusModel, ResultStatus.class)).thenReturn(gResultStatusModel);
-        when(commonService.setResultModelWithNextUrl(gResultStatusModel, Constants.RESULT_STATUS_SUCCESS, nextUrl)).thenReturn(gFinalResultStatusModel);
+        when(restTemplateService.sendYaml(Constants.TARGET_CP_MASTER_API, "/api/v1/persistentvolumes/{name}", HttpMethod.PUT, ResultStatus.class, gParams)).thenReturn(gResultStatusModel);
+        when(commonService.setResultModel(gResultStatusModel, Constants.RESULT_STATUS_SUCCESS)).thenReturn(gFinalResultStatusModel);
 
-        ResultStatus result = persistentVolumesService.updatePersistentVolumes(PERSISTENT_VOLUME_NAME, YAML_STRING);
+        ResultStatus result = persistentVolumesService.updatePersistentVolumes(gParams);
 
         //compare result
         assertEquals(gFinalResultStatusModel, result);
     }
 
     @Test
-    public void getPersistentVolumesAdmin_Valid_ReturnModel() {
+    public void getPersistentVolumes_Valid_ReturnModel() {
 
         //when
         when(propertyService.getCpMasterApiListPersistentVolumesGetUrl()).thenReturn("/api/v1/persistentvolumes/{name}");
-        when(restTemplateService.sendAdmin(Constants.TARGET_CP_MASTER_API, "/api/v1/persistentvolumes/" + PERSISTENT_VOLUME_NAME, HttpMethod.GET, null, Map.class)).thenReturn(gResultMap);
-        when(commonService.setResultObject(gResultMap, PersistentVolumesAdmin.class)).thenReturn(gResultAdminModel);
-        when(commonService.annotationsProcessing(gResultAdminModel, PersistentVolumesAdmin.class)).thenReturn(gResultAdminModel);
-        when(commonService.setResultModel(gResultAdminModel, Constants.RESULT_STATUS_SUCCESS)).thenReturn(gFinalResultAdminModel);
+        when(restTemplateService.send(Constants.TARGET_CP_MASTER_API, "/api/v1/persistentvolumes/{name}", HttpMethod.GET, null, Map.class, gParams)).thenReturn(gResultMap);
+        when(commonService.setResultObject(gResultMap, PersistentVolumes.class)).thenReturn(gResultModel);
+        when(commonService.annotationsProcessing(gResultModel, PersistentVolumes.class)).thenReturn(gResultModel);
+        when(commonService.setResultModel(gResultModel, Constants.RESULT_STATUS_SUCCESS)).thenReturn(gFinalResultModel);
 
         //call method
-        PersistentVolumesAdmin result = (PersistentVolumesAdmin) persistentVolumesService.getPersistentVolumesAdmin(NAMESPACE, PERSISTENT_VOLUME_NAME);
+        PersistentVolumes result = persistentVolumesService.getPersistentVolumes(gParams);
 
         //compare result
         assertThat(result).isNotNull();

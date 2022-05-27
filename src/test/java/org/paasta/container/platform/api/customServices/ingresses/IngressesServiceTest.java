@@ -1,4 +1,4 @@
-package org.paasta.container.platform.api.storages.persistentVolumeClaims;
+package org.paasta.container.platform.api.customServices.ingresses;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -25,10 +25,10 @@ import static org.mockito.Mockito.when;
 
 @RunWith(SpringRunner.class)
 @TestPropertySource("classpath:application.yml")
-public class PersistentVolumeClaimsServiceTest {
+public class IngressesServiceTest {
     private static final String CLUSTER = "cp-cluster";
     private static final String NAMESPACE = "cp-namespace";
-    private static final String PERSISTENT_VOLUME_CLAIM_NAME = "test-persistent-volume-claim-name";
+    private static final String INGRESS_NAME = "test-ingress-name";
     private static final String YAML_STRING = "test-yaml-string";
     private static final String KUBE_ANNOTATIONS = "kubectl.kubernetes.io/";
     private static final int OFFSET = 0;
@@ -39,16 +39,17 @@ public class PersistentVolumeClaimsServiceTest {
 
     private static HashMap gResultMap = null;
 
-    private static PersistentVolumeClaimsList gResultListModel = null;
-    private static PersistentVolumeClaimsList gFinalResultListModel = null;
-    private static PersistentVolumeClaimsList gFinalResultListFailModel = null;
+    private static IngressesList gResultListModel = null;
+    private static IngressesList gFinalResultListModel = null;
+    private static IngressesList gFinalResultListFailModel = null;
 
-    private static PersistentVolumeClaims gResultModel = null;
-    private static PersistentVolumeClaims gFinalResultModel = null;
+    private static Ingresses gResultModel = null;
+    private static Ingresses gFinalResultModel = null;
 
     private static CommonResourcesYaml gFinalResultYamlModel = null;
 
     private static ResultStatus gResultStatusModel = null;
+    private static ResultStatus gResultFailModel = null;
     private static ResultStatus gFinalResultStatusModel = null;
 
     private static Params gParams = null;
@@ -63,11 +64,12 @@ public class PersistentVolumeClaimsServiceTest {
     PropertyService propertyService;
 
     @InjectMocks
-    PersistentVolumeClaimsService persistentVolumeClaimsService;
+    IngressesService ingressesService;
 
     @Before
     public void setUp() {
         gResultMap = new HashMap();
+        gParams = new Params();
 
         gResultStatusModel = new ResultStatus();
         gResultStatusModel.setResultCode(Constants.RESULT_STATUS_SUCCESS);
@@ -80,21 +82,27 @@ public class PersistentVolumeClaimsServiceTest {
         gFinalResultStatusModel.setResultMessage(Constants.RESULT_STATUS_SUCCESS);
         gFinalResultStatusModel.setHttpStatusCode(CommonStatusCode.OK.getCode());
         gFinalResultStatusModel.setDetailMessage(CommonStatusCode.OK.getMsg());
-        gFinalResultStatusModel.setNextActionUrl(Constants.URI_STORAGES);
+        gFinalResultStatusModel.setNextActionUrl(Constants.URI_INGRESSES);
 
         // 리스트가져옴
-        gResultListModel = new PersistentVolumeClaimsList();
+        gResultListModel = new IngressesList();
 
-        gFinalResultListModel = new PersistentVolumeClaimsList();
+        gFinalResultListModel = new IngressesList();
         gFinalResultListModel.setResultCode(Constants.RESULT_STATUS_SUCCESS);
 
-        gFinalResultListFailModel = new PersistentVolumeClaimsList();
+        gFinalResultListFailModel = new IngressesList();
         gFinalResultListFailModel.setResultCode(Constants.RESULT_STATUS_FAIL);
 
         // 하나만 가져옴
-        gResultModel = new PersistentVolumeClaims();
-        gFinalResultModel = new PersistentVolumeClaims();
+        gResultModel = new Ingresses();
+        gFinalResultModel = new Ingresses();
         gFinalResultModel.setResultCode(Constants.RESULT_STATUS_SUCCESS);
+
+        gResultFailModel = new ResultStatus();
+        gResultFailModel.setResultCode(Constants.RESULT_STATUS_FAIL);
+        gResultFailModel.setResultMessage(Constants.RESULT_STATUS_FAIL);
+        gResultFailModel.setHttpStatusCode(CommonStatusCode.NOT_FOUND.getCode());
+        gResultFailModel.setDetailMessage(CommonStatusCode.NOT_FOUND.getMsg());
 
         gFinalResultYamlModel = new CommonResourcesYaml("");
         gFinalResultYamlModel.setResultCode(Constants.RESULT_STATUS_SUCCESS);
@@ -116,8 +124,6 @@ public class PersistentVolumeClaimsServiceTest {
         List<CommonAnnotations> commonAnnotationsList = new ArrayList<>();
         commonAnnotationsList.add(commonAnnotations);
 
-        gParams = new Params();
-
         //Params setting
         gParams.setCluster(CLUSTER);
         gParams.setNamespace(NAMESPACE);
@@ -126,22 +132,21 @@ public class PersistentVolumeClaimsServiceTest {
         gParams.setOrderBy(ORDER_BY);
         gParams.setOrder(ORDER);
         gParams.setSearchName(SEARCH_NAME);
-        gParams.setResourceName(PERSISTENT_VOLUME_CLAIM_NAME);
+        gParams.setResourceName(INGRESS_NAME);
         gParams.setYaml(YAML_STRING);
     }
 
     @Test
-    public void getPersistentVolumeClaimsList_Valid_ReturnModel() {
-
+    public void getIngressesList_Valid_ReturnModel() {
         //when
-        when(propertyService.getCpMasterApiListPersistentVolumeClaimsListUrl()).thenReturn("/api/v1/namespaces/{namespace}/persistentvolumeclaims");
-        when(restTemplateService.send(Constants.TARGET_CP_MASTER_API, "/api/v1/namespaces/{namespace}/persistentvolumeclaims", HttpMethod.GET, null, Map.class, gParams)).thenReturn(gResultMap);
-        when(commonService.setResultObject(gResultMap, PersistentVolumeClaimsList.class)).thenReturn(gResultListModel);
-        when(commonService.resourceListProcessing(gResultListModel, gParams, PersistentVolumeClaimsList.class)).thenReturn(gResultListModel);
+        when(propertyService.getCpMasterApiListIngressesListUrl()).thenReturn("/apis/networking.k8s.io/v1/namespaces/{namespace}/ingresses");
+        when(restTemplateService.send(Constants.TARGET_CP_MASTER_API, "/apis/networking.k8s.io/v1/namespaces/{namespace}/ingresses", HttpMethod.GET, null, Map.class, gParams)).thenReturn(gResultMap);
+        when(commonService.setResultObject(gResultMap, IngressesList.class)).thenReturn(gResultListModel);
+        when(commonService.resourceListProcessing(gResultListModel, gParams, IngressesList.class)).thenReturn(gResultListModel);
         when(commonService.setResultModel(gResultListModel, Constants.RESULT_STATUS_SUCCESS)).thenReturn(gFinalResultListModel);
 
         //call method
-        PersistentVolumeClaimsList resultList = persistentVolumeClaimsService.getPersistentVolumeClaimsList(gParams);
+        IngressesList resultList = ingressesService.getIngressesList(gParams);
 
         //compare result
         assertThat(resultList).isNotNull();
@@ -150,74 +155,72 @@ public class PersistentVolumeClaimsServiceTest {
 
 
     @Test
-    public void getPersistentVolumeClaims_Valid_ReturnModel() {
+    public void getIngresses_Valid_ReturnModel() {
         //when
-        when(propertyService.getCpMasterApiListPersistentVolumeClaimsGetUrl()).thenReturn("/api/v1/namespaces/{namespace}/persistentvolumeclaims/{name}");
-        when(restTemplateService.send(Constants.TARGET_CP_MASTER_API, "/api/v1/namespaces/{namespace}/persistentvolumeclaims/{name}", HttpMethod.GET, null, Map.class, gParams)).thenReturn(gResultMap);
-        when(commonService.setResultObject(gResultMap, PersistentVolumeClaims.class)).thenReturn(gResultModel);
-        when(commonService.annotationsProcessing(gResultModel, PersistentVolumeClaims.class)).thenReturn(gResultModel);
+        when(propertyService.getCpMasterApiListIngressesGetUrl()).thenReturn("/apis/networking.k8s.io/v1/namespaces/{namespace}/ingresses/{name}");
+        when(restTemplateService.send(Constants.TARGET_CP_MASTER_API, "/apis/networking.k8s.io/v1/namespaces/{namespace}/ingresses/{name}", HttpMethod.GET, null, Map.class, gParams)).thenReturn(gResultMap);
+        when(commonService.setResultObject(gResultMap, Ingresses.class)).thenReturn(gResultModel);
+        when(commonService.annotationsProcessing(gResultModel, Ingresses.class)).thenReturn(gResultModel);
         when(commonService.setResultModel(gResultModel, Constants.RESULT_STATUS_SUCCESS)).thenReturn(gFinalResultModel);
 
         //call method
-        PersistentVolumeClaims result = persistentVolumeClaimsService.getPersistentVolumeClaims(gParams);
+        Ingresses result = ingressesService.getIngresses(gParams);
 
         //compare result
         assertThat(result).isNotNull();
         assertEquals(Constants.RESULT_STATUS_SUCCESS, result.getResultCode());
     }
 
-
     @Test
-    public void getPersistentVolumeClaims_Yaml_Valid_ReturnModel() {
-
+    public void getIngresses_Yaml_Valid_ReturnModel() {
         //when
-        when(propertyService.getCpMasterApiListPersistentVolumeClaimsGetUrl()).thenReturn("/api/v1/namespaces/{namespace}/persistentvolumeclaims/{name}");
-        when(restTemplateService.send(Constants.TARGET_CP_MASTER_API, "/api/v1/namespaces/{namespace}/persistentvolumeclaims/{name}", HttpMethod.GET, null, String.class, Constants.ACCEPT_TYPE_YAML, gParams)).thenReturn(YAML_STRING);
+        when(propertyService.getCpMasterApiListIngressesGetUrl()).thenReturn("/apis/networking.k8s.io/v1/namespaces/{namespace}/ingresses/{name}");
+        when(restTemplateService.send(Constants.TARGET_CP_MASTER_API, "/apis/networking.k8s.io/v1/namespaces/{namespace}/ingresses/{name}", HttpMethod.GET, null, String.class, Constants.ACCEPT_TYPE_YAML, gParams)).thenReturn(YAML_STRING);
         when(commonService.setResultModel(new CommonResourcesYaml(YAML_STRING), Constants.RESULT_STATUS_SUCCESS)).thenReturn(gFinalResultYamlModel);
 
         //call method
-        CommonResourcesYaml result = persistentVolumeClaimsService.getPersistentVolumeClaimsYaml(gParams);
+        CommonResourcesYaml result = ingressesService.getIngressesYaml(gParams);
 
         //compare result
+        assertThat(result).isNotNull();
         assertEquals(YAML_STRING, result.getSourceTypeYaml());
         assertEquals(Constants.RESULT_STATUS_SUCCESS, result.getResultCode());
     }
 
     @Test
-    public void createPersistentVolumeClaims() {
-
+    public void createIngresses() {
         //when
-        when(propertyService.getCpMasterApiListPersistentVolumeClaimsCreateUrl()).thenReturn("/api/v1/namespaces/{namespace}/persistentvolumeclaims");
-        when(restTemplateService.sendYaml(Constants.TARGET_CP_MASTER_API, "/api/v1/namespaces/{namespace}/persistentvolumeclaims", HttpMethod.POST, ResultStatus.class, gParams)).thenReturn(gResultStatusModel);
+        when(propertyService.getCpMasterApiListIngressesCreateUrl()).thenReturn("/apis/networking.k8s.io/v1/namespaces/{namespace}/ingresses/");
+        when(restTemplateService.sendYaml(Constants.TARGET_CP_MASTER_API, "/apis/networking.k8s.io/v1/namespaces/{namespace}/ingresses/", HttpMethod.POST, ResultStatus.class, gParams)).thenReturn(gResultStatusModel);
         when(commonService.setResultModel(gResultStatusModel, Constants.RESULT_STATUS_SUCCESS)).thenReturn(gFinalResultStatusModel);
 
-        ResultStatus result = persistentVolumeClaimsService.createPersistentVolumeClaims(gParams);
+        ResultStatus result = ingressesService.createIngresses(gParams);
 
         //compare result
         assertEquals(gFinalResultStatusModel, result);
     }
 
     @Test
-    public void deletePersistentVolumeClaims_Valid() {
+    public void deleteServices_Valid() {
         //when
-        when(propertyService.getCpMasterApiListPersistentVolumeClaimsDeleteUrl()).thenReturn("/api/v1/namespaces/{namespace}/persistentvolumeclaims/{name}");
-        when(restTemplateService.send(Constants.TARGET_CP_MASTER_API, "/api/v1/namespaces/{namespace}/persistentvolumeclaims/{name}", HttpMethod.DELETE, null, ResultStatus.class, gParams)).thenReturn(gResultStatusModel);
+        when(propertyService.getCpMasterApiListIngressesDeleteUrl()).thenReturn("/apis/networking.k8s.io/v1/namespaces/{namespace}/ingresses/{name}");
+        when(restTemplateService.send(Constants.TARGET_CP_MASTER_API, "/apis/networking.k8s.io/v1/namespaces/{namespace}/ingresses/{name}", HttpMethod.DELETE, null, ResultStatus.class, gParams)).thenReturn(gResultStatusModel);
         when(commonService.setResultModel(gResultStatusModel, Constants.RESULT_STATUS_SUCCESS)).thenReturn(gFinalResultStatusModel);
 
-        ResultStatus result = persistentVolumeClaimsService.deletePersistentVolumeClaims(gParams);
+        ResultStatus result = ingressesService.deleteIngresses(gParams);
 
         //compare result
         assertEquals(gFinalResultStatusModel, result);
     }
 
     @Test
-    public void updatePersistentVolumeClaims() {
+    public void updateServices() {
         //when
-        when(propertyService.getCpMasterApiListPersistentVolumeClaimsUpdateUrl()).thenReturn("/api/v1/namespaces/{namespace}/persistentvolumeclaims/{name}");
-        when(restTemplateService.sendYaml(Constants.TARGET_CP_MASTER_API, "/api/v1/namespaces/{namespace}/persistentvolumeclaims/{name}", HttpMethod.PUT, ResultStatus.class, gParams)).thenReturn(gResultStatusModel);
+        when(propertyService.getCpMasterApiListIngressesUpdateUrl()).thenReturn("/apis/networking.k8s.io/v1/namespaces/{namespace}/ingresses/{name}");
+        when(restTemplateService.sendYaml(Constants.TARGET_CP_MASTER_API, "/apis/networking.k8s.io/v1/namespaces/{namespace}/ingresses/{name}", HttpMethod.PUT, ResultStatus.class, gParams)).thenReturn(gResultStatusModel);
         when(commonService.setResultModel(gResultStatusModel, Constants.RESULT_STATUS_SUCCESS)).thenReturn(gFinalResultStatusModel);
 
-        ResultStatus result = persistentVolumeClaimsService.updatePersistentVolumeClaims(gParams);
+        ResultStatus result = ingressesService.updateIngresses(gParams);
 
         //compare result
         assertEquals(gFinalResultStatusModel, result);

@@ -63,6 +63,8 @@ public class LimitRangesService {
     }
 
     /**
+
+    /**
      * 전체 Namespaces 의 LimitRanges 목록 조회(Get LimitRanges list in all namespaces)
      *
      * @param params the params

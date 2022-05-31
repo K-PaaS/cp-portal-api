@@ -7,6 +7,7 @@ import org.paasta.container.platform.api.common.model.CommonAnnotations;
 import org.paasta.container.platform.api.common.model.CommonMetaData;
 import org.paasta.container.platform.api.common.model.CommonSpec;
 import org.paasta.container.platform.api.common.model.CommonStatus;
+import org.paasta.container.platform.api.customServices.ingresses.support.IngressesSpec;
 
 import java.util.List;
 
@@ -30,19 +31,20 @@ public class Ingresses {
     private String namespace;
     private Object labels;
     private List<CommonAnnotations> annotations;
+
+    private String pathType;
+    private String host;
+    private String path;
+    private int port;
+    private String targetService;
     private String creationTimestamp;
 
-    //Resource Info
-    private String type;
-    private String clusterIP;
-    private String sessionAffinity;
-    private Object selector;
 
     @JsonIgnore
     private CommonMetaData metadata;
 
     @JsonIgnore
-    private CommonSpec spec;
+    private IngressesSpec spec;
 
     @JsonIgnore
     private CommonStatus status;
@@ -66,4 +68,26 @@ public class Ingresses {
     public String getCreationTimestamp() {
         return creationTimestamp = metadata.getCreationTimestamp();
     }
+
+    public String getPath() {
+        return path = spec.getRules().get(0).getHttp().getPaths().get(0).getPath();
+    }
+
+    public String getPathType() {
+        return pathType = spec.getRules().get(0).getHttp().getPaths().get(0).getPathType();
+    }
+
+    public String getHost() {
+        return host = spec.getRules().get(0).getHost();
+    }
+
+    public int getPort() {
+        return port = spec.getRules().get(0).getHttp().getPaths().get(0).getBackend().getService().getPort().getNumber();
+    }
+
+    public String getTargetService() {
+        return targetService = spec.getRules().get(0).getHttp().getPaths().get(0).getBackend().getService().getName();
+    }
+
+
 }

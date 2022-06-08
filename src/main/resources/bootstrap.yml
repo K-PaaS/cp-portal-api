@@ -1,0 +1,15 @@
+spring:
+  cloud:
+    vault:
+      scheme: http
+      host: ${VAULT_IP}
+      port: ${VAULT_PORT}
+      authentication: APPROLE
+      kv:
+        enabled: true
+        backend: secret
+      app-role:
+        role-id: ${VAULT_ROLE_ID}
+        secret-id: ${VAULT_SECRET_ID}
+        role: webapp
+        app-role-path: approle

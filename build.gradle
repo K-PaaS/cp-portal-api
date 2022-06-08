@@ -45,6 +45,7 @@ ext {
 	swaggerVersion = '2.9.2'
 	jjwtVersion = '0.9.1'
 	jsonpathVersion = '2.4.0'
+	springCloudVersion = 'Hoxton.SR10'
 }
 
 jar {
@@ -82,6 +83,14 @@ dependencies {
 	implementation group: 'org.slf4j', name: 'jul-to-slf4j', version: '1.7.32'
 	implementation group: 'org.apache.logging.log4j', name: 'log4j-to-slf4j', version: '2.17.0'
 	implementation group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.17.0'
+
+	compile( "org.springframework.cloud:spring-cloud-starter-vault-config")
+}
+
+dependencyManagement {
+	imports {
+		mavenBom "org.springframework.cloud:spring-cloud-dependencies:${springCloudVersion}"
+	}
 }
 
 jacoco {

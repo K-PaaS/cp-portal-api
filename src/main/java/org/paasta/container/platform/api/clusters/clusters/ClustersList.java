@@ -14,7 +14,7 @@ import java.util.List;
  **/
 
 @Data
-public class ClustersLIst {
+public class ClustersList {
     private String resultCode;
     private String resultMessage;
     private Integer httpStatusCode;

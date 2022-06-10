@@ -63,7 +63,7 @@ public class ClustersService {
      *
      * @return the clusters list
      */
-    public ClustersLIst getClustersList() {
-        return restTemplateService.send(Constants.TARGET_COMMON_API, "/clusters" , HttpMethod.GET, null, ClustersLIst.class, new Params());
+    public ClustersList getClustersList() {
+        return restTemplateService.send(Constants.TARGET_COMMON_API, "/clusters" , HttpMethod.GET, null, ClustersList.class, new Params());
     }
 }

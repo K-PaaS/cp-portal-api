@@ -1,12 +1,10 @@
 package org.paasta.container.platform.api.common.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.AllArgsConstructor;
 import lombok.Data;
 import org.paasta.container.platform.api.common.Constants;
 
 @Data
-@AllArgsConstructor
 public class Params {
 
 
@@ -23,6 +21,7 @@ public class Params {
     public String selector;
     public String type;
     public String userId;
+    public String userAuthId;
     public String userType;
     public String isActive;
     public String nodeName;
@@ -38,10 +37,16 @@ public class Params {
     public String rs_rq;
     public String rs_lr;
 
+    // sign Up
+    public Boolean isSuperAdmin;
 
     public
     @JsonProperty("yaml")
     String yaml;
+
+
+    private String browser;
+    private String clientIp;
 
 
     public Params() {
@@ -59,7 +64,8 @@ public class Params {
         this.selector = Constants.EMPTY_STRING;
         this.type = Constants.EMPTY_STRING;
         this.userId = Constants.EMPTY_STRING;
-        this.userType = Constants.SELECTED_ADMINISTRATOR;
+        this.userAuthId = Constants.EMPTY_STRING;
+        this.userType = Constants.EMPTY_STRING;
         this.isActive = "true";
         this.nodeName = Constants.EMPTY_STRING;
         this.resourceUid = Constants.EMPTY_STRING;
@@ -69,7 +75,17 @@ public class Params {
         this.rs_role =Constants.EMPTY_STRING;
         this.rs_rq=Constants.EMPTY_STRING;
         this.rs_lr= Constants.EMPTY_STRING;
+        this.isSuperAdmin = false;
     }
 
 
+
+    // sa, rb 관련 생성자
+    public Params(String cluster, String namespace, String sa, String role) {
+        this.cluster = cluster;
+        this.namespace = namespace;
+        this.rs_sa = sa;
+        this.rs_role = role;
+
+    }
 }

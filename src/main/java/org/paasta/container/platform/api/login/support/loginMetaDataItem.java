@@ -15,6 +15,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Data
 public class loginMetaDataItem {
+    private String cluster;
     private String namespace;
     private String userType;
 }

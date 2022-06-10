@@ -1,27 +1,25 @@
 package org.paasta.container.platform.api.login;
 
-import org.paasta.container.platform.api.common.Constants;
-import org.paasta.container.platform.api.common.MessageConstant;
-import org.paasta.container.platform.api.common.PropertyService;
-import org.paasta.container.platform.api.common.RequestWrapper;
+import org.paasta.container.platform.api.common.*;
 import org.paasta.container.platform.api.common.model.CommonStatusCode;
-import org.paasta.container.platform.api.common.model.ResultStatus;
-import org.paasta.container.platform.api.login.support.loginMetaDataItem;
+import org.paasta.container.platform.api.common.model.Params;
 import org.paasta.container.platform.api.users.Users;
-import org.paasta.container.platform.api.users.UsersList;
+
 import org.paasta.container.platform.api.users.UsersService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpMethod;
+
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
-
 import javax.servlet.http.HttpServletRequest;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
+import static org.paasta.container.platform.api.common.Constants.TARGET_COMMON_API;
 
 /**
  * Custom User Details Service 클래스
@@ -37,6 +35,8 @@ public class CustomUserDetailsService implements UserDetailsService {
 
     private final UsersService usersService;
 
+    private final RestTemplateService restTemplateService;
+
     @Autowired
     private JwtUtil jwtUtil;
 
@@ -47,9 +47,10 @@ public class CustomUserDetailsService implements UserDetailsService {
      * @param usersService    the users service
      */
     @Autowired
-    public CustomUserDetailsService(PropertyService propertyService, UsersService usersService) {
+    public CustomUserDetailsService(PropertyService propertyService, UsersService usersService, RestTemplateService restTemplateService) {
         this.propertyService = propertyService;
         this.usersService = usersService;
+        this.restTemplateService = restTemplateService;
     }
 
     @Autowired
@@ -65,17 +66,8 @@ public class CustomUserDetailsService implements UserDetailsService {
      */
     @Override
     public UserDetails loadUserByUsername(String userId) throws UsernameNotFoundException {
-        RequestWrapper requestWrapper = new RequestWrapper(request);
-
         List<SimpleGrantedAuthority> roles = null;
-        String isAdmin = null;
-        isAdmin = requestWrapper.getParameter("isAdmin");
-
-        if (isAdmin == null) {
-            isAdmin = "false";
-        }
-
-        Users user = usersService.getUsersDetailsForLogin(userId, isAdmin);
+        Users user = getUsersDetailsForLogin(userId);
         if (user != null) {
             roles = Arrays.asList(new SimpleGrantedAuthority(user.getUserType()));
             return new User(user.getUserId(), user.getUserAuthId(), roles);
@@ -87,84 +79,30 @@ public class CustomUserDetailsService implements UserDetailsService {
     /**
      * 사용자 인증 후 리턴 객체 생성(Create authentication response)
      *
-     * @param authRequest the auth request
+     * @param params the params
      * @return the object
      */
-    public Object createAuthenticationResponse(AuthenticationRequest authRequest, String isAdmin) {
+    public Object createAuthenticationResponse(Params params) {
 
-        AuthenticationResponse authResponse = new AuthenticationResponse();
-
-        UserDetails userdetails = loadUserByUsername(authRequest.getUserId());
-
-        UsersList userListByUserId = usersService.getUsersDetails(authRequest.getUserId());
-        List<Users> userItem = userListByUserId.getItems();
-
+        UserDetails userdetails = loadUserByUsername(params.getUserId());
         //Generate token
-        String token = jwtUtil.generateToken(userdetails, authRequest, userListByUserId);
-
-        //user_auth get
-        String user_auth = userdetails.getAuthorities().toArray()[0].toString();
-
-
-        // CLUSTER_ADMIN
-        if (user_auth.equals(Constants.AUTH_CLUSTER_ADMIN)) {
-
-            if(isAdmin.toLowerCase().equals("true")) {
-                Users user = usersService.getUsersDetailsForLogin(userdetails.getUsername(), "true");
-
-                authResponse = new AuthenticationResponse(Constants.RESULT_STATUS_SUCCESS, MessageConstant.LOGIN_SUCCESS.getMsg(), CommonStatusCode.OK.getCode(),
-                        MessageConstant.LOGIN_SUCCESS.getMsg(), Constants.URI_INTRO_OVERVIEW, userdetails.getUsername(), token, null, user.getClusterName());
-
-            }
-
-            else {
-
-                Users user = usersService.getUsersDetailsForLogin(userdetails.getUsername(), "false");
-                token = jwtUtil.generateTokenForAdminToAccessUserPortal(userdetails, authRequest, userListByUserId);
-                //generate loginMetadata & filter default namespace
-                List<loginMetaDataItem> loginMetaData = defaultNamespaceFilter(userItem);
-
-                if (loginMetaData.size() == 0) {
-                    //in-active user
-                    return new ResultStatus(Constants.RESULT_STATUS_FAIL, MessageConstant.LOGIN_FAIL.getMsg(), CommonStatusCode.FORBIDDEN.getCode(), MessageConstant.INVALID_LOGIN_INFO.getMsg());
-                }
-
-                authResponse = new AuthenticationResponse(Constants.RESULT_STATUS_SUCCESS, MessageConstant.LOGIN_SUCCESS.getMsg(), CommonStatusCode.OK.getCode(),
-                        MessageConstant.LOGIN_SUCCESS.getMsg(), Constants.URI_INTRO_OVERVIEW, userdetails.getUsername(), token, loginMetaData, user.getClusterName());
-
-            }
-
-
-        }
-        // NAMESPACE_ADMIN, USER
-        else {
-
-            Users user = usersService.getUsersDetailsForLogin(userdetails.getUsername(), "false");
-
-            //generate loginMetadata & filter default namespace
-            List<loginMetaDataItem> loginMetaData = defaultNamespaceFilter(userItem);
-
-            if (loginMetaData.size() == 0) {
-                //in-active user
-                return new ResultStatus(Constants.RESULT_STATUS_FAIL, MessageConstant.LOGIN_INACTIVE_USER.getMsg(), CommonStatusCode.FORBIDDEN.getCode(), MessageConstant.INACTIVE_USER_ACCESS.getMsg());
-            }
-
-            authResponse = new AuthenticationResponse(Constants.RESULT_STATUS_SUCCESS, MessageConstant.LOGIN_SUCCESS.getMsg(), CommonStatusCode.OK.getCode(),
-                    MessageConstant.LOGIN_SUCCESS.getMsg(), Constants.URI_INTRO_OVERVIEW, userdetails.getUsername(), token, loginMetaData, user.getClusterName());
-
-        }
-
+        String token = jwtUtil.generateToken(userdetails, params);
+        AuthenticationResponse  authResponse = new AuthenticationResponse(Constants.RESULT_STATUS_SUCCESS, MessageConstant.LOGIN_SUCCESS.getMsg(), CommonStatusCode.OK.getCode(),
+                MessageConstant.LOGIN_SUCCESS.getMsg(), userdetails.getUsername(), token, "cp-cluster", params.getIsSuperAdmin());
 
         return authResponse;
     }
 
 
-    /**
-     * 기본 Namespace를 제외한 인증된 사용자가 속한 Namespace 목록 조회(Get List of Namespaces to which authenticated users belong, excluding default namespaces)
-     *
-     * @param userItem the users item
-     * @return the list
+    /*
      */
+/**
+ * 기본 Namespace를 제외한 인증된 사용자가 속한 Namespace 목록 조회(Get List of Namespaces to which authenticated users belong, excluding default namespaces)
+ *
+ * @param userItem the users item
+ * @return the list
+ *//*
+
     public List<loginMetaDataItem> defaultNamespaceFilter(List<Users> userItem) {
 
         List<loginMetaDataItem> loginMetaData = new ArrayList<>();
@@ -181,6 +119,19 @@ public class CustomUserDetailsService implements UserDetailsService {
         }
 
         return loginMetaData;
+    }
+*/
+
+
+    /**
+     * Users 로그인을 위한 상세 조회(Get Users for login)
+     *
+     * @param userId  the userId
+     * @return the users detail
+     */
+    public Users getUsersDetailsForLogin(String userId) {
+        return restTemplateService.send(TARGET_COMMON_API, Constants.URI_COMMON_API_USER_DETAIL_LOGIN.replace("{userId:.+}", userId)
+                , HttpMethod.GET, null, Users.class);
     }
 
 }

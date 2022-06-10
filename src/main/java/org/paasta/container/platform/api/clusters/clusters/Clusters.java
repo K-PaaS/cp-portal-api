@@ -5,9 +5,9 @@ import lombok.Data;
 /**
  * Clusters Model 클래스
  *
- * @author hrjin
+ * @author kjhoon
  * @version 1.0
- * @since 2020.11.04
+ * @since 2022.06.09
  **/
 @Data
 public class Clusters {
@@ -16,9 +16,11 @@ public class Clusters {
     private Integer httpStatusCode;
     private String detailMessage;
 
-    private long id;
-    private String clusterName;
+    private String clusterId;
     private String clusterApiUrl;
+    private String clusterName;
     private String clusterToken;
+    private String clusterType;
     private String created;
+    private String lastModified;
 }

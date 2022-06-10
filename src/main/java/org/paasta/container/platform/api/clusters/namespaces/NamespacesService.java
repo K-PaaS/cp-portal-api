@@ -10,7 +10,7 @@ import org.paasta.container.platform.api.common.*;
 import org.paasta.container.platform.api.common.model.CommonResourcesYaml;
 import org.paasta.container.platform.api.common.model.Params;
 import org.paasta.container.platform.api.common.model.ResultStatus;
-import org.paasta.container.platform.api.signUp.SignUpAdminService;
+import org.paasta.container.platform.api.signUp.SignUpService;
 import org.paasta.container.platform.api.users.Users;
 import org.paasta.container.platform.api.users.UsersService;
 import org.slf4j.Logger;
@@ -47,7 +47,6 @@ public class NamespacesService {
     private final AccessTokenService accessTokenService;
     private final ResourceQuotasService resourceQuotasService;
     private final LimitRangesService limitRangesService;
-    private final SignUpAdminService signUpAdminService;
     private final ResultStatusService resultStatusService;
 
     /**
@@ -65,7 +64,7 @@ public class NamespacesService {
     @Autowired
     public NamespacesService(RestTemplateService restTemplateService, CommonService commonService, PropertyService propertyService,
                              ResourceYamlService resourceYamlService, UsersService usersService, AccessTokenService accessTokenService,
-                             ResourceQuotasService resourceQuotasService, LimitRangesService limitRangesService, SignUpAdminService signUpAdminService, ResultStatusService resultStatusService) {
+                             ResourceQuotasService resourceQuotasService, LimitRangesService limitRangesService, ResultStatusService resultStatusService) {
         this.restTemplateService = restTemplateService;
         this.commonService = commonService;
         this.propertyService = propertyService;
@@ -74,7 +73,6 @@ public class NamespacesService {
         this.accessTokenService = accessTokenService;
         this.resourceQuotasService = resourceQuotasService;
         this.limitRangesService = limitRangesService;
-        this.signUpAdminService = signUpAdminService;
         this.resultStatusService = resultStatusService;
     }
 
@@ -324,7 +322,7 @@ public class NamespacesService {
 
             if (createRBresult.getResultCode().equalsIgnoreCase(RESULT_STATUS_FAIL)) {
                 LOGGER.info("ROLE BINDING EXECUTE IS FAILED. K8S SA AND RB WILL BE REMOVED...");
-                resourceYamlService.deleteServiceAccountAndRolebinding(namespace, updateNsAdminUserSA, propertyService.getAdminRole());
+                //   resourceYamlService.deleteServiceAccountAndRolebinding(namespace, updateNsAdminUserSA, propertyService.getAdminRole());
                 return createRBresult;
             }
 
@@ -342,8 +340,8 @@ public class NamespacesService {
         }
 
         // Modify ResourceQuotas , LimitRanges
-       // modifyResourceQuotas(namespace, initTemplate.getResourceQuotasList());
-       // modifyLimitRanges(namespace, initTemplate.getLimitRangesList());
+        // modifyResourceQuotas(namespace, initTemplate.getResourceQuotasList());
+        // modifyLimitRanges(namespace, initTemplate.getLimitRangesList());
 
 
         return (ResultStatus) commonService.setResultModelWithNextUrl(resultStatusService.SUCCESS_RESULT_STATUS(), Constants.RESULT_STATUS_SUCCESS, "YOUR_NAMESPACES_DETAIL_PAGE");
@@ -375,7 +373,7 @@ public class NamespacesService {
         }
         // add
         for (String rqName : toBeAdd) {
-           // resourceYamlService.createDefaultResourceQuota(namespace, rqName);
+            // resourceYamlService.createDefaultResourceQuota(namespace, rqName);
         }
     }
 
@@ -397,11 +395,11 @@ public class NamespacesService {
         ArrayList<String> toBeAdd = commonService.compareArrayList(requestUpdatedLrList, k8sLimitRangesList);
 
         for (String lrName : toBeAdd) {
-          //  resourceYamlService.createDefaultLimitRanges(namespace, lrName);
+            //  resourceYamlService.createDefaultLimitRanges(namespace, lrName);
         }
 
         for (String deleteLrName : toBeDelete) {
-          //  limitRangesService.deleteLimitRanges(namespace, deleteLrName);
+            //  limitRangesService.deleteLimitRanges(namespace, deleteLrName);
         }
     }
 

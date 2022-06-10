@@ -63,11 +63,7 @@ public class ResultStatusService {
                 CommonStatusCode.BAD_REQUEST.getCode(),MessageConstant.REQUEST_VALUE_IS_MISSING.getMsg(), null );
     }
 
-    // Sign Up
-    public ResultStatus CLUSTER_ADMINISTRATOR_IS_ALREADY_REGISTERED() {
-        return new ResultStatus(Constants.RESULT_STATUS_FAIL, MessageConstant.CLUSTER_ADMINISTRATOR_IS_ALREADY_REGISTERED_MESSAGE.getMsg(),
-                CommonStatusCode.CONFLICT.getCode(),MessageConstant.CLUSTER_ADMINISTRATOR_IS_ALREADY_REGISTERED_MESSAGE.getMsg(), null );
-    }
+
 
     public ResultStatus USER_ALREADY_REGISTERED() {
         return new ResultStatus(Constants.RESULT_STATUS_FAIL, MessageConstant.USER_ALREADY_REGISTERED_MESSAGE.getMsg(),
@@ -100,4 +96,11 @@ public class ResultStatusService {
                 CommonStatusCode.UNAUTHORIZED.getCode(),MessageConstant.INVALID_SERVICE_INSTANCE_ID.getMsg(), null );
     }
 
+
+
+/*    // Sign Up
+    public ResultStatus CLUSTER_ADMINISTRATOR_IS_ALREADY_REGISTERED() {
+        return new ResultStatus(Constants.RESULT_STATUS_FAIL, MessageConstant.CLUSTER_ADMINISTRATOR_IS_ALREADY_REGISTERED_MESSAGE.getMsg(),
+                CommonStatusCode.CONFLICT.getCode(),MessageConstant.CLUSTER_ADMINISTRATOR_IS_ALREADY_REGISTERED_MESSAGE.getMsg(), null );
+    }*/
 }

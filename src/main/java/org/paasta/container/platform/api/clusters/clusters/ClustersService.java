@@ -2,6 +2,7 @@ package org.paasta.container.platform.api.clusters.clusters;
 
 import org.paasta.container.platform.api.common.Constants;
 import org.paasta.container.platform.api.common.RestTemplateService;
+import org.paasta.container.platform.api.common.model.Params;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
@@ -49,10 +50,20 @@ public class ClustersService {
     /**
      * Clusters 정보 조회(Get Clusters Info)
      *
-     * @param clusterName the cluster name
+     * @param params the params
      * @return the clusters
      */
-    public Clusters getClusters(String clusterName) {
-        return restTemplateService.send(Constants.TARGET_COMMON_API, "/clusters/" + clusterName, HttpMethod.GET, null, Clusters.class);
+    public Clusters getClusters(Params params) {
+        return restTemplateService.send(Constants.TARGET_COMMON_API, "/clusters/" + params.getCluster(), HttpMethod.GET, null, Clusters.class, params);
+    }
+
+
+    /**
+     * Clusters 목록 조회(Get Clusters List)
+     *
+     * @return the clusters list
+     */
+    public ClustersLIst getClustersList() {
+        return restTemplateService.send(Constants.TARGET_COMMON_API, "/clusters" , HttpMethod.GET, null, ClustersLIst.class, new Params());
     }
 }

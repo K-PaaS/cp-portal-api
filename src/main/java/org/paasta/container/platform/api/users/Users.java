@@ -5,6 +5,7 @@ import java.util.List;
 
 import lombok.Data;
 
+import lombok.NoArgsConstructor;
 import org.springframework.util.StringUtils;
 
 import org.paasta.container.platform.api.common.CommonUtils;
@@ -19,6 +20,7 @@ import org.paasta.container.platform.api.common.Constants;
  **/
 
 @Data
+@NoArgsConstructor
 public class Users {
     public String resultCode;
     public String resultMessage;
@@ -26,6 +28,7 @@ public class Users {
     public String detailMessage;
 
     public long id;
+    public String clusterId;
     public String userId;
     public String userAuthId;
     public String password;
@@ -144,7 +147,7 @@ public class Users {
 
     public List<NamespaceRole> getSelectValues() {
         return (StringUtils.isEmpty(selectValues)) ? new ArrayList<NamespaceRole>() {{
-            add(new Users.NamespaceRole() {{
+            add(new NamespaceRole() {{
                 setNamespace(Constants.NULL_REPLACE_TEXT);
                 setRole(Constants.NULL_REPLACE_TEXT);
             }});
@@ -160,5 +163,18 @@ public class Users {
                 ", roleSetCode='" + roleSetCode + '\'' +
                 ", userType='" + userType + '\'' +
                 '}';
+    }
+
+    public Users(String cluterId, String namespace, String userId, String userAuthId, String userType, String roleSetCode, String serviceAccountName,  String saSecret,
+                 String saToken) {
+        this.clusterId = cluterId;
+        this.cpNamespace = namespace;
+        this.userId = userId;
+        this.userAuthId = userAuthId;
+        this.userType = userType;
+        this.roleSetCode = roleSetCode;
+        this.serviceAccountName = serviceAccountName;
+        this.saSecret = saSecret;
+        this.saToken = saToken;
     }
 }

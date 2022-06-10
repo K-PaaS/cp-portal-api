@@ -15,6 +15,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -57,7 +58,7 @@ public class ResourceYamlService {
         Map map = new HashMap();
         map.put("spaceName", params.getNamespace());
         params.setYaml(templateService.convert("create_namespace.ftl", map));
-        ResultStatus  resultStatus = restTemplateService.sendYaml(Constants.TARGET_CP_MASTER_API,
+        ResultStatus resultStatus = restTemplateService.sendYaml(Constants.TARGET_CP_MASTER_API,
                 propertyService.getCpMasterApiListNamespacesCreateUrl(), HttpMethod.POST, ResultStatus.class, params);
 
         return (ResultStatus) commonService.setResultModel(resultStatus, Constants.RESULT_STATUS_SUCCESS);
@@ -82,7 +83,6 @@ public class ResourceYamlService {
     }
 
 
-
     /**
      * ftl 파일로 Role Binding 생성(Create Role Binding)
      *
@@ -93,7 +93,7 @@ public class ResourceYamlService {
         Map map = new HashMap();
 
 
-        if(params.getRs_role().equalsIgnoreCase("")) {
+        if (params.getRs_role().equalsIgnoreCase("")) {
             map.put("userName", params.getRs_sa());
             map.put("spaceName", params.getNamespace());
             params.setYaml(templateService.convert("create_clusterRoleBinding.ftl", map));
@@ -123,7 +123,7 @@ public class ResourceYamlService {
         map.put("roleName", propertyService.getInitRole());
 
         params.setYaml(templateService.convert("create_init_role.ftl", map));
-        ResultStatus  resultStatus = restTemplateService.sendYaml(Constants.TARGET_CP_MASTER_API,
+        ResultStatus resultStatus = restTemplateService.sendYaml(Constants.TARGET_CP_MASTER_API,
                 propertyService.getCpMasterApiListRolesCreateUrl(), HttpMethod.POST, ResultStatus.class, params);
 
         return (ResultStatus) commonService.setResultModel(resultStatus, Constants.RESULT_STATUS_SUCCESS);
@@ -143,7 +143,7 @@ public class ResourceYamlService {
 
         params.setYaml(templateService.convert("create_admin_role.ftl", map));
 
-        ResultStatus  resultStatus = restTemplateService.sendYaml(Constants.TARGET_CP_MASTER_API,
+        ResultStatus resultStatus = restTemplateService.sendYaml(Constants.TARGET_CP_MASTER_API,
                 propertyService.getCpMasterApiListRolesCreateUrl(), HttpMethod.POST, ResultStatus.class, params);
 
         return (ResultStatus) commonService.setResultModel(resultStatus, Constants.RESULT_STATUS_SUCCESS);
@@ -162,7 +162,7 @@ public class ResourceYamlService {
 
         String rqName = params.getRs_rq();
 
-        for (ResourceQuotasDefault d:resourceQuotasDefaultList.getItems()) {
+        for (ResourceQuotasDefault d : resourceQuotasDefaultList.getItems()) {
             if (rqName.equals("")) {
                 rqName = propertyService.getLowResourceQuotas();
             }
@@ -182,7 +182,7 @@ public class ResourceYamlService {
 
         params.setYaml(templateService.convert("create_resource_quota.ftl", model));
 
-        ResultStatus  resultStatus = restTemplateService.sendYaml(Constants.TARGET_CP_MASTER_API,
+        ResultStatus resultStatus = restTemplateService.sendYaml(Constants.TARGET_CP_MASTER_API,
                 propertyService.getCpMasterApiListResourceQuotasCreateUrl(), HttpMethod.POST, ResultStatus.class, params);
 
         return (ResultStatus) commonService.setResultModel(resultStatus, Constants.RESULT_STATUS_SUCCESS);
@@ -202,13 +202,13 @@ public class ResourceYamlService {
 
         String lrName = params.getRs_lr();
 
-        for (LimitRangesDefault limitRanges:limitRangesDefaultList.getItems()) {
+        for (LimitRangesDefault limitRanges : limitRangesDefaultList.getItems()) {
             if (lrName.equals("")) {
                 lrName = propertyService.getLowLimitRanges();
             }
 
             if (propertyService.getLimitRangesList().contains(lrName) && limitRanges.getName().equals(lrName)) {
-                if(Constants.SUPPORTED_RESOURCE_CPU.equals(limitRanges.getResource())) {
+                if (Constants.SUPPORTED_RESOURCE_CPU.equals(limitRanges.getResource())) {
                     limitsCpu = limitRanges.getDefaultLimit();
                 } else {
                     limitsMemory = limitRanges.getDefaultLimit();
@@ -224,13 +224,11 @@ public class ResourceYamlService {
 
         params.setYaml(templateService.convert("create_limit_range.ftl", model));
 
-        ResultStatus  resultStatus = restTemplateService.sendYaml(Constants.TARGET_CP_MASTER_API,
+        ResultStatus resultStatus = restTemplateService.sendYaml(Constants.TARGET_CP_MASTER_API,
                 propertyService.getCpMasterApiListLimitRangesCreateUrl(), HttpMethod.POST, ResultStatus.class, params);
 
         return (ResultStatus) commonService.setResultModel(resultStatus, Constants.RESULT_STATUS_SUCCESS);
     }
-
-
 
 
     /**
@@ -258,19 +256,20 @@ public class ResourceYamlService {
     /**
      * ServiceAccount 와 RoleBinding 삭제 (Delete ServiceAccount and Role binding)
      *
-     * @param username
-     * @param namespace
+     * @param params the params
      * @return
      */
-    public void deleteServiceAccountAndRolebinding(String namespace, String username, String roleName) {
-        // 1. SA 삭제
-        restTemplateService.sendYaml(TARGET_CP_MASTER_API, propertyService.getCpMasterApiListUsersDeleteUrl()
-                .replace("{namespace}", namespace).replace("{name}", username), HttpMethod.DELETE, null, Object.class, true);
+    public void deleteSaAndRb(Params params) {
 
-        // 2. RB 삭제
-        restTemplateService.sendYaml(TARGET_CP_MASTER_API, propertyService.getCpMasterApiListRoleBindingsDeleteUrl()
-                .replace("{namespace}", namespace)
-                .replace("{name}", username + Constants.NULL_REPLACE_TEXT + roleName + "-binding"), HttpMethod.DELETE, null, Object.class, true);
+        restTemplateService.send(Constants.TARGET_CP_MASTER_API,
+                propertyService.getCpMasterApiListUsersDeleteUrl().replace("{namespace}", params.getNamespace()).replace("{name}", params.getRs_sa()),
+                HttpMethod.DELETE, null, ResultStatus.class, params);
+
+        restTemplateService.send(Constants.TARGET_CP_MASTER_API,
+                propertyService.getCpMasterApiListRoleBindingsDeleteUrl()
+                        .replace("{namespace}", params.getNamespace())
+                        .replace("{name}", params.getRs_sa() + Constants.NULL_REPLACE_TEXT + params.getRs_role() + "-binding"),
+                HttpMethod.DELETE, null, ResultStatus.class, params);
     }
 
 
@@ -285,7 +284,6 @@ public class ResourceYamlService {
                 propertyService.getCpMasterApiListNamespacesDeleteUrl().replace("{name}", params.getNamespace()), HttpMethod.DELETE, null, ResultStatus.class, params);
         return (ResultStatus) commonService.setResultModel(resultStatus, Constants.RESULT_STATUS_SUCCESS);
     }
-
 
 
     /**

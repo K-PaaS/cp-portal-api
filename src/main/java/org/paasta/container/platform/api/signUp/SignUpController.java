@@ -1,18 +1,22 @@
 package org.paasta.container.platform.api.signUp;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import org.paasta.container.platform.api.common.Constants;
+import org.paasta.container.platform.api.common.MessageConstant;
 import org.paasta.container.platform.api.common.PropertyService;
 import org.paasta.container.platform.api.common.ResultStatusService;
+import org.paasta.container.platform.api.common.model.Params;
 import org.paasta.container.platform.api.common.model.ResultStatus;
 import org.paasta.container.platform.api.config.NoAuth;
-import org.paasta.container.platform.api.users.Users;
+import org.paasta.container.platform.api.exception.ResultStatusException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 import java.util.Map;
@@ -20,16 +24,16 @@ import java.util.Map;
 /**
  * Sign Up Controller 클래스
  *
- * @author hrjin
+ * @author kjhoon
  * @version 1.0
- * @since 2020.09.22
+ * @since 2022.06.02
  **/
 @Api(value = "SignUpController v1")
 @RestController
 public class SignUpController {
 
     private final SignUpUserService signUpUserService;
-    private final SignUpAdminService signUpAdminService;
+    private final SignUpService signUpService;
     private final PropertyService propertyService;
     private final ResultStatusService resultStatusService;
 
@@ -37,12 +41,12 @@ public class SignUpController {
      * Instantiates a new SignUp controller
      *
      * @param signUpUserService the signUpUserService service
-     * @param signUpAdminService the signUpAdminService service
+     * @param signUpService     the signUpService
      */
     @Autowired
-    public SignUpController(SignUpUserService signUpUserService, SignUpAdminService signUpAdminService,PropertyService propertyService, ResultStatusService resultStatusService) {
+    public SignUpController(SignUpUserService signUpUserService, SignUpService signUpService, PropertyService propertyService, ResultStatusService resultStatusService) {
         this.signUpUserService = signUpUserService;
-        this.signUpAdminService = signUpAdminService;
+        this.signUpService = signUpService;
         this.propertyService = propertyService;
         this.resultStatusService = resultStatusService;
     }
@@ -51,45 +55,30 @@ public class SignUpController {
     /**
      * 회원가입(Sign Up)
      *
-     * @param requestUsers the requestUsers
-     * @param isAdmin the isAdmin
+     * @param params the params
      * @return the resultStatus
      */
     @ApiOperation(value = "회원가입(Sign Up)", nickname = "signUpUsers")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "requestUsers", value = "요청한 유저", required = true, dataType = "Object", paramType = "body"),
-            @ApiImplicitParam(name = "isAdmin", value = "관리자 여부 (true/false)", required = true, dataType = "string", paramType = "query")
+            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body")
     })
     @NoAuth
     @PostMapping(value = Constants.URI_SIGN_UP)
-    public ResultStatus signUpUsers(@RequestBody Object requestUsers,
-                                    @RequestParam(required = false, name = "isAdmin", defaultValue = "false") String isAdmin,
-                                    @RequestParam(required = false, name = "param", defaultValue = "") String param) {
+    public ResultStatus signUpUsers(@RequestBody Params params) {
+        if (params.getUserId().equalsIgnoreCase(Constants.EMPTY_STRING) || params.getUserAuthId().equalsIgnoreCase(Constants.EMPTY_STRING)) {
+            throw new ResultStatusException(MessageConstant.USER_SIGN_UP_INFO_REQUIRED.getMsg());
+        }
 
-        ObjectMapper objectMapper = new ObjectMapper();
-        Map<String, String> map = objectMapper.convertValue(requestUsers, Map.class);
-
-        Users users = objectMapper.convertValue(map, Users.class);
-
-        if(users.getUserId().equalsIgnoreCase(Constants.NULL_REPLACE_TEXT) || users.getUserAuthId().equalsIgnoreCase(Constants.NULL_REPLACE_TEXT)) {
-            return resultStatusService.INVALID_USER_SIGN_UP();
+        if (params.getIsSuperAdmin()) {
+            params.setUserType(Constants.AUTH_SUPER_ADMIN);
+        } else {
+            params.setUserType(Constants.AUTH_USER);
         }
 
         // Converts a userId to lowercase letters
-        users.setUserId(users.getUserId().toLowerCase());
+        params.setUserId(params.getUserId().toLowerCase());
+        return signUpService.signUpUsers(params);
 
-        // For Cluster Admin
-        if(isAdmin.toLowerCase().equals(Constants.CHECK_TRUE)) {
-            return signUpAdminService.signUpAdminUsers(users, param);
-        }
-
-        // For User As Service Type
-        if(users.getCpProviderType().equalsIgnoreCase(propertyService.getCpProviderAsService())) {
-           return  signUpUserService.signUpUsersByProviderAsService(users);
-        }
-
-        // For User As StandAlone Type
-          return signUpUserService.signUpUsersByProviderAsStandAlone(users);
     }
 
 
@@ -103,7 +92,6 @@ public class SignUpController {
     public Map<String, List<String>> getUsersNameList() {
         return signUpUserService.getUsersNameList();
     }
-
 
 
 }

@@ -38,10 +38,10 @@ public class Constants {
     public static final String SELECTED_ADMINISTRATOR = "administrator";
     public static final String SELECTED_USER = "user";
 
+    public static final String AUTH_SUPER_ADMIN = "SUPER_ADMIN";
     public static final String AUTH_CLUSTER_ADMIN = "CLUSTER_ADMIN";
     public static final String AUTH_NAMESPACE_ADMIN = "NAMESPACE_ADMIN";
     public static final String AUTH_USER = "USER";
-
 
     public static final String AUTH_CLUSTER_ADMIN_CG = "Cluster Admin";
     public static final String AUTH_NAMESPACE_ADMIN_CG = "Namespace Admin";
@@ -53,6 +53,7 @@ public class Constants {
     public static final String DEFAULT_SERVICE_ACCOUNT = "default";
 
     public static final String NOT_ASSIGNED_ROLE = "NOT_ASSIGNED_ROLE";
+    public static final String DEFAULT_SUPER_ADMIN_ROLE = "cluster-admin"; // k8s default cluster role's name
     public static final String DEFAULT_CLUSTER_ADMIN_ROLE = "cluster-admin"; // k8s default cluster role's name
     public static final String DEFAULT_CONFIGMAPS = "kube-root-ca.crt"; // k8s default configMaps name
 
@@ -89,6 +90,15 @@ public class Constants {
         }
     });
 
+
+    public static final List<String> USER_AUTH_LIST = Collections.unmodifiableList(new ArrayList<String>(){
+        {
+            add(AUTH_SUPER_ADMIN);
+            add(AUTH_CLUSTER_ADMIN);
+            add(AUTH_USER);
+        }
+    });
+
     static final String STRING_DATE_TYPE = "yyyy-MM-dd HH:mm:ss";
     static final String STRING_ORIGINAL_DATE_TYPE = "yyyy-MM-dd'T'HH:mm:ss'Z'";
     static final String STRING_TIME_ZONE_ID = "Asia/Seoul";
@@ -113,7 +123,7 @@ public class Constants {
     // COMMON API CALL URI
     public static final String URI_COMMON_API_ADMIN_TOKEN_DETAIL = "/adminToken/{tokenName:.+}";
     public static final String URI_COMMON_API_USERS = "/clusters/{cluster:.+}/namespaces/{namespace:.+}/users/{userId:.+}";
-    public static final String URI_COMMON_API_USERS_DETAIL =  "/users/{userId:.+}";
+    public static final String URI_COMMON_API_USERS_DETAIL =  "/users/{userId:.+}/{userAuthId:.+}";
     public static final String URI_COMMON_API_USERS_LIST =  "/users";
     public static final String URI_COMMON_API_USERS_NAMES =  "/users/names";
     public static final String URI_COMMON_API_USERS_LIST_BY_CLUSTER = "/clusters/{cluster:.+}/users";
@@ -121,7 +131,7 @@ public class Constants {
 
 
 
-    public static final String URI_COMMON_API_USER_DETAIL_LOGIN =  "/users/login/{userId:.+}";
+    public static final String URI_COMMON_API_USER_DETAIL_LOGIN =  "/login/users/{userId:.+}";
     public static final String URI_COMMON_API_USERS_LIST_BY_NAMESPACE = "/clusters/{cluster:.+}/namespaces/{namespace:.+}/users";
     public static final String URI_COMMON_API_USERS_NAMES_LIST = "/clusters/{cluster:.+}/namespaces/{namespace:.+}/users/names";
     public static final String URI_COMMON_API_USER_DELETE = "/users/";
@@ -130,11 +140,9 @@ public class Constants {
     public static final String URI_COMMON_API_PRIVATE_REGISTRY = "/privateRegistry/{imageName:.+}";
     public static final String URI_COMMON_API_CLUSTER_ADMIN_ROLE_BY_CLUSTER_NAME_USER_ID = "/clusters/{cluster:.+}/users/{userId:.+}/userType";
 
-    public static final String URI_COMMON_API_CLUSTER_ADMIN_SIGNUP = "/cluster/all/admin/signUp";
-    public static final String URI_COMMON_API_USER_SIGNUP = "/cluster/all/user/signUp";
 
-    public static final String URI_COMMON_API_CHECK_CLUSTER_ADMIN_REGISTER = "/clusterAdminRegisterCheck?userId={userId:.+}&userAuthId={userAuthId:.+}";
-    public static final String URI_COMMON_API_CHECK_USER_REGISTER =  "/userRegisterCheck?userId={userId:.+}&userAuthId={userAuthId:.+}";
+    public static final String URI_COMMON_API_USER_SIGNUP = "/user/signUp";
+    public static final String URI_COMMON_API_CHECK_USER_REGISTER =  "/userRegisterCheck?userId={userId:.+}&userAuthId={userAuthId:.+}&userType={userType:.+}";
 
     public static final String URI_COMMON_API_CLUSTER_ADMIN_INFO = "/cluster/all/admin/info?searchName={searchName:.+}";
     public static final String URI_COMMON_API_CLUSTER_USER_DETAILS = "/cluster/all/user/details?userId={userId:.+}&userType={userType:.+}";
@@ -233,6 +241,8 @@ public class Constants {
     public static final String REPLICASETS_FOR_SELECTOR = "replicaSets";
     public static final String DEPLOYMENTS_FOR_SELECTOR = "deployments";
     public static final String NULL_REPLACE_TEXT = "-";
+
+
 
     public static final String PARAM_QUERY_FIRST ="?" ;
     public static final String PARAM_QUERY_AND = "&";

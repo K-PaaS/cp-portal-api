@@ -4,7 +4,6 @@ import org.paasta.container.platform.api.common.*;
 import org.paasta.container.platform.api.common.model.CommonResourcesYaml;
 import org.paasta.container.platform.api.common.model.Params;
 import org.paasta.container.platform.api.common.model.ResultStatus;
-import org.paasta.container.platform.api.signUp.SignUpAdminService;
 import org.paasta.container.platform.api.users.Users;
 import org.paasta.container.platform.api.users.UsersList;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,7 +30,6 @@ public class RolesService {
     private final RestTemplateService restTemplateService;
     private final CommonService commonService;
     private final PropertyService propertyService;
-    private final SignUpAdminService signUpAdminService;
     private final ResultStatusService resultStatusService;
 
 
@@ -43,11 +41,10 @@ public class RolesService {
      * @param propertyService     the property service
      */
     @Autowired
-    public RolesService(RestTemplateService restTemplateService, CommonService commonService, PropertyService propertyService, SignUpAdminService signUpAdminService, ResultStatusService resultStatusService) {
+    public RolesService(RestTemplateService restTemplateService, CommonService commonService, PropertyService propertyService, ResultStatusService resultStatusService) {
         this.restTemplateService = restTemplateService;
         this.commonService = commonService;
         this.propertyService = propertyService;
-        this.signUpAdminService = signUpAdminService;
         this.resultStatusService = resultStatusService;
     }
 

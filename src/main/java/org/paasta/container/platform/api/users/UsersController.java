@@ -140,8 +140,6 @@ public class UsersController {
     }
 
 
-
-
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //사용자 포탈 기능, 운영자 포탈에 적용될 수 있으므로 보류
 
@@ -291,25 +289,5 @@ public class UsersController {
     }
 
 */
-
-    /**
-     * Users 삭제(Delete Users)
-     * (All Namespaces)
-     *
-     * @param cluster the cluster
-     * @param userId  the user id
-     * @return return is succeeded
-     */
-    @ApiOperation(value = "Users 삭제(Delete Users)", nickname = "deleteUsers")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "cluster", value = "클러스터 명", required = true, dataType = "string", paramType = "path"),
-            @ApiImplicitParam(name = "userId", value = "유저 Id", required = true, dataType = "string", paramType = "path")
-    })
-    @DeleteMapping(value = "/clusters/{cluster:.+}/users/{userId:.+}")
-    public ResultStatus deleteUsers(@PathVariable(value = "cluster") String cluster,
-                                    @PathVariable(value = "userId") String userId) {
-        return usersService.deleteUsersByAllNamespaces(userId);
-    }
-
 
 }

@@ -139,4 +139,11 @@ public class GlobalExceptionHandler extends RuntimeException {
                 CommonStatusCode.INTERNAL_SERVER_ERROR.getCode(), CommonStatusCode.INTERNAL_SERVER_ERROR.getMsg());
     }
 
+
+    @ExceptionHandler({ResultStatusException.class})
+    @ResponseBody
+    public ResultStatus resultStatusException(ResultStatusException ex) {
+        return new ResultStatus(Constants.RESULT_STATUS_FAIL, ex.getMessage(), CommonStatusCode.OK.getCode(), ex.getMessage());
+    }
+
 }

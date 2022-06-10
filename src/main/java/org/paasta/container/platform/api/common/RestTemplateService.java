@@ -5,6 +5,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import org.paasta.container.platform.api.adminToken.AdminToken;
+import org.paasta.container.platform.api.clusters.clusters.Clusters;
 import org.paasta.container.platform.api.common.model.CommonStatusCode;
 import org.paasta.container.platform.api.common.model.Params;
 import org.paasta.container.platform.api.common.model.ResultStatus;
@@ -160,7 +161,8 @@ public class RestTemplateService {
     public <T> T sendAdmin(String reqApi, String reqUrl, HttpMethod httpMethod, Object bodyObject, Class<T> responseType, String acceptType, String contentType, Params params) {
 
         reqUrl = setRequestParameter(reqApi, reqUrl, httpMethod, params);
-        setApiUrlAuthorizationAdmin(reqApi);
+        //이름 바꿔야함
+        setApiUrlAuthorizationClusterAdmin(reqApi, params);
 
         HttpHeaders reqHeaders = new HttpHeaders();
         reqHeaders.add(AUTHORIZATION_HEADER_KEY, base64Authorization);
@@ -476,6 +478,45 @@ public class RestTemplateService {
     }
 
 
+
+    /**수정 필요
+     * Authorization 값을 입력(Set the authorization value)
+     *
+     * @param reqApi the reqApi
+     */
+    private void setApiUrlAuthorizationClusterAdmin(String reqApi, Params params) {
+
+        String apiUrl = "";
+        String authorization = "";
+
+        // CONTAINER PLATFORM MASTER API
+        if (Constants.TARGET_CP_MASTER_API.equals(reqApi)) {
+            Clusters clusters = getClusters("cp-cluster");
+            apiUrl = clusters.getClusterApiUrl();
+            authorization = "Bearer " + clusters.getClusterToken();
+        }
+
+        // COMMON API
+        if (TARGET_COMMON_API.equals(reqApi)) {
+            apiUrl = propertyService.getCommonApiUrl();
+            authorization = commonApiBase64Authorization;
+        }
+
+        this.base64Authorization = authorization;
+        this.baseUrl = apiUrl;
+    }
+
+
+    /**
+     * Clusters 정보 조회(Get Clusters Info)
+     *
+     * @param clusterId the cluster name
+     * @return the clusters
+     */
+    public Clusters getClusters(String clusterId) {
+        return send(Constants.TARGET_COMMON_API, "/clusters/" + clusterId, HttpMethod.GET, null, Clusters.class, new Params());
+    }
+
     ///지울것
     ///////////////////////////////////////////////////////////////////////////
 
@@ -573,8 +614,5 @@ public class RestTemplateService {
         return sendAdmin(reqApi, reqUrl, httpMethod, bodyObject, responseType, Constants.ACCEPT_TYPE_JSON, "application/yaml");
 
     }
-
-
-
 
 }

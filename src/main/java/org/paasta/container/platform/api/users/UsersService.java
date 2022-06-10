@@ -322,6 +322,20 @@ public class UsersService {
     }
 
 
+    /**
+     * userId로 사용자 단건 상세 조회(Get Users By User Id)
+     *
+     * @param params the params
+     * @return the users detail
+     */
+    public UsersList getUsersDetails(Params params) {
+        return restTemplateService.send(TARGET_COMMON_API, Constants.URI_COMMON_API_USERS_DETAIL
+                        .replace("{userId:.+}", params.getUserId()).replace("{userAuthId:.+}", params.getUserAuthId())
+                , HttpMethod.GET, null, UsersList.class);
+    }
+
+
+
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //사용자 포탈 기능, 운영자 포탈에 적용될 수 있으므로 보류
 
@@ -413,20 +427,6 @@ public class UsersService {
 
 
     /**
-     * Users 로그인을 위한 상세 조회(Get Users for login)
-     *
-     * @param userId  the userId
-     * @param isAdmin the isAdmin
-     * @return the users detail
-     */
-    public Users getUsersDetailsForLogin(String userId, String isAdmin) {
-        return restTemplateService.send(TARGET_COMMON_API, Constants.URI_COMMON_API_USER_DETAIL_LOGIN.replace("{userId:.+}", userId)
-                        + "?isAdmin=" + isAdmin
-                , HttpMethod.GET, null, Users.class);
-    }
-
-
-    /**
      * Namespace 관리자 상세 조회(Get Namespace Admin Users detail)
      *
      * @param cluster   the cluster
@@ -439,15 +439,6 @@ public class UsersService {
     }
 
 
-    /**
-     * Users 상세 조회(Get Users detail)
-     *
-     * @param userId the userId
-     * @return the users detail
-     */
-    public UsersList getUsersDetails(String userId) {
-        return restTemplateService.send(TARGET_COMMON_API, Constants.URI_COMMON_API_USERS_DETAIL.replace("{userId:.+}", userId), HttpMethod.GET, null, UsersList.class);
-    }
 
 
     /**
@@ -526,30 +517,6 @@ public class UsersService {
         return restTemplateService.sendAdmin(TARGET_COMMON_API, Constants.URI_COMMON_API_USERS_DETAIL.replace("{userId:.+}", userId), HttpMethod.PUT, user, ResultStatus.class);
     }
 
-
-    /**
-     * Users 삭제(Delete Users)
-     * (All Namespaces)
-     *
-     * @param userId the user id
-     * @return return is succeeded
-     */
-    public ResultStatus deleteUsersByAllNamespaces(String userId) {
-        UsersList users = getUsersDetails(userId);
-
-        for(Users user : users.getItems()) {
-            if (user.getUserType().equals(AUTH_CLUSTER_ADMIN)) {
-                return resultStatusService.DO_NOT_DELETE_DEFAULT_RESOURCES();
-            }
-        }
-
-        ResultStatus rs = new ResultStatus();
-        for (Users user : users.getItems()) {
-            rs = deleteUsers(user);
-        }
-        return (ResultStatus) commonService.setResultModelWithNextUrl(commonService.setResultObject(rs, ResultStatus.class),
-                Constants.RESULT_STATUS_SUCCESS, Constants.URI_USERS);
-    }
 
 
 //    /**
@@ -664,26 +631,6 @@ public class UsersService {
 
 
 
-
-    /**
-     * 해당 클러스터 정보의 값을 사용자에 저장
-     *
-     * @param clusterName the cluster name
-     * @param users       the users
-     * @return the users
-     */
-    public Users commonSaveClusterInfo(String clusterName, Users users) {
-        Clusters clusters = clustersService.getClusters(clusterName);
-
-        users.setClusterApiUrl(clusters.getClusterApiUrl());
-        users.setClusterName(clusters.getClusterName());
-        users.setClusterToken(clusters.getClusterToken());
-
-        return users;
-    }
-
-
-
     /**
      * CLUSTER_ADMIN 권한을 가진 운영자 상세 조회(Get Cluster Admin's info)
      *
@@ -745,9 +692,6 @@ public class UsersService {
 
 
 
-
-
-
     /**
      * 사용자 아이디, 사용자 인증 아이디, 네임스페이스를 통한 Users 삭제 (Delete Users by userId, userAuthId and namespace)
      *
@@ -764,6 +708,7 @@ public class UsersService {
 
         return rsDb;
     }
+
 
 
 }

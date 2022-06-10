@@ -2,10 +2,10 @@ package org.paasta.container.platform.api.signUp;
 
 import org.paasta.container.platform.api.accessInfo.AccessTokenService;
 import org.paasta.container.platform.api.common.*;
-
 import org.paasta.container.platform.api.common.model.ResultStatus;
-import org.paasta.container.platform.api.users.*;
-
+import org.paasta.container.platform.api.users.Users;
+import org.paasta.container.platform.api.users.UsersList;
+import org.paasta.container.platform.api.users.UsersService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

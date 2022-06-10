@@ -5,6 +5,7 @@ import io.jsonwebtoken.impl.DefaultClaims;
 import org.paasta.container.platform.api.common.Constants;
 import org.paasta.container.platform.api.common.MessageConstant;
 import org.paasta.container.platform.api.common.RequestWrapper;
+import org.paasta.container.platform.api.common.model.Params;
 import org.paasta.container.platform.api.users.Users;
 import org.paasta.container.platform.api.users.UsersList;
 import org.springframework.beans.factory.annotation.Value;
@@ -45,35 +46,31 @@ public class JwtUtil {
     }
 
     @Value("${jwt.refreshExpirationDateInMs}")
-    public void setRefreshExpirationDateInMs(int refreshExpirationDateInMs) { this.refreshExpirationDateInMs = refreshExpirationDateInMs; }
+    public void setRefreshExpirationDateInMs(int refreshExpirationDateInMs) {
+        this.refreshExpirationDateInMs = refreshExpirationDateInMs;
+    }
 
     /**
      * JWT 토큰 생성을 위한 권한 및 브라우저 정보 조회(Get authority and browser info for generate JWT token)
      *
-     * @param userDetails      the user details
-     * @param authRequest      the auth request
-     * @param userListByUserId the users list
+     * @param userDetails the user details
+     * @param params      the params
      * @return the string
      */
-    public String generateToken(UserDetails userDetails, AuthenticationRequest authRequest, UsersList userListByUserId) {
+    public String generateToken(UserDetails userDetails, Params params) {
         Map<String, Object> claims = new HashMap<>();
-        String url = null;
         Collection<? extends GrantedAuthority> roles = userDetails.getAuthorities();
 
-        if (roles.contains(new SimpleGrantedAuthority(Constants.AUTH_CLUSTER_ADMIN))) {
-            claims.put("isClusterAdmin", true);
-        }
-        if (roles.contains(new SimpleGrantedAuthority(Constants.AUTH_NAMESPACE_ADMIN))) {
-            claims.put("isNamespaceAdmin", true);
-        }
-        if (roles.contains(new SimpleGrantedAuthority(Constants.AUTH_USER))) {
-            claims.put("isUser", true);
+        if (roles.contains(new SimpleGrantedAuthority(Constants.AUTH_SUPER_ADMIN))) {
+            claims.put("userType", Constants.AUTH_SUPER_ADMIN);
+            params.setIsSuperAdmin(true);
+        } else {
+            claims.put("userType", Constants.AUTH_USER);
+            params.setIsSuperAdmin(false);
         }
 
-        claims.put("IP", authRequest.getClientIp());
-        claims.put("Browser", authRequest.getBrowser());
-        for (Users users : userListByUserId.getItems())
-            claims.put("url", users.getClusterApiUrl());
+        claims.put("IP", params.getClientIp());
+        claims.put("Browser", params.getBrowser());
 
         return doGenerateToken(claims, userDetails.getUsername());
     }
@@ -134,21 +131,9 @@ public class JwtUtil {
     public List<SimpleGrantedAuthority> getRolesFromToken(String authToken) {
         List<SimpleGrantedAuthority> roles = null;
         Claims claims = Jwts.parser().setSigningKey(secret).parseClaimsJws(authToken).getBody();
-        Boolean isClusterAdmin = claims.get("isClusterAdmin", Boolean.class);
-        Boolean isNamespaceAdmin = claims.get("isNamespaceAdmin", Boolean.class);
-        Boolean isUser = claims.get("isUser", Boolean.class);
 
-        if (isClusterAdmin != null && isClusterAdmin == true) {
-            roles = Arrays.asList(new SimpleGrantedAuthority(Constants.AUTH_CLUSTER_ADMIN));
-        }
-
-        if (isNamespaceAdmin != null && isNamespaceAdmin == true) {
-            roles = Arrays.asList(new SimpleGrantedAuthority(Constants.AUTH_NAMESPACE_ADMIN));
-        }
-
-        if (isUser != null && isUser == true) {
-            roles = Arrays.asList(new SimpleGrantedAuthority(Constants.AUTH_USER));
-        }
+        String userType = claims.get("userType", String.class);
+        roles = Arrays.asList(new SimpleGrantedAuthority(userType));
         return roles;
     }
 
@@ -184,7 +169,6 @@ public class JwtUtil {
     }
 
 
-
     /**
      * 관리자 사용자 포탈 접속 용
      * JWT 토큰 생성을 위한 권한 및 브라우저 정보 조회 (Get authority and browser info for generate JWT token for admin access user portal)
@@ -210,7 +194,6 @@ public class JwtUtil {
     }
 
 
-
     /**
      * Refresh JWT 토큰 생성(Generate Refresh JWT token)
      *
@@ -229,7 +212,7 @@ public class JwtUtil {
     /**
      * Refresh JWT 허가(Allow Refresh JWT token)
      *
-     * @param ex  the ExpiredJwtException
+     * @param ex      the ExpiredJwtException
      * @param request the HttpServletRequest
      * @return the string
      */
@@ -250,7 +233,7 @@ public class JwtUtil {
     /**
      * JWT Claims Map 조회 (Get map from JWT token claims)
      *
-     * @param claims  the DefaultClaims
+     * @param claims the DefaultClaims
      * @return the Map
      */
     public Map<String, Object> getMapFromIoJsonwebtokenClaims(DefaultClaims claims) {

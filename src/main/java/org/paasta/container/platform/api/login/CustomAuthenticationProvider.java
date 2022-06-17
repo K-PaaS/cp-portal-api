@@ -5,9 +5,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.*;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
+
+import java.util.Collection;
+import java.util.List;
 
 /**
  * Custom Authentication Provider 클래스
@@ -20,8 +24,6 @@ import org.springframework.stereotype.Component;
 public class CustomAuthenticationProvider implements AuthenticationProvider {
 
     @Autowired
-    private PasswordEncoder passwordEncoder;
-    @Autowired
     private CustomUserDetailsService customUserDetailsService;
 
     @Override
@@ -32,7 +34,8 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
 
         String userId = authentication.getPrincipal().toString(); //USER ID
         String userAuthId = authentication.getCredentials().toString(); //USER AUTH ID
-
+        List<GrantedAuthority> list = (List<GrantedAuthority>) authentication.getAuthorities();
+        String userType = list.get(0).getAuthority(); // USER TYPE
 
         if( userId == null || userId.length() < 1) {
             throw new AuthenticationCredentialsNotFoundException(MessageConstant.ID_REQUIRED.getMsg());
@@ -43,10 +46,16 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
         }
 
         UserDetails loadedUser = customUserDetailsService.loadUserByUsername(userId);
+        Collection<? extends GrantedAuthority> authorities = loadedUser.getAuthorities();
 
         if (loadedUser == null) {
             throw new InternalAuthenticationServiceException(MessageConstant.INVALID_LOGIN_INFO.getMsg());
         }
+
+        if(!authorities.contains(new SimpleGrantedAuthority(userType))) {
+            throw new InternalAuthenticationServiceException(MessageConstant.INVALID_AUTHORITY.getMsg());
+        }
+
         if (!loadedUser.isAccountNonLocked()) {
             throw new LockedException(MessageConstant.UNAVAILABLE_ID.getMsg());
         }

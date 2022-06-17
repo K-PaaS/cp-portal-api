@@ -4,19 +4,13 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
-import org.paasta.container.platform.api.common.Constants;
-import org.paasta.container.platform.api.common.MessageConstant;
-import org.paasta.container.platform.api.common.PropertyService;
-import org.paasta.container.platform.api.common.ResultStatusService;
+import org.paasta.container.platform.api.common.*;
 import org.paasta.container.platform.api.common.model.Params;
 import org.paasta.container.platform.api.common.model.ResultStatus;
 import org.paasta.container.platform.api.config.NoAuth;
 import org.paasta.container.platform.api.exception.ResultStatusException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
@@ -34,8 +28,7 @@ public class SignUpController {
 
     private final SignUpUserService signUpUserService;
     private final SignUpService signUpService;
-    private final PropertyService propertyService;
-    private final ResultStatusService resultStatusService;
+
 
     /**
      * Instantiates a new SignUp controller
@@ -44,11 +37,9 @@ public class SignUpController {
      * @param signUpService     the signUpService
      */
     @Autowired
-    public SignUpController(SignUpUserService signUpUserService, SignUpService signUpService, PropertyService propertyService, ResultStatusService resultStatusService) {
+    public SignUpController(SignUpUserService signUpUserService, SignUpService signUpService) {
         this.signUpUserService = signUpUserService;
         this.signUpService = signUpService;
-        this.propertyService = propertyService;
-        this.resultStatusService = resultStatusService;
     }
 
 
@@ -92,6 +83,7 @@ public class SignUpController {
     public Map<String, List<String>> getUsersNameList() {
         return signUpUserService.getUsersNameList();
     }
+
 
 
 }

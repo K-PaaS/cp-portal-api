@@ -39,6 +39,7 @@ public enum MessageConstant {
     ID_PASSWORD_REQUIRED("사용자 아이디와 비밀번호를 입력해주세요.","Please enter your username and password."),
     INACTIVE_USER_ACCESS("승인되지 않은 사용자입니다. 관리자에게 문의하시기 바랍니다.","Unauthorized user. Please contact your administrator."),
     INVALID_LOGIN_INFO("로그인 정보가 올바르지 않습니다.","The login information is incorrect."),
+    INVALID_AUTHORITY("사용자 권한이 올바르지 않습니다.","Authority is not valid."),
     USER_SIGN_UP_INFO_REQUIRED("사용자의 아이디 또는 인증 아이디가 올바르지 않습니다.","The user's ID or verification ID is incorrect."),
     LIMIT_ILLEGALARGUMENT("limit(한 페이지에 가져올 리소스 최대 수) 는 반드시 0 이상이여아 합니다. limit >=0","Limit (maximum number of resources to import on a page) must be at least zero. limit >=0"),
     OFFSET_ILLEGALARGUMENT("offset(목록 시작지점) 은 반드시 0 이상이여아 합니다. offset >=0","Offset must be at least zero. offset >=0"),

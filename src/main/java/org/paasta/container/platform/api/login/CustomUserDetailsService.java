@@ -4,20 +4,25 @@ import org.paasta.container.platform.api.common.*;
 import org.paasta.container.platform.api.common.model.CommonStatusCode;
 import org.paasta.container.platform.api.common.model.Params;
 import org.paasta.container.platform.api.users.Users;
-
+import org.paasta.container.platform.api.users.UsersList;
 import org.paasta.container.platform.api.users.UsersService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpMethod;
 
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
+
 import javax.servlet.http.HttpServletRequest;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static org.paasta.container.platform.api.common.Constants.TARGET_COMMON_API;
 
@@ -82,15 +87,29 @@ public class CustomUserDetailsService implements UserDetailsService {
      * @param params the params
      * @return the object
      */
-    public Object createAuthenticationResponse(Params params) {
+    public Object createAuthenticationResponse(Authentication authentication, Params params) {
+        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+        Collection<? extends GrantedAuthority> roles = userDetails.getAuthorities();
 
-        UserDetails userdetails = loadUserByUsername(params.getUserId());
-        //Generate token
-        String token = jwtUtil.generateToken(userdetails, params);
-        AuthenticationResponse  authResponse = new AuthenticationResponse(Constants.RESULT_STATUS_SUCCESS, MessageConstant.LOGIN_SUCCESS.getMsg(), CommonStatusCode.OK.getCode(),
-                MessageConstant.LOGIN_SUCCESS.getMsg(), userdetails.getUsername(), token, "cp-cluster", params.getIsSuperAdmin());
+        if (!roles.contains(new SimpleGrantedAuthority(Constants.AUTH_SUPER_ADMIN))) {
+            params.setUserType(Constants.AUTH_USER);
+            UsersList usersList = usersService.getMappingClustersListByUser(params);
+            if (usersList.getItems().size() < 1) {
+                //inactive user
+                return new AuthenticationResponse(Constants.RESULT_STATUS_FAIL, MessageConstant.LOGIN_INACTIVE_USER.getMsg(), CommonStatusCode.FORBIDDEN.getCode(),
+                        MessageConstant.INACTIVE_USER_ACCESS.getMsg(), Constants.NULL_REPLACE_TEXT,  Constants.NULL_REPLACE_TEXT,Constants.NULL_REPLACE_TEXT,
+                        Constants.NULL_REPLACE_TEXT, Constants.NULL_REPLACE_TEXT, false);
+            }
+            // cluster-admin 권한 포함되었는지 확인
+            List<Users> clusterAdminCheck = usersList.getItems().stream().filter(x -> x.getUserType().matches(Constants.AUTH_CLUSTER_ADMIN)).collect(Collectors.toList());
+            if (clusterAdminCheck.size() > 0) {
+                params.setUserType(Constants.AUTH_CLUSTER_ADMIN);
+            }
+        }
 
-        return authResponse;
+        String token = jwtUtil.generateToken(userDetails, params);
+        return new AuthenticationResponse(Constants.RESULT_STATUS_SUCCESS, MessageConstant.LOGIN_SUCCESS.getMsg(), CommonStatusCode.OK.getCode(),
+                MessageConstant.LOGIN_SUCCESS.getMsg(), params.getUserId(), params.getUserAuthId(), params.getUserType(), token, "cp-cluster", params.getIsSuperAdmin());
     }
 
 
@@ -126,7 +145,7 @@ public class CustomUserDetailsService implements UserDetailsService {
     /**
      * Users 로그인을 위한 상세 조회(Get Users for login)
      *
-     * @param userId  the userId
+     * @param userId the userId
      * @return the users detail
      */
     public Users getUsersDetailsForLogin(String userId) {

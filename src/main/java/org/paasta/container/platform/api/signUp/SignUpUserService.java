@@ -213,7 +213,7 @@ public class SignUpUserService {
                 users.setServiceAccountName(users.getUserAuthId());
                 users.setIsActive(CHECK_Y);
                 users.setSaSecret(saSecretName);
-                users.setSaToken(accessTokenService.getSecrets(addInNamespace, saSecretName).getUserAccessToken());
+  //              users.setSaToken(accessTokenService.getSecrets(addInNamespace, saSecretName).getUserAccessToken());
 
                 rsDb = usersService.createUsers(users);
 

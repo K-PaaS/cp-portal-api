@@ -64,6 +64,7 @@ public class JwtUtil {
         if (roles.contains(new SimpleGrantedAuthority(Constants.AUTH_SUPER_ADMIN))) {
             claims.put("userType", Constants.AUTH_SUPER_ADMIN);
             params.setIsSuperAdmin(true);
+            params.setUserType(Constants.AUTH_SUPER_ADMIN);
         } else {
             claims.put("userType", Constants.AUTH_USER);
             params.setIsSuperAdmin(false);

@@ -7,6 +7,7 @@ import java.util.Map;
 
 import lombok.Data;
 
+import org.paasta.container.platform.api.common.Constants;
 import org.paasta.container.platform.api.common.model.CommonItemMetaData;
 import org.paasta.container.platform.api.common.model.CommonMetaData;
 
@@ -35,6 +36,12 @@ class RolesListItem {
     private String name;
     private String namespace;
     private String creationTimestamp;
+
+    // item with user
+    private String checkYn = Constants.CHECK_N;
+    private String userType = Constants.NOT_ASSIGNED_ROLE;
+    private String isNamespaceAdminRole = Constants.CHECK_N;
+
 
     @JsonIgnore
     private CommonMetaData metadata;

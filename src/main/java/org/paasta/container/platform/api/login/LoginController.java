@@ -14,7 +14,13 @@ import org.paasta.container.platform.api.config.NoAuth;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.ArrayList;
+import java.util.List;
 
 
 /**
@@ -41,7 +47,6 @@ public class LoginController {
      * 사용자 로그인(User login)
      *
      * @param params the params
-     *
      * @return return is succeeded
      */
     @ApiOperation(value = "사용자 로그인(User login)", nickname = "userLogin")
@@ -53,15 +58,27 @@ public class LoginController {
     @ResponseBody
     public Object userLogin(@RequestBody Params params) {
 
+        Authentication authentication = null;
+
         try {
-            authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
-                    params.getUserId(), params.getUserAuthId()));
+
+            List<GrantedAuthority> authorities = new ArrayList<>();
+
+            if (params.getIsSuperAdmin()) {
+                authorities.add(new SimpleGrantedAuthority(Constants.AUTH_SUPER_ADMIN));
+            } else {
+                authorities.add(new SimpleGrantedAuthority(Constants.AUTH_USER));
+            }
+
+            authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
+                    params.getUserId(), params.getUserAuthId(), authorities));
+
         } catch (Exception e) {
             return new ResultStatus(Constants.RESULT_STATUS_FAIL, MessageConstant.LOGIN_FAIL.getMsg(),
                     CommonStatusCode.UNAUTHORIZED.getCode(), e.getMessage());
         }
 
-        return userDetailsService.createAuthenticationResponse(params);
+        return userDetailsService.createAuthenticationResponse(authentication, params);
     }
 
 

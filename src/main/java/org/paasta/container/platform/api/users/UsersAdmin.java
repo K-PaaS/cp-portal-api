@@ -1,7 +1,5 @@
 package org.paasta.container.platform.api.users;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
 import java.util.List;
 
 import lombok.Builder;
@@ -30,6 +28,7 @@ public class UsersAdmin {
 
     //User Info
     public String userId;
+    private String userAuthId;
     public String serviceAccountName;
     public String created;
     public String email;

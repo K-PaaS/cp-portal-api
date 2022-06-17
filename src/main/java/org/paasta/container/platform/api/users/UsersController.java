@@ -140,6 +140,24 @@ public class UsersController {
     }
 
 
+
+    /**
+     * Users 와 맵핑된 Clusters 목록 조회(Get Clusters List Used By User)
+     *
+     * @return the users list
+     */
+    @ApiOperation(value = "Users 와 맵핑된 Clusters 목록 조회(Get Clusters List Used By User)", nickname = "getClustersListUsedByUser")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body")
+    })
+    @GetMapping(value = "/users/{userAuthId:.+}/clustersList")
+    public UsersList getClustersListUsedByUser(Params params) {
+        return usersService.getMappingClustersListByUser(params);
+    }
+
+
+
+
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //사용자 포탈 기능, 운영자 포탈에 적용될 수 있으므로 보류
 

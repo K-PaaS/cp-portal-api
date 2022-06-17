@@ -23,9 +23,6 @@ public class PropertyService {
     @Value("${commonApi.url}")
     private String commonApiUrl;
 
-    @Value("${cpCluster.name}")
-    private String cpClusterName;
-
     @Value("${cpNamespace.ignoreNamespace}")
     List<String> ignoreNamespaceList;
 
@@ -387,4 +384,7 @@ public class PropertyService {
 
     @Value("${cp.provide-as-standalone}")
     private String cpProviderAsStandalone;
+
+    @Value("${vault.path.cluster-token}")
+    private String vaultClusterTokenPath;
 }

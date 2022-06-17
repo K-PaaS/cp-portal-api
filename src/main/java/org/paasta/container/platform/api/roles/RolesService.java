@@ -10,12 +10,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
-import static org.paasta.container.platform.api.common.Constants.URI_COMMON_API_NAMESPACES_ROLE_BY_CLUSTER_NAME_USER_ID;
 
 /**
  * Roles Service 클래스
@@ -142,41 +139,19 @@ public class RolesService {
      * @return return is succeeded
      */
     public Object getNamespacesRolesTemplateList(Params params) {
+        params.setNamespace(Constants.ALL_NAMESPACES);
+        RolesList rolesLIst = getRolesList(params);
 
-        HashMap responseMap = (HashMap) restTemplateService.send(Constants.TARGET_CP_MASTER_API,
-                propertyService.getCpMasterApiListRolesListAllNamespacesUrl(), HttpMethod.GET, null, Map.class, params);
-
-
-        RolesListAllNamespaces rolesListAllNamespaces = commonService.setResultObject(responseMap, RolesListAllNamespaces.class);
-
-        List<RolesListAllNamespaces.RolesListAllNamespacesItem> rolesListAdminItems = new ArrayList<>();
-
-        for (RolesListAllNamespaces.RolesListAllNamespacesItem item : rolesListAllNamespaces.getItems()) {
-            if (!propertyService.getIgnoreNamespaceList().contains(item.getNamespace())) {
-                rolesListAdminItems.add(item);
-            }
-        }
-
-        rolesListAllNamespaces.setItems(rolesListAdminItems);
-
-        if (params.getUserId().equals(Constants.ALL_USER_ID)) {
-            for (RolesListAllNamespaces.RolesListAllNamespacesItem item : rolesListAllNamespaces.getItems()) {
-                item.setCheckYn(Constants.CHECK_N);
-                item.setUserType(Constants.NOT_ASSIGNED_ROLE);
-            }
-        } else {
-            UsersList usersList = restTemplateService.send(Constants.TARGET_COMMON_API, URI_COMMON_API_NAMESPACES_ROLE_BY_CLUSTER_NAME_USER_ID
+        if (!params.getUserId().equals(Constants.ALL_USER_ID)) {
+            UsersList usersList = restTemplateService.send(Constants.TARGET_COMMON_API, Constants.URI_COMMON_API_NAMESPACES_ROLE_BY_CLUSTER_USER_AUTH_ID
                     .replace("{cluster:.+}", params.getCluster())
-                    .replace("{userId:.+}", params.getUserId()), HttpMethod.GET, null, UsersList.class, params);
+                    .replace("{userAuthId:.+}", params.getUserAuthId()), HttpMethod.GET, null, UsersList.class, params);
 
-            for (RolesListAllNamespaces.RolesListAllNamespacesItem item : rolesListAllNamespaces.getItems()) {
-                item.setCheckYn(Constants.CHECK_N);
-                item.setUserType(Constants.NOT_ASSIGNED_ROLE);
+            for (RolesListItem item : rolesLIst.getItems()) {
                 for (Users user : usersList.getItems()) {
                     if (user.getCpNamespace().equals(item.getNamespace()) && user.getRoleSetCode().equals(item.getName())) {
                         item.setCheckYn(Constants.CHECK_Y);
                         item.setUserType(user.getUserType());
-
                         if(Constants.AUTH_NAMESPACE_ADMIN.equals(user.getUserType())) {
                             item.setIsNamespaceAdminRole(Constants.CHECK_Y);
                         }
@@ -185,8 +160,7 @@ public class RolesService {
             }
         }
 
-
-        rolesListAllNamespaces = commonService.resourceListProcessing(rolesListAllNamespaces, params, RolesListAllNamespaces.class);
-        return commonService.setResultModel(rolesListAllNamespaces, Constants.RESULT_STATUS_SUCCESS);
+        rolesLIst = commonService.resourceListProcessing(rolesLIst, params, RolesList.class);
+        return commonService.setResultModel(rolesLIst, Constants.RESULT_STATUS_SUCCESS);
     }
 }

@@ -3,6 +3,8 @@ package org.paasta.container.platform.api.common;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+
+import org.paasta.container.platform.api.accessInfo.AccessToken;
 import org.paasta.container.platform.api.clusters.limitRanges.LimitRangesDefault;
 import org.paasta.container.platform.api.clusters.limitRanges.LimitRangesDefaultList;
 import org.paasta.container.platform.api.clusters.resourceQuotas.ResourceQuotasDefault;
@@ -16,6 +18,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
 
+
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -76,9 +80,9 @@ public class ResourceYamlService {
         map.put("userName", params.getRs_sa());
         map.put("spaceName", params.getNamespace());
         params.setYaml(templateService.convert("create_account.ftl", map));
+
         ResultStatus resultStatus = restTemplateService.sendYaml(Constants.TARGET_CP_MASTER_API,
                 propertyService.getCpMasterApiListUsersCreateUrl(), HttpMethod.POST, ResultStatus.class, params);
-
         return (ResultStatus) commonService.setResultModel(resultStatus, Constants.RESULT_STATUS_SUCCESS);
     }
 
@@ -303,6 +307,48 @@ public class ResourceYamlService {
         String token = element.getAsJsonObject().get("name").toString();
         token = token.replaceAll("\"", "");
         return token;
+    }
+
+
+
+    /**
+     * ftl 파일로 init role 생성(Create init role)
+     *
+     * @param params the params
+     * @return the resultStatus
+     */
+    public void deleteRoleBinding(Params params) {
+      restTemplateService.send(Constants.TARGET_CP_MASTER_API,
+                propertyService.getCpMasterApiListRoleBindingsDeleteUrl()
+                        .replace("{namespace}", params.getNamespace())
+                        .replace("{name}", params.getRs_sa() + Constants.NULL_REPLACE_TEXT + params.getRs_role() + "-binding"),
+                HttpMethod.DELETE, null, ResultStatus.class, params);
+    }
+
+
+    public AccessToken getSecrets(Params params) {
+        String caCertToken;
+        String userToken;
+
+        HashMap responseMap = (HashMap) restTemplateService.send(Constants.TARGET_CP_MASTER_API,
+                propertyService.getCpMasterApiListSecretsGetUrl()
+                        .replace("{namespace}", params.getNamespace())
+                        .replace("{name}", params.getResourceName()), HttpMethod.GET, null, Map.class, params);
+
+        Map map = (Map) responseMap.get("data");
+
+        caCertToken = map.get("ca.crt").toString();
+        userToken = map.get("token").toString();
+
+        Base64.Decoder decoder = Base64.getDecoder();
+        String caCertDecodeToken = new String(decoder.decode(caCertToken));
+        String userDecodeToken = new String(decoder.decode(userToken));
+
+        AccessToken accessToken = new AccessToken();
+        accessToken.setCaCertToken(caCertDecodeToken);
+        accessToken.setUserAccessToken(userDecodeToken);
+
+        return (AccessToken) commonService.setResultModel(commonService.setResultObject(accessToken, AccessToken.class), Constants.RESULT_STATUS_SUCCESS);
     }
 
 

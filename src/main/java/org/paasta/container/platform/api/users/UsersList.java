@@ -13,8 +13,10 @@ import java.util.List;
  **/
 @Data
 public class UsersList {
-    private String resultCode;
-    private String resultMessage;
+    public String resultCode;
+    public String resultMessage;
+    public Integer httpStatusCode;
+    public String detailMessage;
 
     private List<Users> items;
 }

@@ -122,7 +122,7 @@ public class Constants {
 
     // COMMON API CALL URI
     public static final String URI_COMMON_API_ADMIN_TOKEN_DETAIL = "/adminToken/{tokenName:.+}";
-    public static final String URI_COMMON_API_USERS = "/clusters/{cluster:.+}/namespaces/{namespace:.+}/users/{userId:.+}";
+    public static final String URI_COMMON_API_USERS = "/clusters/{cluster:.+}/namespaces/{namespace:.+}/users/{userAuthId:.+}";
     public static final String URI_COMMON_API_USERS_DETAIL =  "/users/{userId:.+}/{userAuthId:.+}";
     public static final String URI_COMMON_API_USERS_LIST =  "/users";
     public static final String URI_COMMON_API_USERS_NAMES =  "/users/names";
@@ -136,10 +136,9 @@ public class Constants {
     public static final String URI_COMMON_API_USERS_NAMES_LIST = "/clusters/{cluster:.+}/namespaces/{namespace:.+}/users/names";
     public static final String URI_COMMON_API_USER_DELETE = "/users/";
     public static final String URI_COMMON_API_USERS_BY_NAMESPACE_NS_ADMIN = "/clusters/{cluster:.+}/namespaces/{namespace:.+}";
-    public static final String URI_COMMON_API_NAMESPACES_ROLE_BY_CLUSTER_NAME_USER_ID = "/clusters/{cluster:.+}/users/{userId:.+}";
+    public static final String URI_COMMON_API_NAMESPACES_ROLE_BY_CLUSTER_USER_AUTH_ID = "/clusters/{cluster:.+}/users/{userAuthId:.+}";
     public static final String URI_COMMON_API_PRIVATE_REGISTRY = "/privateRegistry/{imageName:.+}";
     public static final String URI_COMMON_API_CLUSTER_ADMIN_ROLE_BY_CLUSTER_NAME_USER_ID = "/clusters/{cluster:.+}/users/{userId:.+}/userType";
-
 
     public static final String URI_COMMON_API_USER_SIGNUP = "/user/signUp";
     public static final String URI_COMMON_API_CHECK_USER_REGISTER =  "/userRegisterCheck?userId={userId:.+}&userAuthId={userAuthId:.+}&userType={userType:.+}";
@@ -148,7 +147,7 @@ public class Constants {
     public static final String URI_COMMON_API_CLUSTER_USER_DETAILS = "/cluster/all/user/details?userId={userId:.+}&userType={userType:.+}";
     public static final String URI_COMMON_API_NAMESPACE_OR_NOT_CHECK = "/clusters/all/namespaces/{namespace:.+}/adminCheck";
     public static final String URI_COMMON_API_DELETE_USER_BY_ID_AND_AUTHID = "/cluster/all/user/delete?userId={userId:.+}&userAuthId={userAuthId:.+}&namespace={namespace:.+}";
-
+    public static final String URI_COMMON_API_CLUSTER_LIST_BY_USER = "/users/{userAuthId:.+}/clustersList?userType={userType:.+}";
 
 
     // NEXT ACTION MOVEMENT DASHBOARD URI

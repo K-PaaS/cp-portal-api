@@ -48,6 +48,7 @@ public class RestTemplateService {
     private final RestTemplate restTemplate;
     private final PropertyService propertyService;
     private final CommonService commonService;
+    private final VaultService vaultService;
     private String base64Authorization;
     private String baseUrl;
 
@@ -67,10 +68,12 @@ public class RestTemplateService {
                                @Value("${commonApi.authorization.id}") String commonApiAuthorizationId,
                                @Value("${commonApi.authorization.password}") String commonApiAuthorizationPassword,
                                PropertyService propertyService,
-                               CommonService commonService) {
+                               CommonService commonService,
+                               VaultService vaultService) {
         this.restTemplate = restTemplate;
         this.propertyService = propertyService;
         this.commonService = commonService;
+        this.vaultService = vaultService;
         this.commonApiBase64Authorization = "Basic "
                 + Base64Utils.encodeToString(
                 (commonApiAuthorizationId + ":" + commonApiAuthorizationPassword).getBytes(StandardCharsets.UTF_8));
@@ -159,9 +162,7 @@ public class RestTemplateService {
      * @return the t
      */
     public <T> T sendAdmin(String reqApi, String reqUrl, HttpMethod httpMethod, Object bodyObject, Class<T> responseType, String acceptType, String contentType, Params params) {
-
         reqUrl = setRequestParameter(reqApi, reqUrl, httpMethod, params);
-        //이름 바꿔야함
         setApiUrlAuthorizationClusterAdmin(reqApi, params);
 
         HttpHeaders reqHeaders = new HttpHeaders();
@@ -491,11 +492,18 @@ public class RestTemplateService {
 
         // CONTAINER PLATFORM MASTER API
         if (Constants.TARGET_CP_MASTER_API.equals(reqApi)) {
-            Clusters clusters = getClusters("cp-cluster");
+            Clusters clusters = getClusters(params.getCluster());
             apiUrl = clusters.getClusterApiUrl();
-            authorization = "Bearer " + clusters.getClusterToken();
-        }
+            if(params.getIsClusterToken()) {
+                // vault cluster-token 값 조회
+                authorization = "Bearer " + vaultService.getClusterDetails(params.getCluster()).getClusterToken();
+            }
+            else {
+                // vault user-sa-token 값 조회 -추후 수정
+                authorization = "Bearer " + vaultService.getClusterDetails(params.getCluster()).getClusterToken();
+            }
 
+        }
         // COMMON API
         if (TARGET_COMMON_API.equals(reqApi)) {
             apiUrl = propertyService.getCommonApiUrl();

@@ -1,5 +1,6 @@
 package org.paasta.container.platform.api.common;
 
+import org.paasta.container.platform.api.clusters.clusters.Clusters;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,13 +19,19 @@ public class VaultService {
     @Autowired
     VaultTemplate vaultTemplate;
 
+    @Autowired
+    PropertyService propertyService;
+
+    @Autowired
+    CommonService commonService;
+
     /**
      * Vault read를 위한 method
      *
      * @param path the path
      * @return the object
      */
-    public Object read(String path) {
+    public <T> T read(String path,  Class<T> requestClass) {
         VaultResponse vaultResponse;
 
         path = setPath(path);
@@ -36,7 +43,8 @@ public class VaultService {
             logger.info("Invalid path");
             return null;
         }
-        return vaultResponse.getData().get("data");
+        HashMap responseMap = (HashMap) vaultResponse.getData().get("data");
+        return  commonService.setResultObject(responseMap, requestClass);
     }
 
     /**
@@ -73,5 +81,16 @@ public class VaultService {
      */
     String setPath(String path){
         return new StringBuilder(path).insert(path.indexOf("/") + 1, "data/").toString();
+    }
+
+
+    /**
+     * Vault를 통한 Cluster 정보 조회
+     *
+     * @param clusterId the clusterId
+     * @return the String
+     */
+    public Clusters getClusterDetails(String clusterId){
+      return read(propertyService.getVaultClusterTokenPath().replace("{id}", clusterId), Clusters.class);
     }
 }

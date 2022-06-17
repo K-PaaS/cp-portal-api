@@ -15,9 +15,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
+import java.util.Map;
 
-import java.util.List;
-import java.util.stream.Collectors;
 
 import static org.paasta.container.platform.api.common.Constants.NULL_REPLACE_TEXT;
 import static org.paasta.container.platform.api.common.Constants.TARGET_COMMON_API;
@@ -82,19 +81,13 @@ public class SignUpService {
         // 1-2. TYPE : SUPER-ADMIN, SUPER-ADMIN 권한이 이미 등록된 경우
         // 1-3. TYPE: USER, 해당 USER가 이미 등록된 경우
         // 메세지 리턴 처리
-        ResultStatus resultStatus = checkUserRegister(params);
-        if(resultStatus.getResultCode().equals(Constants.RESULT_STATUS_FAIL)) {
-            throw new ResultStatusException(resultStatus.getResultMessage());
-        }
+
+        UsersList usersList = checkUserSignUp(params);
 
         // 2. KEYCLOAK 내 삭제된 동일한 이전 USER-ID의 K8S SA, ROLEBINDING 삭제 진행
-        UsersList usersList = getUsersListByUserId(params.getUserId());
-        List<Users> deleteUsers = usersList.getItems().stream().filter(x-> !x.getUserAuthId().matches(params.getUserAuthId())).collect(Collectors.toList());
-        
-        for(Users u: deleteUsers) {
-            //***** 이 부분 수정 필요
-            Params sp = new Params(u.getClusterId(), u.getCpNamespace(), u.getServiceAccountName(), u.getRoleSetCode());
-            resourceYamlService.deleteSaAndRb(sp);
+        for(Users u: usersList.getItems()) {
+          Params p = new Params(u.getClusterId(), u.getCpNamespace(), u.getServiceAccountName(), u.getRoleSetCode(), true);
+          resourceYamlService.deleteSaAndRb(p);
         }
 
         // 3. CP-USER 계정 생성
@@ -119,14 +112,21 @@ public class SignUpService {
      *
      * @return the users
      */
-    public ResultStatus checkUserRegister(Params params) {
+    public UsersList checkUserSignUp(Params params) {
         // 클러스터 관리자 등록 여부 조회
-        ResultStatus resultStatus = restTemplateService.send(TARGET_COMMON_API, Constants.URI_COMMON_API_CHECK_USER_REGISTER
+        Object result= restTemplateService.send(TARGET_COMMON_API, Constants.URI_COMMON_API_CHECK_USER_REGISTER
                         .replace("{userId:.+}", params.getUserId())
                         .replace("{userAuthId:.+}", params.getUserAuthId())
                         .replace("{userType:.+}", params.getUserType())
-                , HttpMethod.GET, null, ResultStatus.class, new Params());
-        return resultStatus;
+                , HttpMethod.GET, null,  Map.class, new Params());
+
+        if(result instanceof ResultStatus) {
+            LOGGER.info("FAILD USER SIGN UP : {}", CommonUtils.loggerReplace(((ResultStatus) result).getResultMessage()));
+            throw new ResultStatusException(((ResultStatus) result).getResultMessage());
+        }
+
+        UsersList usersList = commonService.setResultObject(result, UsersList.class);
+        return usersList;
     }
 
 

@@ -23,6 +23,8 @@ public class AuthenticationResponse {
     private Integer httpStatusCode;
     private String detailMessage;
     private String userId;
+    private String userAuthId;
+    private String userType;
     private String token;
     private String clusterId;
     private Boolean isSuperAdmin;

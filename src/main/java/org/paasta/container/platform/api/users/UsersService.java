@@ -285,13 +285,36 @@ public class UsersService {
     }
 
 
-
+    /**
+     * User 과 맵핑된 클러스터 목록 조회
+     *
+     * @param params the params
+     * @return the UsersList
+     */
     public UsersList getMappingClustersListByUser(Params params){
      UsersList usersList =  restTemplateService.send(TARGET_COMMON_API, Constants.URI_COMMON_API_CLUSTER_LIST_BY_USER
                 .replace("{userAuthId:.+}", params.getUserAuthId()).replace("{userType:.+}", params.getUserType()),
              HttpMethod.GET, null, UsersList.class, params);
         return (UsersList) commonService.setResultModel(usersList, Constants.RESULT_STATUS_SUCCESS);
     }
+
+
+    /**
+     * User 과 맵핑된 네임스페이스 목록 조회
+     *
+     * @param params the params
+     * @return the UsersList
+     */
+    public UsersList getMappingNamespacesListByUser(Params params){
+        UsersList usersList =  restTemplateService.send(TARGET_COMMON_API, Constants.URI_COMMON_API_NAMESPACES_ROLE_BY_CLUSTER_USER_AUTH_ID
+                        .replace("{cluster:.+}", params.getCluster())
+                        .replace("{userAuthId:.+}", params.getUserAuthId()),
+                HttpMethod.GET, null, UsersList.class, params);
+        return (UsersList) commonService.setResultModel(usersList, Constants.RESULT_STATUS_SUCCESS);
+    }
+
+
+
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //사용자 포탈 기능, 운영자 포탈에 적용될 수 있으므로 보류
 

@@ -66,10 +66,11 @@ public class JwtUtil {
             params.setIsSuperAdmin(true);
             params.setUserType(Constants.AUTH_SUPER_ADMIN);
         } else {
-            claims.put("userType", Constants.AUTH_USER);
+            claims.put("userType", params.getUserType());
             params.setIsSuperAdmin(false);
         }
 
+        claims.put("userAuthId", params.getUserAuthId());
         claims.put("IP", params.getClientIp());
         claims.put("Browser", params.getBrowser());
 
@@ -243,6 +244,18 @@ public class JwtUtil {
             expectedMap.put(entry.getKey(), entry.getValue());
         }
         return expectedMap;
+    }
+
+
+    /**
+     * 토큰을 통한 UserType 조회(Get UserType from token)
+     *
+     * @param authToken the auth token
+     * @return the list
+     */
+    public String getClaimsFromToken(String authToken, String name) {
+        Claims claims = Jwts.parser().setSigningKey(secret).parseClaimsJws(authToken).getBody();
+        return claims.get(name, String.class);
     }
 
 }

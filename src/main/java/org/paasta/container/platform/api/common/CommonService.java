@@ -4,12 +4,15 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
 import lombok.SneakyThrows;
 import org.paasta.container.platform.api.common.model.*;
+import org.paasta.container.platform.api.login.JwtUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
+import javax.servlet.http.HttpServletRequest;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -32,10 +35,10 @@ public class CommonService {
     private static final Logger LOGGER = LoggerFactory.getLogger(CommonService.class);
     private final Gson gson;
     private final PropertyService propertyService;
-
+    private final HttpServletRequest request;
+    private final JwtUtil jwtUtil;
     @Value("${cpNamespace.ignoreNamespace}")
     List<String> ignoreNamespaceList;
-
 
 
     /**
@@ -44,9 +47,11 @@ public class CommonService {
      * @param gson the gson
      */
     @Autowired
-    public CommonService(Gson gson, PropertyService propertyService) {
+    public CommonService(Gson gson, PropertyService propertyService, HttpServletRequest request, JwtUtil jwtUtil) {
         this.gson = gson;
         this.propertyService = propertyService;
+        this.request = request;
+        this.jwtUtil = jwtUtil;
     }
 
 
@@ -91,8 +96,8 @@ public class CommonService {
     /**
      * 생성/수정/삭제 후 페이지 이동을 위한 result model 설정(Set result model for moving the page after a create/update/delete)
      *
-     * @param reqObject the reqObject
-     * @param resultCode the resultCode
+     * @param reqObject     the reqObject
+     * @param resultCode    the resultCode
      * @param nextActionUrl the nextActionUrl
      * @return the object
      */
@@ -165,10 +170,10 @@ public class CommonService {
     /**
      * 서로 다른 객체를 매핑 (mapping each other objects)
      *
-     * @param instance the instance
+     * @param instance    the instance
      * @param targetClass the targetClass
-     * @param <A> the type parameter
-     * @param <B> the type parameter
+     * @param <A>         the type parameter
+     * @param <B>         the type parameter
      * @return the b
      * @throws Exception
      */
@@ -192,7 +197,7 @@ public class CommonService {
      * 필드를 조회하고, 그 값을 반환 처리(check the field and return the result)
      *
      * @param fieldName the fieldName
-     * @param obj the obj
+     * @param obj       the obj
      * @return the t
      */
     @SneakyThrows
@@ -208,8 +213,8 @@ public class CommonService {
      * 필드를 조회하고, 그 값을 저장 처리(check the field and save the result)
      *
      * @param fieldName the fieldName
-     * @param obj the obj
-     * @param value the value
+     * @param obj       the obj
+     * @param value     the value
      * @return the object
      */
     @SneakyThrows
@@ -226,7 +231,7 @@ public class CommonService {
      * 리소스 명 기준, 키워드가 포함된 리스트 반환 처리(return the list including keywords)
      *
      * @param commonList the commonList
-     * @param keyword the keyword
+     * @param keyword    the keyword
      * @return the list
      */
     public <T> List<T> searchKeywordForResourceName(List<T> commonList, String keyword) {
@@ -243,8 +248,8 @@ public class CommonService {
      * 리소스 생성날짜 또는 이름으로 리스트 정렬 처리(order by creation time or name)
      *
      * @param commonList the commonList
-     * @param orderBy the orderBy
-     * @param order the order
+     * @param orderBy    the orderBy
+     * @param order      the order
      * @return the list
      */
     public <T> List<T> sortingListByCondition(List<T> commonList, String orderBy, String order) {
@@ -264,9 +269,7 @@ public class CommonService {
                 sortList = commonList.stream().sorted(Comparator.comparing(x -> this.<String>getField(Constants.RESOURCE_NAME,
                         getField(Constants.RESOURCE_METADATA, x))).reversed()).collect(Collectors.toList());
             }
-        }
-
-        else if (orderBy.equals(Constants.RESOURCE_NS)) {
+        } else if (orderBy.equals(Constants.RESOURCE_NS)) {
             // 네임스페이스명 기준
             order = (order.equals("")) ? "asc" : order;
             if (order.equals("asc")) {
@@ -276,8 +279,7 @@ public class CommonService {
                 sortList = commonList.stream().sorted(Comparator.comparing(x -> this.<String>getField(Constants.RESOURCE_NS,
                         getField(Constants.RESOURCE_METADATA, x))).reversed()).collect(Collectors.toList());
             }
-        }
-        else {
+        } else {
             // 생성날짜 기준
             order = (order.equals("")) ? "desc" : order;
 
@@ -299,8 +301,8 @@ public class CommonService {
      * offset & limit 을 통한 리스트 가공 처리(sublist using offset and limit)
      *
      * @param itemList the itemList
-     * @param offset the offset
-     * @param limit the limit
+     * @param offset   the offset
+     * @param limit    the limit
      * @return the list
      */
     public <T> List<T> subListforLimit(List<T> itemList, int offset, int limit) {
@@ -316,8 +318,8 @@ public class CommonService {
      * commonItemMetaData 객체 생성(create a common Item Meta Data object)
      *
      * @param itemList the itemList
-     * @param offset the offset
-     * @param limit the limit
+     * @param offset   the offset
+     * @param limit    the limit
      * @return the CommonItemMetaData
      */
     public CommonItemMetaData setCommonItemMetaData(List itemList, int offset, int limit) {
@@ -354,13 +356,12 @@ public class CommonService {
      * Resource 목록에 대한 검색 및 페이징, 정렬을 위한 공통 메서드(Common Method for searching, paging, ordering about resource's list)
      *
      * @param resourceList the resourceList
-     * @param offset the offset
-     * @param limit the limit
-     * @param orderBy the orderBy
-     * @param order the order
-     * @param searchName the searchName
+     * @param offset       the offset
+     * @param limit        the limit
+     * @param orderBy      the orderBy
+     * @param order        the order
+     * @param searchName   the searchName
      * @param requestClass the requestClass
-     *
      * @return the T
      */
     public <T> T resourceListProcessing(Object resourceList, int offset, int limit, String orderBy, String order, String searchName, Class<T> requestClass) {
@@ -399,7 +400,6 @@ public class CommonService {
      *
      * @param resourceList the resourceList
      * @param requestClass the requestClass
-     *
      * @return the t
      */
     public <T> T setCommonItemMetaDataBySelector(Object resourceList, Class<T> requestClass) {
@@ -442,7 +442,7 @@ public class CommonService {
     /**
      * Nodes 명에 따른 Pods 목록조회 fieldSelector 생성 (Create Field Selector For pods By NodeNames)
      *
-     * @param prefix the prefix
+     * @param prefix   the prefix
      * @param nodeName the node name
      * @return the string
      */
@@ -478,18 +478,16 @@ public class CommonService {
     }
 
 
-
     /**
      * User 목록에 대한 검색 및 페이징, 정렬을 위한 공통 메서드(Common Method for searching, paging, ordering about resource's list)
      *
      * @param resourceList the resourceList
-     * @param offset the offset
-     * @param limit the limit
-     * @param orderBy the orderBy
-     * @param order the order
-     * @param searchName the searchName
+     * @param offset       the offset
+     * @param limit        the limit
+     * @param orderBy      the orderBy
+     * @param order        the order
+     * @param searchName   the searchName
      * @param requestClass the requestClass
-     *
      * @return the T
      */
     public <T> T userListProcessing(Object resourceList, int offset, int limit, String orderBy, String order, String searchName, Class<T> requestClass) {
@@ -516,10 +514,10 @@ public class CommonService {
      * Annotations checkY/N 처리 (Resource Annotation Check y/n Processing)
      *
      * @param resourceDetails the resource Details
-     * @param requestClass the requestClass
+     * @param requestClass    the requestClass
      * @return the ArrayList
      */
-    public<T> T annotationsProcessing(Object resourceDetails, Class<T> requestClass)  {
+    public <T> T annotationsProcessing(Object resourceDetails, Class<T> requestClass) {
 
         Object returnObj = null;
 
@@ -529,14 +527,14 @@ public class CommonService {
         // new annotaions list
         List<CommonAnnotations> commonAnnotationsList = new ArrayList<>();
 
-        if(annotations != null) {
+        if (annotations != null) {
             for (String key : annotations.keySet()) {
                 CommonAnnotations commonAnnotations = new CommonAnnotations();
                 commonAnnotations.setCheckYn(Constants.CHECK_N);
 
-                for(String configAnnotations : propertyService.getCpAnnotationsConfiguration()) {
+                for (String configAnnotations : propertyService.getCpAnnotationsConfiguration()) {
                     // if exists kube-annotations
-                    if(key.startsWith(configAnnotations)) {
+                    if (key.startsWith(configAnnotations)) {
                         commonAnnotations.setCheckYn(Constants.CHECK_Y);
                     }
                 }
@@ -567,7 +565,7 @@ public class CommonService {
      * @return the string
      */
     public String procSetAnnotations(String value) {
-        return value.replace("\\\"","\"");
+        return value.replace("\\\"", "\"");
     }
 
 
@@ -577,7 +575,6 @@ public class CommonService {
      * @param resourceList the resourceList
      * @param params
      * @param requestClass the requestClass
-     *
      * @return the T
      */
     public <T> T resourceListProcessing(Object resourceList, Params params, Class<T> requestClass) {
@@ -595,7 +592,7 @@ public class CommonService {
         resourceItemList = sortingListByCondition(resourceItemList, params.getOrderBy(), params.getOrder());
 
         // 3. commonItemMetaData 추가
-        CommonItemMetaData commonItemMetaData = setCommonItemMetaData(resourceItemList, params.getOffset(),  params.getLimit());
+        CommonItemMetaData commonItemMetaData = setCommonItemMetaData(resourceItemList, params.getOffset(), params.getLimit());
         resourceReturnList = setField("itemMetaData", resourceList, commonItemMetaData);
 
 
@@ -607,15 +604,12 @@ public class CommonService {
     }
 
 
-
-
     /**
      * User 목록에 대한 검색 및 페이징, 정렬을 위한 공통 메서드(Common Method for searching, paging, ordering about resource's list)
      *
      * @param resourceList the resourceList
      * @param params
      * @param requestClass the requestClass
-     *
      * @return the T
      */
     public <T> T userListProcessing(Object resourceList, Params params, Class<T> requestClass) {
@@ -637,5 +631,15 @@ public class CommonService {
         return (T) resourceReturnList;
     }
 
+
+    public void setUsersDataFromToken(Params params) {
+        RequestWrapper requestWrapper = new RequestWrapper(request);
+        String jwtToken = jwtUtil.extractJwtFromRequest(requestWrapper);
+
+        if (StringUtils.hasText(jwtToken) && jwtUtil.validateToken(jwtToken)) {
+            params.setUserType(jwtUtil.getClaimsFromToken(jwtToken, "userType"));
+            params.setUserAuthId(jwtUtil.getClaimsFromToken(jwtToken, "userAuthId"));
+        }
+    }
 
 }

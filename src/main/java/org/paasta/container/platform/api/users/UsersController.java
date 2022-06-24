@@ -4,6 +4,8 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
+import org.paasta.container.platform.api.clusters.namespaces.NamespacesService;
+import org.paasta.container.platform.api.common.CommonService;
 import org.paasta.container.platform.api.common.Constants;
 import org.paasta.container.platform.api.common.MessageConstant;
 import org.paasta.container.platform.api.common.ResultStatusService;
@@ -34,13 +36,16 @@ public class UsersController {
 
     private final UsersService usersService;
     private final ResultStatusService resultStatusService;
+    private final NamespacesService namespacesService;
+    private final CommonService commonService;
 
     @Autowired
-    public UsersController(UsersService usersService, ResultStatusService resultStatusService) {
+    public UsersController(UsersService usersService, ResultStatusService resultStatusService, NamespacesService namespacesService, CommonService commonService) {
         this.usersService = usersService;
         this.resultStatusService = resultStatusService;
+        this.namespacesService = namespacesService;
+        this.commonService = commonService;
     }
-
 
 
     /**
@@ -55,7 +60,7 @@ public class UsersController {
     })
     @GetMapping(value = "/clusters/{cluster:.+}/users")
     public Object getUsersList(Params params) {
-        if(params.getUserType().equalsIgnoreCase(Constants.SELECTED_ADMINISTRATOR)) {
+        if (params.getUserType().equalsIgnoreCase(Constants.SELECTED_ADMINISTRATOR)) {
             return usersService.getClusterAdminAllByCluster(params);
         }
         return usersService.getUsersAllByCluster(params);
@@ -76,10 +81,9 @@ public class UsersController {
     })
     @GetMapping(value = "/clusters/{cluster:.+}/users/{userId:.+}")
     public Object getUsers(Params params) throws Exception {
-        if(params.getUserType().equalsIgnoreCase(Constants.SELECTED_ADMINISTRATOR)) {
+        if (params.getUserType().equalsIgnoreCase(Constants.SELECTED_ADMINISTRATOR)) {
             params.setUserType(Constants.AUTH_CLUSTER_ADMIN);
-        }
-        else {
+        } else {
             //사용자인 경우
             params.setUserType(Constants.AUTH_USER);
         }
@@ -102,9 +106,6 @@ public class UsersController {
     public Object modifyUsers(Params params, @RequestBody Users users) throws Exception {
         return usersService.modifyUsersAdmin(params, users);
     }
-
-
-
 
 
     /**
@@ -140,27 +141,45 @@ public class UsersController {
     }
 
 
-
     /**
      * Users 와 맵핑된 Clusters 목록 조회(Get Clusters List Used By User)
      *
      * @return the users list
      */
-    @ApiOperation(value = "Users 와 맵핑된 Clusters 목록 조회(Get Clusters List Used By User)", nickname = "getClustersListUsedByUser")
+    @ApiOperation(value = "Users 와 맵핑된 Clusters 목록 조회(Get Clusters List Used By User)", nickname = "getClustersListByUserOwns")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body")
     })
-    @GetMapping(value = "/users/{userAuthId:.+}/clustersList")
-    public UsersList getClustersListUsedByUser(Params params) {
+    @GetMapping(value = "/users/clustersList")
+    public UsersList getClustersListByUserOwns(Params params) {
+        commonService.setUsersDataFromToken(params);
+        System.out.println("userAuthId: "+params.getUserAuthId() + " userType: " + params.getUserType());
         return usersService.getMappingClustersListByUser(params);
     }
 
 
+    /**
+     * Users 와 맵핑된 Namespaces 목록 조회(Get Namespaces List Used By User)
+     *
+     * @return the users list
+     */
+    @ApiOperation(value = "Users 와 맵핑된 Namespaces 목록 조회(Get Namespaces List Used By User)", nickname = "getNamespacesListByUserOwns")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body")
+    })
+    @GetMapping(value = "/clusters/{cluster:.+}/users/namespacesList")
+    public UsersList getNamespacesListByUserOwns(Params params) {
+        commonService.setUsersDataFromToken(params);
+        System.out.println("userAuthId: "+params.getUserAuthId() + " userType: " + params.getUserType());
+        if (Constants.AUTH_ADMIN_LIST.contains(params.getUserType())) {
+            return namespacesService.getMappingNamespacesListByAdmin(params);
+        }
+        return usersService.getMappingNamespacesListByUser(params);
+    }
 
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //사용자 포탈 기능, 운영자 포탈에 적용될 수 있으므로 보류
-
 
 
     /**
@@ -186,8 +205,6 @@ public class UsersController {
         }
         return usersService.getUsersListByNamespace(cluster, namespace);
     }
-
-
 
 
     /**
@@ -216,10 +233,6 @@ public class UsersController {
     }
 
 
-
-
-
-
     /**
      * 각 Namespace 별 등록 되어 있는 사용자들의 이름 목록 조회(Get Users registered list namespace)
      *
@@ -237,9 +250,6 @@ public class UsersController {
                                               @PathVariable(value = "namespace") String namespace) {
         return usersService.getUsersNameListByNamespace(cluster, namespace);
     }
-
-
-
 
 
     /**

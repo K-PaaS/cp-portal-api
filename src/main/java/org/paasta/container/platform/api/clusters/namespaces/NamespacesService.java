@@ -10,15 +10,14 @@ import org.paasta.container.platform.api.common.*;
 import org.paasta.container.platform.api.common.model.CommonResourcesYaml;
 import org.paasta.container.platform.api.common.model.Params;
 import org.paasta.container.platform.api.common.model.ResultStatus;
-import org.paasta.container.platform.api.signUp.SignUpService;
 import org.paasta.container.platform.api.users.Users;
+import org.paasta.container.platform.api.users.UsersList;
 import org.paasta.container.platform.api.users.UsersService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -77,7 +76,6 @@ public class NamespacesService {
     }
 
 
-
     /**
      * Namespaces 목록 조회(Get Namespaces List)
      *
@@ -93,7 +91,6 @@ public class NamespacesService {
         namespacesList = commonService.resourceListProcessing(namespacesList, params, NamespacesList.class);
         return (NamespacesList) commonService.setResultModel(namespacesList, Constants.RESULT_STATUS_SUCCESS);
     }
-
 
 
     /**
@@ -137,7 +134,7 @@ public class NamespacesService {
 
         List<String> userNamesList = usersService.getUsersNameListByNamespace(params.getCluster(), params.getNamespace()).get(USERS);
         for (String userId : userNamesList) {
-            usersService.deleteUsers(usersService.getUsers(params.getCluster(), params.getNamespace() , userId));
+            usersService.deleteUsers(usersService.getUsers(params.getCluster(), params.getNamespace(), userId));
         }
         return (ResultStatus) commonService.setResultModel(resultStatus, Constants.RESULT_STATUS_SUCCESS);
     }
@@ -146,7 +143,7 @@ public class NamespacesService {
     /**
      * Namespaces 생성(Create Namespaces)
      *
-     * @param params the params
+     * @param params       the params
      * @param initTemplate the init template
      * @return the resultStatus
      */
@@ -156,9 +153,8 @@ public class NamespacesService {
 
         Users newNsUser = null;
         try {
-            newNsUser =  usersService.getUsers(params.getCluster(), propertyService.getDefaultNamespace(), userId);
-        }
-        catch(Exception e){
+            newNsUser = usersService.getUsers(params.getCluster(), propertyService.getDefaultNamespace(), userId);
+        } catch (Exception e) {
             return resultStatusService.UNAPPROACHABLE_USERS();
         }
 
@@ -228,7 +224,7 @@ public class NamespacesService {
     /**
      * Namespaces 수정(Update Namespaces)
      *
-     * @param params the params
+     * @param params       the params
      * @param initTemplate the init template
      * @return the resultStatus
      */
@@ -245,7 +241,7 @@ public class NamespacesService {
 
         // 2. namespace 관리자 지정 여부 확인
         String updateNsAdminUserId = initTemplate.getNsAdminUserId();
-        if(updateNsAdminUserId.trim().isEmpty() || updateNsAdminUserId == null ) {
+        if (updateNsAdminUserId.trim().isEmpty() || updateNsAdminUserId == null) {
             return resultStatusService.REQUIRES_NAMESPACE_ADMINISTRATOR_ASSIGNMENT();
         }
 
@@ -254,8 +250,7 @@ public class NamespacesService {
         Users newNsUser = null;
         try {
             newNsUser = usersService.getUsers(cluster, propertyService.getDefaultNamespace(), updateNsAdminUserId);
-        }
-        catch(NullPointerException e){
+        } catch (NullPointerException e) {
             LOGGER.info("THERE ARE NO USERS IN THE TEMP NAMESPACE.....");
             return resultStatusService.UNAPPROACHABLE_USERS();
 
@@ -266,11 +261,9 @@ public class NamespacesService {
         Users nsAdminUser = null;
         try {
             nsAdminUser = usersService.getUsersByNamespaceAndNsAdmin(cluster, namespace);
-        }
-        catch(NullPointerException e){
+        } catch (NullPointerException e) {
             LOGGER.info("NAMESPACE ADMINISTRATOR DOES NOT EXIST...");
         }
-
 
 
         String updateNsAdminUserSA = newNsUser.getServiceAccountName();
@@ -430,6 +423,16 @@ public class NamespacesService {
         namespacesListSupport.setItems(returnNamespaceList);
 
         return commonService.setResultModel(namespacesListSupport, Constants.RESULT_STATUS_SUCCESS);
+    }
+
+
+
+    public UsersList getMappingNamespacesListByAdmin(Params params) {
+        NamespacesList namespacesList = getNamespacesList(params);
+        List<Users> items = namespacesList.getItems().stream().map(x -> new Users(x.getName())).collect(Collectors.toList());
+        items.add(0, new Users(Constants.ALL_NAMESPACES.toUpperCase()));
+        UsersList usersList = new UsersList(items);
+        return (UsersList) commonService.setResultModel(usersList, Constants.RESULT_STATUS_SUCCESS);
     }
 
 }

@@ -5,7 +5,6 @@ import java.util.List;
 
 import lombok.Data;
 
-import lombok.NoArgsConstructor;
 import org.springframework.util.StringUtils;
 
 import org.paasta.container.platform.api.common.CommonUtils;
@@ -20,7 +19,6 @@ import org.paasta.container.platform.api.common.Constants;
  **/
 
 @Data
-@NoArgsConstructor
 public class Users {
     public String resultCode;
     public String resultMessage;
@@ -176,5 +174,10 @@ public class Users {
         this.serviceAccountName = serviceAccountName;
         this.saSecret = saSecret;
         this.saToken = saToken;
+    }
+
+    public Users() {};
+    public Users(String cpNamespace) {
+        this.cpNamespace = cpNamespace;
     }
 }

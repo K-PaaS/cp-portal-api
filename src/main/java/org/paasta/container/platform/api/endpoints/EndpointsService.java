@@ -67,7 +67,7 @@ public class EndpointsService {
         if (endpoints.getSubsets() == null) {
             return resultStatusService.NOT_FOUND_RESULT_STATUS();
         }
-        endpoints = endpointsProcessing(endpoints);
+        endpoints = endpointsProcessing(endpoints, params);
         return (Endpoints) commonService.setResultModel(endpoints, Constants.RESULT_STATUS_SUCCESS);
     }
 
@@ -77,7 +77,7 @@ public class EndpointsService {
      *
      * @return the endpoints
      */
-    public Endpoints endpointsProcessing(Endpoints endpoints) {
+    public Endpoints endpointsProcessing(Endpoints endpoints, Params params) {
 
         List<EndPointsDetailsItem> endPointsDetailsItemsList = new ArrayList<>();
 
@@ -106,9 +106,8 @@ public class EndpointsService {
                     String nodeReady = Constants.noName;
 
                     if (!nodeName.equals(Constants.noName)) {
-                        Params params = new Params();
                         params.setResourceName(nodeName);
-                        Nodes nodesDetails = (Nodes) nodesService.getNodes(params);
+                        Nodes nodesDetails = nodesService.getNodes(params);
 
                         List<CommonCondition> nodeConditionList = nodesDetails.getStatus().getConditions();
 

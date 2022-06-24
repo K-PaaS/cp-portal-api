@@ -1,7 +1,6 @@
 package org.paasta.container.platform.api.users;
 
 import lombok.Data;
-
 import java.util.List;
 
 /**
@@ -19,4 +18,10 @@ public class UsersList {
     public String detailMessage;
 
     private List<Users> items;
+
+    public UsersList(){};
+    public UsersList(List<Users> items) {
+        this.items = items;
+    }
+
 }

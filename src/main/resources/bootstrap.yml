@@ -11,5 +11,5 @@ spring:
       app-role:
         role-id: ${VAULT_ROLE_ID}
         secret-id: ${VAULT_SECRET_ID}
-        role: webapp
+        role: ${VAULT_ROLE_NAME}
         app-role-path: approle

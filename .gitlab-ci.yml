@@ -1,7 +1,23 @@
-variables:
-  PROJECT_RELEASE_NAME: "api"
-
 include:
-  - project: ${PORTAL_CI_INCLUDE_PROJECT}
-    ref: ${CI_COMMIT_REF_NAME}
-    file: ${PORTAL_CI_INCLUDE_FILE}
+  - local: '/.gitlab-ci/.ci-values.yml'
+  - project: '$MANAGED_PROJECT'
+    ref: '$CI_COMMIT_REF_NAME'
+    file: '/.gitlab-ci/.build-gradle-template.yml'
+  - project: '$MANAGED_PROJECT'
+    ref: '$CI_COMMIT_REF_NAME'
+    file: '/.gitlab-ci/.build-image-template.yml'
+  - project: '$MANAGED_PROJECT'
+    ref: '$CI_COMMIT_REF_NAME'
+    file: '/.gitlab-ci/.deploy-configmap-template.yml'
+  - project: '$MANAGED_PROJECT'
+    ref: '$CI_COMMIT_REF_NAME'
+    file: '/.gitlab-ci/.deploy-secret-template.yml'
+  - project: '$MANAGED_PROJECT'
+    ref: '$CI_COMMIT_REF_NAME'
+    file: '/.gitlab-ci/.deploy-helm-template.yml'
+
+stages:
+  - build
+  - docker
+  - pre-deploy
+  - deploy

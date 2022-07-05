@@ -67,7 +67,7 @@ public class MethodHandler {
 
         Object[] parameterValues = Arrays.asList(joinPoint.getArgs()).toArray();
         Params params = (Params) parameterValues[0];
-        yaml = params.getYaml();
+
         namespace = params.getNamespace();
 
 
@@ -77,12 +77,22 @@ public class MethodHandler {
 
         String requestResource;
         String requestURI = request.getRequestURI();
+        String resource;
 
         if (StringUtils.isEmpty(namespace)) {
             requestResource = InspectionUtil.parsingRequestURI(requestURI)[3];
         } else {
             requestResource = InspectionUtil.parsingRequestURI(requestURI)[5];
         }
+
+        resource = InspectionUtil.parsingRequestURI(requestURI)[5];
+        params.setResource(resource);
+
+        if (StringUtils.isEmpty(yaml)) {
+            YamlUtil.makeResourceYaml(params);
+        }
+
+        yaml = params.getYaml();
 
         requestResource = InspectionUtil.makeResourceName(requestResource);
 
@@ -214,7 +224,7 @@ public class MethodHandler {
         yaml = params.getYaml();
         namespace = params.getNamespace();
         resourceName = params.getResourceName();
-
+        String resource;
 
         String requestResource;
         String requestURI = request.getRequestURI();
@@ -225,8 +235,20 @@ public class MethodHandler {
         } else {
             requestResource = InspectionUtil.parsingRequestURI(requestURI)[5];
         }
-
         requestResource = InspectionUtil.makeResourceName(requestResource);
+
+        resource = InspectionUtil.parsingRequestURI(requestURI)[5];
+        params.setResource(resource);
+
+
+        if (StringUtils.isEmpty(yaml)) {
+            YamlUtil.makeResourceYaml(params);
+        }
+
+        yaml = params.getYaml();
+
+
+        //requestResource = InspectionUtil.makeResourceName(requestResource);
 
         String resourceKind = YamlUtil.parsingYaml(yaml, KIND_KEY);
         resourceKind = YamlUtil.makeResourceNameYAML(resourceKind);

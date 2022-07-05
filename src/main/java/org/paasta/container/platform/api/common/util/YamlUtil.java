@@ -3,6 +3,7 @@ package org.paasta.container.platform.api.common.util;
 import org.paasta.container.platform.api.common.Constants;
 import org.paasta.container.platform.api.common.MessageConstant;
 import org.paasta.container.platform.api.common.model.CommonStatusCode;
+import org.paasta.container.platform.api.common.model.Params;
 import org.paasta.container.platform.api.exception.ContainerPlatformException;
 import org.yaml.snakeyaml.Yaml;
 
@@ -101,5 +102,56 @@ public class YamlUtil {
             }
         }
          return returnList.toArray(new String[returnList.size()]);
+    }
+
+    /**
+     * resources yaml 조합(Assemble resource YAML)
+     *
+     * @param params the params
+     */
+    public static void makeResourceYaml(Params params) {
+        String yaml = "";
+
+        //ingress
+        if (InspectionUtil.makeResourceName(params.getResource()).equals(Constants.RESOURCE_INGRESS.toLowerCase())) {
+
+            String topYaml = "apiVersion: networking.k8s.io/v1\nkind: Ingress\nmetadata:\n  name: " + params.getMetadataName() + "\n  namespace: " + params.getNamespace() + "\nspec:\n  rules:";
+
+            for (int i = 0; i < params.rules.size(); i++) {
+
+                int key = params.rules.get(i).toString().indexOf(":");
+                String host = "";
+                String pathType = "";
+                String path = "";
+                String target = "";
+                String port = "";
+
+                if (params.rules.get(i).toString().contains("host")) {
+                    host = params.rules.get(i).toString().substring(key + 1);
+                    String rulesYaml = "\n  - host: " + host + "\n    http:\n      paths:";
+                    topYaml += rulesYaml;
+                } else if (params.rules.get(i).toString().contains("pathType")) {
+                    pathType = params.rules.get(i).toString().substring(key + 1);
+                    String pathTypeYaml = "\n      - pathType: " + pathType;
+                    topYaml += pathTypeYaml;
+                } else if (params.rules.get(i).toString().contains("path")) {
+                    path = params.rules.get(i).toString().substring(key + 1);
+                    String pathYaml = "\n        path: " + path;
+                    topYaml += pathYaml;
+                } else if (params.rules.get(i).toString().contains("target")) {
+                    target = params.rules.get(i).toString().substring(key + 1);
+                    String targetYaml = "\n        backend:\n          service:\n            name: " + target;
+                    topYaml += targetYaml;
+                } else if (params.rules.get(i).toString().contains("port")) {
+                    port = params.rules.get(i).toString().substring(key + 1);
+                    String portYaml = "\n            port:\n              number: " + port;
+                    topYaml += portYaml;
+                }
+            }
+            yaml = topYaml;
+        }
+        if (params.getYaml().isEmpty()) {
+            params.setYaml(yaml);
+        }
     }
 }

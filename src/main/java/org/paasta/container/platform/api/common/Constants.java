@@ -68,6 +68,7 @@ public class Constants {
     public static final String SUPPORTED_RESOURCE_CPU = "cpu";
     public static final String SUPPORTED_RESOURCE_MEMORY = "memory";
     public static final String SUPPORTED_RESOURCE_STORAGE = "storage";
+    public static final String SUPPORTED_RESOURCE_PORT = "port";
 
     public static final List<String> LIMIT_RANGE_TYPE_LIST = Collections.unmodifiableList(new ArrayList<String>(){
         {
@@ -212,6 +213,7 @@ public class Constants {
 
     //service
     public static final String RESOURCE_SERVICE = "Service";
+    public static final String RESOURCE_INGRESS = "Ingress";
 
     //storage
     public static final String RESOURCE_PERSISTENTVOLUMECLAIM = "PersistentVolumeClaim";

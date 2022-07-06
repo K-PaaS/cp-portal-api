@@ -31,6 +31,7 @@ public class CustomServices {
     private String uid;
     private String namespace;
     private Object labels;
+    private List port;
     private List<CommonAnnotations> annotations;
     private String creationTimestamp;
 
@@ -83,5 +84,9 @@ public class CustomServices {
 
     public Object getSelector() {
         return spec.getSelector();
+    }
+
+    public List getPort() {
+        return spec.getPorts();
     }
 }

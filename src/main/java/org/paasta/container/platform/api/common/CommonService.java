@@ -637,8 +637,11 @@ public class CommonService {
         String jwtToken = jwtUtil.extractJwtFromRequest(requestWrapper);
 
         if (StringUtils.hasText(jwtToken) && jwtUtil.validateToken(jwtToken)) {
-            params.setUserType(jwtUtil.getClaimsFromToken(jwtToken, "userType"));
             params.setUserAuthId(jwtUtil.getClaimsFromToken(jwtToken, "userAuthId"));
+
+            if (params.getUserType().equals(Constants.EMPTY_STRING)) {
+                params.setUserType(jwtUtil.getClaimsFromToken(jwtToken, "userType"));
+            }
         }
     }
 

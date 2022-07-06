@@ -9,6 +9,7 @@ import org.paasta.container.platform.api.common.model.CommonResourcesYaml;
 import org.paasta.container.platform.api.common.model.Params;
 import org.paasta.container.platform.api.common.model.ResultStatus;
 import org.paasta.container.platform.api.workloads.pods.support.ContainerStatusesItem;
+import org.paasta.container.platform.api.workloads.pods.support.PodsListItem;
 import org.paasta.container.platform.api.workloads.pods.support.PodsStatus;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpMethod;

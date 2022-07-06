@@ -18,19 +18,19 @@ import org.springframework.web.bind.annotation.*;
  **/
 @Api(value = "OverviewController v1")
 @RestController
-@RequestMapping("/clusters/{cluster:.+}/namespaces/{namespace:.+}/overview")
 public class OverviewController {
 
     private final OverviewService overviewService;
-
+    private final GlobalOverviewService globalOverviewService;
     /**
      * Instantiates a new Overview controller
      *
      * @param overviewService the overview service
      */
     @Autowired
-    public OverviewController(OverviewService overviewService) {
+    public OverviewController(OverviewService overviewService, GlobalOverviewService globalOverviewService) {
         this.overviewService = overviewService;
+        this.globalOverviewService = globalOverviewService;
     }
 
 
@@ -44,7 +44,7 @@ public class OverviewController {
     @ApiImplicitParams({
             @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body")
     })
-    @GetMapping
+    @GetMapping("/clusters/{cluster:.+}/namespaces/{namespace:.+}/overview")
     public Overview getOverview(Params params) {
 
         if (params.getNamespace().equalsIgnoreCase(Constants.ALL_NAMESPACES)) {
@@ -55,4 +55,36 @@ public class OverviewController {
 
     }
 
+
+    /**
+     * Global Overview 조회(Get Global Overview)
+     *
+     * @param params the params
+     * @return the global overview
+     */
+    @ApiOperation(value = "Global Overview 조회(Get Global Overview)", nickname = "getGlobalOverview")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body")
+    })
+    @GetMapping("/clusters/{cluster:.+}/overview")
+    public GlobalOverview getGlobalOverview(Params params) {
+      return null;
+    }
+
+
+
+    /**
+     * Global Overview 조회(Get Global Overview)
+     *
+     * @param params the params
+     * @return the global overview
+     */
+    @ApiOperation(value = "Global Overview 조회(Get Global Overview)", nickname = "getGlobalOverview")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body")
+    })
+    @GetMapping("/test")
+    public void getTest(Params params) {
+       // globalOverviewService.getGlobalOverview(params);
+    }
 }

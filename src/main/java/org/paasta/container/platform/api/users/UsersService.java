@@ -295,6 +295,12 @@ public class UsersService {
      UsersList usersList =  restTemplateService.send(TARGET_COMMON_API, Constants.URI_COMMON_API_CLUSTER_LIST_BY_USER
                 .replace("{userAuthId:.+}", params.getUserAuthId()).replace("{userType:.+}", params.getUserType()),
              HttpMethod.GET, null, UsersList.class, params);
+
+     if(params.getIsGlobal()){
+         // global 화면의 경우 SUPER-ADMIN, CLUSTER-ADMIN 권한과 맵핑된 클러스터 목록 반환
+         List<Users> items = usersList.getItems().stream().filter(x-> !x.getUserType().equals(AUTH_USER)).collect(Collectors.toList());
+         usersList.setItems(items);
+     }
         return (UsersList) commonService.setResultModel(usersList, Constants.RESULT_STATUS_SUCCESS);
     }
 

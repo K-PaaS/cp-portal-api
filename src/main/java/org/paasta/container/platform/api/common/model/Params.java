@@ -58,6 +58,7 @@ public class Params {
     private String browser = Constants.EMPTY_STRING;
     private String clientIp = Constants.EMPTY_STRING;
 
+    private Boolean isGlobal = false;
 
     public Params(){
         this.cluster = Constants.EMPTY_STRING;

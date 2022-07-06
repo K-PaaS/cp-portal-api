@@ -11,6 +11,7 @@ import org.paasta.container.platform.api.common.CommonUtils;
 import org.paasta.container.platform.api.common.model.CommonItemMetaData;
 import org.paasta.container.platform.api.common.model.CommonMetaData;
 import org.paasta.container.platform.api.storages.persistentVolumes.support.ObjectReference;
+import org.paasta.container.platform.api.storages.persistentVolumes.support.PersistentVolumesListItem;
 import org.paasta.container.platform.api.storages.persistentVolumes.support.PersistentVolumesSpec;
 import org.paasta.container.platform.api.storages.persistentVolumes.support.PersistentVolumesStatus;
 
@@ -30,47 +31,4 @@ public class PersistentVolumesList {
     private Map metadata;
     private CommonItemMetaData itemMetaData;
     private List<PersistentVolumesListItem> items;
-}
-
-@Data
-class PersistentVolumesListItem {
-    private String name;
-    private Object capacity;
-    private String accessMode;
-    private String persistentVolumeStatus;
-    private ObjectReference claim;
-    private String creationTimestamp;
-
-    @JsonIgnore
-    private CommonMetaData metadata;
-
-    @JsonIgnore
-    private PersistentVolumesSpec spec;
-
-    @JsonIgnore
-    private PersistentVolumesStatus status;
-
-    public String getName() {
-        return metadata.getName();
-    }
-
-    public Object getCapacity() {
-        return CommonUtils.procReplaceNullValue(spec.getCapacity());
-    }
-
-    public List<String> getAccessMode() {
-        return spec.getAccessModes();
-    }
-
-    public String getPersistentVolumeStatus() {
-        return status.getPhase();
-    }
-
-    public ObjectReference getClaim() {
-        return CommonUtils.procReplaceNullValue(spec.getClaimRef());
-    }
-
-    public String getCreationTimestamp() {
-        return metadata.getCreationTimestamp();
-    }
 }

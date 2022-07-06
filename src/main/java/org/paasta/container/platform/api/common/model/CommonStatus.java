@@ -23,4 +23,6 @@ public class CommonStatus {
     private List<CommonCondition> conditions;
     private String podIP;
     private String qosClass;
+    private CommonNodeInfo nodeInfo;
+    private CommonCapacity capacity;
 }

@@ -136,7 +136,7 @@ public class RestTemplateService {
         if (reqApi.equals(Constants.TARGET_CP_MASTER_API)) {
             if (httpMethod.equals(HttpMethod.GET) && params.getNamespace().equalsIgnoreCase(Constants.ALL_NAMESPACES)) {
                 reqUrl = reqUrl.replace("namespaces/{namespace}/", "");
-                reqUrl += commonService.generateFieldSelectorForExceptNamespace(params.getSelectorType());
+             //   reqUrl += commonService.generateFieldSelectorForExceptNamespace(params.getSelectorType());
             }
 
             reqUrl += params.getAddParam();

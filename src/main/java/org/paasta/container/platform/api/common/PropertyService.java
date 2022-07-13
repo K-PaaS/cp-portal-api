@@ -390,13 +390,21 @@ public class PropertyService {
 
     @Value("${vault.path.cluster-token}")
     private String vaultClusterTokenPath;
-    // metrics api
-    @Value("${cpMaster.api.metrics.node.list}")
-    private String cpMasterApiMetricsNodeListUrl;
 
-    @Value("${cpMaster.api.metrics.node.get}")
-    private String cpMasterApiMetricsNodeGetUrl;
     //clusters
     @Value("${vault.path.provider-credential}")
     private String cpVaultPathProviderCredential;
+
+    // metrics api
+    @Value("${cpMaster.api.metrics.node.list}")
+    private String cpMasterApiMetricsNodesListUrl;
+
+    @Value("${cpMaster.api.metrics.node.get}")
+    private String cpMasterApiMetricsNodesGetUrl;
+
+    @Value("${cpMaster.api.metrics.pod.list}")
+    private String cpMasterApiMetricsPodsListUrl;
+
+    @Value("${cpMaster.api.metrics.pod.get}")
+    private String cpMasterApiMetricsPodsGetUrl;
 }

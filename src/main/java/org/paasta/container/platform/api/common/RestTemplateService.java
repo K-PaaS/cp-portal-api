@@ -30,6 +30,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 import static org.paasta.container.platform.api.common.Constants.TARGET_COMMON_API;
+import static org.paasta.container.platform.api.common.Constants.TARGET_TERRAMAN_API;
 
 /**
  * Rest Template Service 클래스
@@ -116,6 +117,10 @@ public class RestTemplateService {
         return sendAdmin(reqApi, reqUrl, httpMethod, bodyObject, responseType, Constants.ACCEPT_TYPE_JSON, MediaType.APPLICATION_JSON_VALUE, params);
     }
 
+    public <T> T sendGlobal(String reqApi, String reqUrl, HttpMethod httpMethod, Object bodyObject, Class<T> responseType, Params params) {
+        return send(reqApi, reqUrl, httpMethod, bodyObject, responseType, Constants.ACCEPT_TYPE_JSON, MediaType.APPLICATION_JSON_VALUE, params);
+    }
+
 
     /**
      * 사용자가 보낸 YAML 그대로 REST API Call 하는 메소드(Call the Rest Api) isAdmin 제거
@@ -200,6 +205,55 @@ public class RestTemplateService {
     }
 
 
+    /**
+     * t 전송(Send t)
+     * <p></p>
+     *
+     * @param <T>          the type parameter
+     * @param reqApi       the req api
+     * @param reqUrl       the req url
+     * @param httpMethod   the http method
+     * @param bodyObject   the body object
+     * @param responseType the response type
+     * @param acceptType   the accept type
+     * @param contentType  the content type
+     * @return the t
+     */
+    public <T> T send(String reqApi, String reqUrl, HttpMethod httpMethod, Object bodyObject, Class<T> responseType, String acceptType, String contentType, Params params) {
+        reqUrl = setRequestParameter(reqApi, reqUrl, httpMethod, params);
+        setApiUrlAuthorizationClusterAdmin(reqApi, params);
+
+        HttpHeaders reqHeaders = new HttpHeaders();
+        reqHeaders.add(AUTHORIZATION_HEADER_KEY, base64Authorization);
+        reqHeaders.add(CONTENT_TYPE, contentType);
+        reqHeaders.add("ACCEPT", acceptType);
+
+        HttpEntity<Object> reqEntity;
+        if (bodyObject == null) {
+            reqEntity = new HttpEntity<>(reqHeaders);
+        } else {
+            reqEntity = new HttpEntity<>(bodyObject, reqHeaders);
+        }
+
+        LOGGER.info("<T> T SEND :: REQUEST: {} BASE-URL: {}, CONTENT-TYPE: {}", CommonUtils.loggerReplace(httpMethod), CommonUtils.loggerReplace(reqUrl), CommonUtils.loggerReplace(reqHeaders.get(CONTENT_TYPE)));
+
+        ResponseEntity<T> resEntity = null;
+
+        try {
+            resEntity = restTemplate.exchange(baseUrl + reqUrl, httpMethod, reqEntity, responseType);
+        } catch (HttpStatusCodeException exception) {
+            LOGGER.info("HttpStatusCodeException API Call URL : {}, errorCode : {}, errorMessage : {}", CommonUtils.loggerReplace(reqUrl), CommonUtils.loggerReplace(exception.getRawStatusCode()), CommonUtils.loggerReplace(exception.getMessage()));
+            throw new CommonStatusCodeException(Integer.toString(exception.getRawStatusCode()));
+        }
+
+        if (resEntity.getBody() == null) {
+            LOGGER.error("RESPONSE-TYPE: RESPONSE BODY IS NULL");
+        }
+
+        return resEntity.getBody();
+    }
+
+
 
 
 
@@ -237,6 +291,7 @@ public class RestTemplateService {
 
         if (resEntity.getBody() != null) {
             LOGGER.info("RESPONSE-TYPE: {}", CommonUtils.loggerReplace(resEntity.getBody().getClass()));
+            LOGGER.info("#####2#####");
         } else {
             LOGGER.error("RESPONSE-TYPE: RESPONSE BODY IS NULL");
         }
@@ -328,6 +383,17 @@ public class RestTemplateService {
         if (TARGET_COMMON_API.equals(reqApi)) {
             apiUrl = propertyService.getCommonApiUrl();
             authorization = commonApiBase64Authorization;
+        }
+
+        // TERRAMAN API
+        if (TARGET_TERRAMAN_API.equals(reqApi)) {
+            apiUrl = propertyService.getTerramanApiUrl();
+            /*
+            FIXME!!
+            TERRAMAN API authorization
+             */
+            authorization = null;
+
         }
 
         this.base64Authorization = authorization;
@@ -429,7 +495,6 @@ public class RestTemplateService {
     public <T> T statusCodeDiscriminate(String reqApi, ResponseEntity<T> res, HttpMethod httpMethod) {
         // 200, 201, 202일때 결과 코드 동일하게(Same Result Code = 200, 201, 202)
         Integer[] RESULT_STATUS_SUCCESS_CODE = {200, 201, 202};
-
         ResultStatus resultStatus;
 
         List<Integer> intList = new ArrayList<>(RESULT_STATUS_SUCCESS_CODE.length);

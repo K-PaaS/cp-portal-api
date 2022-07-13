@@ -23,6 +23,9 @@ public class PropertyService {
     @Value("${commonApi.url}")
     private String commonApiUrl;
 
+    @Value("${cpTerraman.api.url}")
+    private String terramanApiUrl;
+
     @Value("${cpNamespace.ignoreNamespace}")
     List<String> ignoreNamespaceList;
 
@@ -387,12 +390,13 @@ public class PropertyService {
 
     @Value("${vault.path.cluster-token}")
     private String vaultClusterTokenPath;
-
     // metrics api
     @Value("${cpMaster.api.metrics.node.list}")
     private String cpMasterApiMetricsNodeListUrl;
 
     @Value("${cpMaster.api.metrics.node.get}")
     private String cpMasterApiMetricsNodeGetUrl;
-
+    //clusters
+    @Value("${vault.path.provider-credential}")
+    private String cpVaultPathProviderCredential;
 }

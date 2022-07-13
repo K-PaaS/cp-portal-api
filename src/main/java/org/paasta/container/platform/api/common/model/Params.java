@@ -41,6 +41,22 @@ public class Params {
     public String rs_rq = Constants.EMPTY_STRING;
     public String rs_lr = Constants.EMPTY_STRING;
 
+    //provider
+    public Object providerInfo = null;
+    public String region = Constants.EMPTY_STRING;
+    public Constants.ProviderType providerType = Constants.ProviderType.AWS;
+
+    //hcl
+    public String hclScript = Constants.EMPTY_STRING;
+
+    //cluster
+    public Boolean isClusterRegister = false;
+    public String clusterApiUrl = Constants.EMPTY_STRING;
+    public String clusterToken = Constants.EMPTY_STRING;
+    public String cloudAccountId = Constants.EMPTY_STRING;
+    public String clusterType = Constants.CLUSTER_TYPE_SUB;
+    public String description = Constants.EMPTY_STRING;
+
     // sign Up
     public Boolean isSuperAdmin = false;
 
@@ -53,7 +69,6 @@ public class Params {
     public
     @JsonProperty("yaml")
     String yaml = Constants.EMPTY_STRING;
-
 
     private String browser = Constants.EMPTY_STRING;
     private String clientIp = Constants.EMPTY_STRING;

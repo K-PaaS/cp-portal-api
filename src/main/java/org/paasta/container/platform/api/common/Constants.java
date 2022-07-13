@@ -1,5 +1,7 @@
 package org.paasta.container.platform.api.common;
 
+import org.paasta.container.platform.api.clusters.clusters.support.AWSInfo;
+import org.paasta.container.platform.api.clusters.clusters.support.GCPInfo;
 import org.springframework.http.MediaType;
 import java.util.*;
 
@@ -30,7 +32,11 @@ public class Constants {
 
     public static final String TARGET_CP_MASTER_API = "cpMasterApi/{cluster}";
     public static final String TARGET_COMMON_API = "commonApi";
+    //FIXME!!
+    public static final String TARGET_TERRAMAN_API = "";
 
+    public static final String CLUSTER_TYPE_HOST = "host";
+    public static final String CLUSTER_TYPE_SUB = "sub";
     public static final String ACCEPT_TYPE_YAML = "application/yaml";
 
     public static final String TOKEN_KEY = "cp_admin";
@@ -227,6 +233,7 @@ public class Constants {
 
     public static final String RESOURCE_NAME = "name";
     public static final String RESOURCE_CREATIONTIMESTAMP = "creationTimestamp";
+    public static final String RESOURCE_CREATED = "created";
     public static final String RESOURCE_METADATA = "metadata";
     public static final String RESOURCE_NS = "namespace";
     public static final String RESOURCE_ANNOTATIONS = "annotations";
@@ -289,6 +296,21 @@ public class Constants {
         LIMIT_RANGES_ITEM,
         COMMON_OWNER_REFERENCES,
         STRING
+    }
+
+    public enum ProviderType {
+        AWS("AWSInfo"),
+        GCP("GCPInfo");
+
+        private final String classType;
+
+        ProviderType(String classType) {
+            this.classType = classType;
+        }
+
+        public String getClassType() {
+            return classType;
+        }
     }
 
     public static final String STRING_CONDITION_READY = "Ready";

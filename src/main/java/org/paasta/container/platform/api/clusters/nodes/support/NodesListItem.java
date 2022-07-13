@@ -2,14 +2,15 @@ package org.paasta.container.platform.api.clusters.nodes.support;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
-import org.paasta.container.platform.api.common.CommonService;
 import org.paasta.container.platform.api.common.CommonUtils;
 import org.paasta.container.platform.api.common.Constants;
 import org.paasta.container.platform.api.common.model.CommonCondition;
 import org.paasta.container.platform.api.common.model.CommonMetaData;
 import org.paasta.container.platform.api.common.model.CommonStatus;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.paasta.container.platform.api.metrics.custom.Quantity;
+
 import java.util.List;
+import java.util.Map;
 
 
 @Data
@@ -18,15 +19,16 @@ public class NodesListItem {
     private Object labels;
     private String ready;
     private String creationTimestamp;
+    private Map<String, Quantity> usage;
+
+    private String clusterId;
+    private String clusterName;
 
     @JsonIgnore
     private CommonMetaData metadata;
 
     @JsonIgnore
     private CommonStatus status;
-
-    @Autowired
-    private CommonService commonService;
 
     public String getName() {
         return name = metadata.getName();

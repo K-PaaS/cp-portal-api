@@ -66,9 +66,9 @@ public class OverviewController {
     @ApiImplicitParams({
             @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body")
     })
-    @GetMapping("/clusters/{cluster:.+}/overview")
+    @GetMapping("/global/overview")
     public GlobalOverview getGlobalOverview(Params params) {
-      return null;
+      return  globalOverviewService.getGlobalOverview(params);
     }
 
 
@@ -84,7 +84,8 @@ public class OverviewController {
             @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body")
     })
     @GetMapping("/test")
-    public void getTest(Params params) {
-       // globalOverviewService.getGlobalOverview(params);
+    public Object getTest(Params params) {
+
+        return null;//return globalOverviewService.topPods(params);
     }
 }

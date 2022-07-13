@@ -73,19 +73,18 @@ public class UsersService {
      * @return the users list
      */
     public UsersAdminList getUsersAllByCluster(Params params) {
-        String reqUrlParam = "?searchName=" + params.getSearchName().trim() ;
-        if(params.getIsActive().equalsIgnoreCase(CHECK_FALSE)) {
-            reqUrlParam +=  "&isActive=false";
+        String reqUrlParam = "?searchName=" + params.getSearchName().trim();
+        if (params.getIsActive().equalsIgnoreCase(CHECK_FALSE)) {
+            reqUrlParam += "&isActive=false";
         }
 
         UsersAdminList usersAdminList = restTemplateService.send(TARGET_COMMON_API,
-                Constants.URI_COMMON_API_USERS_LIST_BY_CLUSTER.replace("{cluster:.+}", params.getCluster()) + reqUrlParam, HttpMethod.GET, null, UsersAdminList.class , params);
+                Constants.URI_COMMON_API_USERS_LIST_BY_CLUSTER.replace("{cluster:.+}", params.getCluster()) + reqUrlParam, HttpMethod.GET, null, UsersAdminList.class, params);
 
         // 페이징 적용
         usersAdminList = commonService.userListProcessing(usersAdminList, params, UsersAdminList.class);
         return (UsersAdminList) commonService.setResultModel(usersAdminList, Constants.RESULT_STATUS_SUCCESS);
     }
-
 
 
     /**
@@ -102,12 +101,11 @@ public class UsersService {
                     .replace("{userId:.+}", params.getUserId())
                     .replace("{userType:.+}", params.getUserType()), HttpMethod.GET, null, UsersAdmin.class, params);
 
-            if(usersAdmin.getResultMessage().equalsIgnoreCase(MessageConstant.USER_NOT_MAPPED_TO_THE_NAMESPACE_MESSAGE.getMsg())) {
+            if (usersAdmin.getResultMessage().equalsIgnoreCase(MessageConstant.USER_NOT_MAPPED_TO_THE_NAMESPACE_MESSAGE.getMsg())) {
                 List<UsersAdmin.UsersDetails> items = new ArrayList<>();
                 usersAdmin.setItems(items);
                 return commonService.setResultModel(commonService.setResultObject(usersAdmin, UsersAdmin.class), Constants.RESULT_STATUS_SUCCESS);
             }
-
 
 
             for (UsersAdmin.UsersDetails usersDetails : usersAdmin.getItems()) {
@@ -135,7 +133,8 @@ public class UsersService {
                     usersDetails.setSecrets(UsersAdmin.Secrets.builder()
                             .saSecret(secrets.getMetadata().getName())
                             .secretLabels(secrets.getMetadata().getLabels())
-                            .secretType(secrets.getType()).build()); }
+                            .secretType(secrets.getType()).build());
+                }
             }
 
         } catch (Exception e) {
@@ -147,12 +146,11 @@ public class UsersService {
     }
 
 
-
     /**
      * Users 수정(Update Users)
      *
      * @param params the params
-     * @param users   the users
+     * @param users  the users
      * @return the resultStatus
      * @throws Exception
      */
@@ -230,14 +228,13 @@ public class UsersService {
             params_add.setResourceName(saSecretName);
 
 
-            Users newUser = new  Users(params.getCluster(), nr.getNamespace() , users.getUserId(), users.getUserAuthId(), AUTH_USER, nr.getRole(), users.getUserAuthId(),
+            Users newUser = new Users(params.getCluster(), nr.getNamespace(), users.getUserId(), users.getUserAuthId(), AUTH_USER, nr.getRole(), users.getUserAuthId(),
                     saSecretName, resourceYamlService.getSecrets(params_add).getUserAccessToken());
             rsDb = createUsers(newUser);
         }
 
         return (ResultStatus) commonService.setResultModel(rsDb, Constants.RESULT_STATUS_SUCCESS);
     }
-
 
 
     /**
@@ -291,16 +288,17 @@ public class UsersService {
      * @param params the params
      * @return the UsersList
      */
-    public UsersList getMappingClustersListByUser(Params params){
-     UsersList usersList =  restTemplateService.send(TARGET_COMMON_API, Constants.URI_COMMON_API_CLUSTER_LIST_BY_USER
-                .replace("{userAuthId:.+}", params.getUserAuthId()).replace("{userType:.+}", params.getUserType()),
-             HttpMethod.GET, null, UsersList.class, params);
+    public UsersList getMappingClustersListByUser(Params params) {
+        commonService.setUsersDataFromToken(params);
+        UsersList usersList = restTemplateService.send(TARGET_COMMON_API, Constants.URI_COMMON_API_CLUSTER_LIST_BY_USER
+                        .replace("{userAuthId:.+}", params.getUserAuthId()).replace("{userType:.+}", params.getUserType()),
+                HttpMethod.GET, null, UsersList.class, params);
 
-     if(params.getIsGlobal()){
-         // global 화면의 경우 SUPER-ADMIN, CLUSTER-ADMIN 권한과 맵핑된 클러스터 목록 반환
-         List<Users> items = usersList.getItems().stream().filter(x-> !x.getUserType().equals(AUTH_USER)).collect(Collectors.toList());
-         usersList.setItems(items);
-     }
+        if (params.getIsGlobal()) {
+            // global 화면의 경우 SUPER-ADMIN, CLUSTER-ADMIN 권한과 맵핑된 클러스터 목록 반환
+            List<Users> items = usersList.getItems().stream().filter(x -> !x.getUserType().equals(AUTH_USER)).collect(Collectors.toList());
+            usersList.setItems(items);
+        }
         return (UsersList) commonService.setResultModel(usersList, Constants.RESULT_STATUS_SUCCESS);
     }
 
@@ -311,8 +309,8 @@ public class UsersService {
      * @param params the params
      * @return the UsersList
      */
-    public UsersList getMappingNamespacesListByUser(Params params){
-        UsersList usersList =  restTemplateService.send(TARGET_COMMON_API, Constants.URI_COMMON_API_NAMESPACES_ROLE_BY_CLUSTER_USER_AUTH_ID
+    public UsersList getMappingNamespacesListByUser(Params params) {
+        UsersList usersList = restTemplateService.send(TARGET_COMMON_API, Constants.URI_COMMON_API_NAMESPACES_ROLE_BY_CLUSTER_USER_AUTH_ID
                         .replace("{cluster:.+}", params.getCluster())
                         .replace("{userAuthId:.+}", params.getUserAuthId()),
                 HttpMethod.GET, null, UsersList.class, params);
@@ -320,25 +318,23 @@ public class UsersService {
     }
 
 
-
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //사용자 포탈 기능, 운영자 포탈에 적용될 수 있으므로 보류
-
 
 
     /**
      * Users 전체 목록 조회(Get Users list)
      *
-     * @param cluster the cluster
+     * @param cluster   the cluster
      * @param namespace the namespace
-     * @param userId the userId
+     * @param userId    the userId
      * @return the users list
      */
-    public UsersListAdmin getUsersAll(String cluster,String namespace, String userId) {
+    public UsersListAdmin getUsersAll(String cluster, String namespace, String userId) {
 
         Users users = getUsers(cluster, namespace, userId);
 
-        if(users == null || !users.getUserType().equals(AUTH_NAMESPACE_ADMIN)) {
+        if (users == null || !users.getUserType().equals(AUTH_NAMESPACE_ADMIN)) {
             UsersListAdmin usersListAdmin = new UsersListAdmin();
             usersListAdmin.setResultCode(RESULT_STATUS_FAIL);
             usersListAdmin.setResultMessage(CommonStatusCode.FORBIDDEN.getMsg());
@@ -350,10 +346,6 @@ public class UsersService {
 
         return (UsersListAdmin) commonService.setResultModel(commonService.setResultObject(rsDb, UsersListAdmin.class), Constants.RESULT_STATUS_SUCCESS);
     }
-
-
-
-
 
 
     /**
@@ -378,7 +370,7 @@ public class UsersService {
      * @return the users list
      */
     public UsersList getUsersListByNamespace(String cluster, String namespace) {
-        UsersList usersList =  restTemplateService.send(Constants.TARGET_COMMON_API, Constants.URI_COMMON_API_USERS_LIST_BY_NAMESPACE
+        UsersList usersList = restTemplateService.send(Constants.TARGET_COMMON_API, Constants.URI_COMMON_API_USERS_LIST_BY_NAMESPACE
                 .replace("{cluster:.+}", cluster)
                 .replace("{namespace:.+}", namespace), HttpMethod.GET, null, UsersList.class);
 
@@ -392,9 +384,6 @@ public class UsersService {
 
         return usersList;
     }
-
-
-
 
 
     /**
@@ -424,14 +413,12 @@ public class UsersService {
     }
 
 
-
-
     /**
      * Namespace 와 userId로 사용자 단 건 상세 조회(Get Users userId namespace)
      *
-     * @param cluster       the cluster
-     * @param namespace     the namespace
-     * @param userAuthId    the userAuthId
+     * @param cluster    the cluster
+     * @param namespace  the namespace
+     * @param userAuthId the userAuthId
      * @return the users detail
      */
     public Users getUsers(String cluster, String namespace, String userAuthId) {
@@ -465,8 +452,6 @@ public class UsersService {
     }
 
 
-
-
     /**
      * Users 삭제(Delete Users)
      *
@@ -496,7 +481,6 @@ public class UsersService {
     public ResultStatus modifyUsers(String userId, Users user) {
         return restTemplateService.sendAdmin(TARGET_COMMON_API, Constants.URI_COMMON_API_USERS_DETAIL.replace("{userId:.+}", userId), HttpMethod.PUT, user, ResultStatus.class);
     }
-
 
 
 //    /**
@@ -610,12 +594,11 @@ public class UsersService {
 //    }
 
 
-
     /**
      * CLUSTER_ADMIN 권한을 가진 운영자 상세 조회(Get Cluster Admin's info)
      *
-     * @param cluster   the cluster
-     * @param userId    the userId
+     * @param cluster the cluster
+     * @param userId  the userId
      * @return the users detail
      */
     public Users getClusterAdminUsers(String cluster, String userId) {
@@ -643,7 +626,6 @@ public class UsersService {
     }
 
 
-
     /**
      * Users 이름 목록 조회(Get Users names list)
      *
@@ -662,7 +644,7 @@ public class UsersService {
     public Boolean duplicatedUserIdCheck(Users users) {
         Boolean isDuplicated = false;
         List<String> list = getUsersNameListByDuplicated().get(Constants.USERS);
-        for (String name:list) {
+        for (String name : list) {
             if (name.equals(users.getUserId())) {
                 isDuplicated = true;
             }
@@ -671,11 +653,10 @@ public class UsersService {
     }
 
 
-
     /**
      * 사용자 아이디, 사용자 인증 아이디, 네임스페이스를 통한 Users 삭제 (Delete Users by userId, userAuthId and namespace)
      *
-     * @param userId the userId
+     * @param userId     the userId
      * @param userAuthId the userAuthId
      * @return the resultStatus
      */

@@ -5,10 +5,10 @@ import lombok.Data;
 @Data
 public class Count {
 
-    private Object count;
-    private Object all;
+    private Integer count;
+    private Integer all;
 
-    public Count(Object count, Object all){
+    public Count(Integer count, Integer all){
         this.count = count;
         this.all = all;
     }

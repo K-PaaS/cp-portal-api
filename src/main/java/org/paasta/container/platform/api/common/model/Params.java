@@ -30,6 +30,7 @@ public class Params {
     public String isActive = "true";
     public String nodeName = Constants.EMPTY_STRING;
     public String resourceUid = Constants.EMPTY_STRING;
+    public String clusterName = Constants.EMPTY_STRING;
 
     // request parameter setting
     public String addParam = Constants.EMPTY_STRING;
@@ -72,6 +73,8 @@ public class Params {
 
     private String browser = Constants.EMPTY_STRING;
     private String clientIp = Constants.EMPTY_STRING;
+
+
 
     private Boolean isGlobal = false;
 

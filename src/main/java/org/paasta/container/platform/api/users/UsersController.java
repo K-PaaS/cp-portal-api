@@ -152,8 +152,6 @@ public class UsersController {
     })
     @GetMapping(value = "/users/clustersList")
     public UsersList getClustersListByUserOwns(Params params) {
-        commonService.setUsersDataFromToken(params);
-        System.out.println("userAuthId: "+params.getUserAuthId() + " userType: " + params.getUserType());
         return usersService.getMappingClustersListByUser(params);
     }
 

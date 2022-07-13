@@ -1,8 +1,10 @@
 package org.paasta.container.platform.api.common.model;
 
 import lombok.Data;
+import org.paasta.container.platform.api.metrics.custom.Quantity;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * Common Status Model 클래스
@@ -24,5 +26,6 @@ public class CommonStatus {
     private String podIP;
     private String qosClass;
     private CommonNodeInfo nodeInfo;
-    private CommonCapacity capacity;
+    private Map<String, Quantity> capacity;
+    private Map<String, Quantity> allocatable;
 }

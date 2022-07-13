@@ -33,6 +33,7 @@ public class Users {
     public String passwordConfirm;
     public String email;
     public String clusterName;
+    public String clusterProviderType;
     public String clusterApiUrl;
     public String clusterToken;
     public String cpNamespace;

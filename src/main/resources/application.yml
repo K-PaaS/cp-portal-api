@@ -179,6 +179,10 @@ cpMaster:
       node:
         list: "/apis/metrics.k8s.io/v1beta1/nodes"
         get: "/apis/metrics.k8s.io/v1beta1/nodes/{name}"
+      pod:
+        list: "/apis/metrics.k8s.io/v1beta1/pods"
+        get: "/apis/metrics.k8s.io/v1beta1/namespaces/{namespace}/pods/{name}"
+
 cpTerraman:
   api:
     url: ${CP_PORTAL_TERRAMAN_API_URI}

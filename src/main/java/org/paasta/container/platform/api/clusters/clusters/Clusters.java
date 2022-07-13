@@ -1,13 +1,14 @@
 package org.paasta.container.platform.api.clusters.clusters;
 
 import lombok.Data;
+import org.paasta.container.platform.api.common.Constants;
 
 /**
  * Clusters Model 클래스
  *
- * @author kjhoon
+ * @author hkm
  * @version 1.0
- * @since 2022.06.09
+ * @since 2022.06.30
  **/
 @Data
 public class Clusters {
@@ -18,9 +19,11 @@ public class Clusters {
 
     private String clusterId;
     private String clusterApiUrl;
-    private String clusterName;
+    private String name;
     private String clusterToken;
     private String clusterType;
+    private Constants.ProviderType providerType;
+    private String description;
     private String created;
     private String lastModified;
 }

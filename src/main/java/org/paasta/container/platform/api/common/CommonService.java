@@ -243,6 +243,22 @@ public class CommonService {
         return filterList;
     }
 
+    /**
+     * 리소스 명 기준, 키워드가 포함된 리스트 반환 처리(return the list including keywords)
+     *
+     * @param commonList the commonList
+     * @param keyword    the keyword
+     * @return the list
+     */
+    public <T> List<T> searchKeywordForGlobalResourceName(List<T> commonList, String keyword) {
+        List filterList = commonList.stream()
+                .filter(x -> this.<String>getField(Constants.RESOURCE_NAME,
+                        x).matches("(?i).*" + keyword + ".*"))
+                .collect(Collectors.toList());
+
+        return filterList;
+    }
+
 
     /**
      * 리소스 생성날짜 또는 이름으로 리스트 정렬 처리(order by creation time or name)
@@ -288,11 +304,52 @@ public class CommonService {
                 sortList = commonList.stream().sorted(Comparator.comparing(x -> this.<String>getField(Constants.RESOURCE_CREATIONTIMESTAMP,
                         getField(Constants.RESOURCE_METADATA, x)))).collect(Collectors.toList());
             } else {
-                sortList = commonList.stream().sorted(Comparator.comparing(x -> this.<String>getField(Constants.RESOURCE_CREATIONTIMESTAMP,
-                        getField(Constants.RESOURCE_METADATA, x))).reversed()).collect(Collectors.toList());
+                    sortList = commonList.stream().sorted(Comparator.comparing(x -> this.<String>getField(Constants.RESOURCE_CREATIONTIMESTAMP,
+                            getField(Constants.RESOURCE_METADATA, x))).reversed()).collect(Collectors.toList());
             }
         }
 
+        return sortList;
+    }
+
+    /**
+     * 리소스 생성날짜 또는 이름으로 리스트 정렬 처리(order by creation time or name)
+     *
+     * @param commonList the commonList
+     * @param orderBy    the orderBy
+     * @param order      the order
+     * @return the list
+     */
+    public <T> List<T> sortingGlobalListByCondition(List<T> commonList, String orderBy, String order) {
+
+        List sortList = null;
+
+        orderBy = orderBy.toLowerCase();
+        order = order.toLowerCase();
+
+        if (orderBy.equals(Constants.RESOURCE_NAME)) {
+            //리소스명 기준
+            order = (order.equals("")) ? "asc" : order;
+            if (order.equals("asc")) {
+                sortList = commonList.stream().sorted(Comparator.comparing(x -> this.<String>getField(Constants.RESOURCE_NAME,
+                        x))).collect(Collectors.toList());
+            } else {
+                sortList = commonList.stream().sorted(Comparator.comparing(x -> this.<String>getField(Constants.RESOURCE_NAME,
+                        x)).reversed()).collect(Collectors.toList());
+            }
+        } else {
+            // 생성날짜 기준
+            order = (order.equals("")) ? "desc" : order;
+
+            if (order.equals("asc")) {
+
+                sortList = commonList.stream().sorted(Comparator.comparing(x -> this.<String>getField(Constants.RESOURCE_CREATED,
+                        x))).collect(Collectors.toList());
+            } else {
+                    sortList = commonList.stream().sorted(Comparator.comparing(x -> this.<String>getField(Constants.RESOURCE_CREATED,
+                            x)).reversed()).collect(Collectors.toList());
+            }
+        }
         return sortList;
     }
 
@@ -590,6 +647,40 @@ public class CommonService {
 
         // 2. 조건에 따른 리스트 정렬
         resourceItemList = sortingListByCondition(resourceItemList, params.getOrderBy(), params.getOrder());
+
+        // 3. commonItemMetaData 추가
+        CommonItemMetaData commonItemMetaData = setCommonItemMetaData(resourceItemList, params.getOffset(), params.getLimit());
+        resourceReturnList = setField("itemMetaData", resourceList, commonItemMetaData);
+
+
+        // 4. offset, limit에 따른 리스트 subLIst
+        resourceItemList = subListforLimit(resourceItemList, params.getOffset(), params.getLimit());
+        resourceReturnList = setField("items", resourceReturnList, resourceItemList);
+
+        return (T) resourceReturnList;
+    }
+
+    /**
+     * Resource 목록에 대한 검색 및 페이징, 정렬을 위한 글로벌 공통 메서드(Common Method for searching, paging, ordering about resource's list)
+     *
+     * @param resourceList the resourceList
+     * @param params
+     * @param requestClass the requestClass
+     * @return the T
+     */
+    public <T> T globalListProcessing(Object resourceList, Params params, Class<T> requestClass) {
+
+        Object resourceReturnList = null;
+
+        List resourceItemList = getField("items", resourceList);
+
+        // 1. 키워드 match에 따른 리스트 필터
+        if (params.getSearchName() != null && !params.getSearchName().equals("")) {
+            resourceItemList = searchKeywordForGlobalResourceName(resourceItemList, params.getSearchName().trim());
+        }
+
+        // 2. 조건에 따른 리스트 정렬
+        resourceItemList = sortingGlobalListByCondition(resourceItemList, params.getOrderBy(), params.getOrder());
 
         // 3. commonItemMetaData 추가
         CommonItemMetaData commonItemMetaData = setCommonItemMetaData(resourceItemList, params.getOffset(), params.getLimit());

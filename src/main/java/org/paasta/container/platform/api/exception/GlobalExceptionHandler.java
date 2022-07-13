@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.validation.BindException;
 
 import java.util.Iterator;
 
@@ -66,6 +67,19 @@ public class GlobalExceptionHandler extends RuntimeException {
         return new ErrorMessage(ex.getErrorCode(), ex.getErrorMessage(), ex.getStatusCode(), ex.getDetailMessage());
     }
 
+    @ExceptionHandler({IllegalArgumentException.class})
+    @ResponseBody
+    public ErrorMessage handleException(IllegalArgumentException ex) {
+        LOGGER.info("IllegalArgumentException >>> " + CommonUtils.loggerReplace(ex.getLocalizedMessage()));
+        return new ErrorMessage(Constants.RESULT_STATUS_FAIL, CommonStatusCode.BAD_REQUEST.getMsg(), HttpStatus.BAD_REQUEST.value(), CommonStatusCode.BAD_REQUEST.getMsg());
+    }
+
+    @ExceptionHandler({BindException.class})
+    @ResponseBody
+    public ErrorMessage handleException(BindException ex) {
+        LOGGER.info("BindException >>> " + CommonUtils.loggerReplace(ex.getLocalizedMessage()));
+        return new ErrorMessage(Constants.RESULT_STATUS_FAIL, CommonStatusCode.BAD_REQUEST.getMsg(), HttpStatus.BAD_REQUEST.value(), CommonStatusCode.BAD_REQUEST.getMsg());
+    }
 
     @ExceptionHandler({Exception.class})
     public ErrorMessage handleAll(final Exception ex) {

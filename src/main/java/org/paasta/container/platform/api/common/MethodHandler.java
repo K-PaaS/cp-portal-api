@@ -58,7 +58,10 @@ public class MethodHandler {
      * @param joinPoint the joinPoint
      * @throws Throwable
      */
-    @Around("execution(* org.paasta.container.platform.api..*Controller.*create*(..))")
+    @Around("execution(* org.paasta.container.platform.api..*Controller.*create*(..))"
+            + "&& !execution(* org.paasta.container.platform.api.clusters.cloudAccounts.*.*(..))"
+            + "&& !execution(* org.paasta.container.platform.api.clusters.clusters.*.*(..))"
+            + "&& !execution(* org.paasta.container.platform.api.clusters.hclTemplates.*.*(..))")
     public Object createResourceAspect(ProceedingJoinPoint joinPoint) throws Throwable {
 
         String yaml = "";
@@ -211,7 +214,10 @@ public class MethodHandler {
      * @param joinPoint the joinPoint
      * @throws Throwable
      */
-    @Around("execution(* org.paasta.container.platform.api..*Controller.*update*(..))")
+    @Around("execution(* org.paasta.container.platform.api..*Controller.*update*(..))" +
+            "&& !execution(* org.paasta.container.platform.api.clusters.cloudAccounts.*.*(..))" +
+            "&& !execution(* org.paasta.container.platform.api.clusters.clusters.*.*(..))" +
+            "&& !execution(* org.paasta.container.platform.api.clusters.hclTemplates.*.*(..))")
     public Object updateResourceAspect(ProceedingJoinPoint joinPoint) throws Throwable {
 
         String yaml = null;

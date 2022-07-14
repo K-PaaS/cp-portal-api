@@ -32,6 +32,10 @@ public class MetricsService {
     private final PropertyService propertyService;
     private final ResultStatusService resultStatusService;
 
+
+    public static final String USAGE = "usage";
+    public static final String PERCENT = "percent";
+
     /**
      * Instantiates a new Roles service
      *
@@ -49,7 +53,7 @@ public class MetricsService {
 
 
     /**
-     * Metrics Node 목록 조회(Get Metrics for Nodes)
+     * Metrics Node 목록 조회(Get Metrics List for Nodes)
      *
      * @param params the params
      * @return the NodesMetricsList
@@ -63,10 +67,10 @@ public class MetricsService {
 
 
     /**
-     * Metrics Pods 목록 조회(Get Metrics for Pods)
+     * Metrics Pods 목록 조회(Get Metrics List for Pods)
      *
      * @param params the params
-     * @return the roles list
+     * @return the PodsMetricsList
      */
     public PodsMetricsList getPodsMetricsList(Params params) {
         HashMap responseMap = (HashMap) restTemplateService.send(Constants.TARGET_CP_MASTER_API,
@@ -76,6 +80,13 @@ public class MetricsService {
     }
 
 
+    /**
+     * Nodes Metrics 조회(Get Metrics for Nodes)
+     *
+     * @param nodeName         the nodeName
+     * @param nodesMetricsList the nodesMetricsList
+     * @return the NodesMetricsItems
+     */
     public NodesMetricsItems findNodeMetric(String nodeName, NodesMetricsList nodesMetricsList) {
         for (NodesMetricsItems metric : nodesMetricsList.getItems()) {
             if (metric.getName().equals(nodeName)) {
@@ -86,7 +97,15 @@ public class MetricsService {
     }
 
 
-    public double findClusterUsagePercentage(NodesList nodesList, NodesMetricsList nodesMetricsList, String type) {
+    /**
+     * 클러스터 노드 평균 사용량 조회 (Get Nodes Average Usage)
+     *
+     * @param nodesList        the nodesList
+     * @param nodesMetricsList the nodesMetricsList
+     * @param type             the type
+     * @return the double
+     */
+    public double findAllNodesAvgUsage(NodesList nodesList, NodesMetricsList nodesMetricsList, String type) {
 
         double sumCapacity = 0.0;
         double sumUsage = 0.0;
@@ -96,13 +115,19 @@ public class MetricsService {
             Quantity usage = findNodeMetric(node.getName(), nodesMetricsList).getUsage().get(type);
             sumCapacity += capacity.getNumber().doubleValue();
             sumUsage += usage.getNumber().doubleValue();
-
         }
 
         return sumUsage / sumCapacity;
     }
 
 
+    /**
+     * Pods 내 ContainerMetrics 합계 (Sum Container Metrics in Pods)
+     *
+     * @param podsMetricsItems the podsMetricsItems
+     * @param type             the type
+     * @return the double
+     */
     public static double podMetricSum(PodsMetricsItems podsMetricsItems, String type) {
         double sum = 0;
         for (ContainerMetrics containerMetrics : podsMetricsItems.getContainers()) {
@@ -114,7 +139,15 @@ public class MetricsService {
         return sum;
     }
 
-    public List<TopPods> topPods(List<PodsMetricsItems> podsMetricsList, String type) {
+    /**
+     * Top Pods 계산 (get TopN Pods)
+     *
+     * @param podsMetricsList the podsMetricsList
+     * @param type            the type
+     * @param topN            the topN
+     * @return the List<TopPods>
+     */
+    public List<TopPods> topPods(List<PodsMetricsItems> podsMetricsList, String type, Integer topN) {
         List<PodsMetricsItems> items = podsMetricsList;
         Collections.sort(
                 items,
@@ -130,15 +163,37 @@ public class MetricsService {
 
                 });
 
-        items = items.subList(0, 10);
+        items = items.subList(0, topN);
         List<TopPods> topPods = items.stream().map(x -> new TopPods(x.getClusterName(), x.getClusterId(), x.getNamespace(),
-                x.getName(), convertUsageUnit(type, podMetricSum(x, type)))).collect(Collectors.toList());
+                x.getName(), generatePodsUsageMap(Constants.CPU, x), generatePodsUsageMap(Constants.MEMORY, x))).collect(Collectors.toList());
 
         return topPods;
     }
 
 
-    public List<TopNodes> topNodes(List<NodesListItem> nodesList, String type) {
+    /**
+     * Pods 사용량 Map 반환 (Return Map for Pods Usage)
+     *
+     * @param type the type
+     * @param pm   the podsMetricsItems
+     * @return the Map<String, String>
+     */
+    public Map<String, String> generatePodsUsageMap(String type, PodsMetricsItems pm) {
+        Map<String, String> result = new HashMap<>();
+        result.put(USAGE, convertUsageUnit(type, podMetricSum(pm, type)));
+        return result;
+    }
+
+
+    /**
+     * Top Nodes 계산 (get TopN Nodes)
+     *
+     * @param nodesList the nodesList
+     * @param type      the type
+     * @param topN      the topN
+     * @return the List<TopNodes>
+     */
+    public List<TopNodes> topNodes(List<NodesListItem> nodesList, String type, Integer topN) {
         List<NodesListItem> items = nodesList;
         Collections.sort(
                 items,
@@ -151,17 +206,39 @@ public class MetricsService {
                     }
                 });
 
-        items = items.subList(0, 10);
+        items = items.subList(0, topN);
 
 
         // top nodes 변환
-        List<TopNodes> topNodes = items.stream().map(x -> new TopNodes(x.getClusterName(), x.getClusterId(),
-                x.getName(), convertPercnUnit(findNodePercentage(x, type)),
-                convertUsageUnit(type, x.getUsage().get(type).getNumber().doubleValue()))).collect(Collectors.toList());
+        List<TopNodes> topNodes = items.stream().map(x ->
+                new TopNodes(x.getClusterName(), x.getClusterId(), x.getName(), generateNodeUsageMap(Constants.CPU, x), generateNodeUsageMap(Constants.MEMORY, x))
+        ).collect(Collectors.toList());
         return topNodes;
     }
 
 
+    /**
+     * Nodes 사용량 Map 반환 (Return Map for Nodes Usage)
+     *
+     * @param type the type
+     * @param node the nodesListItem
+     * @return the Map<String, String>
+     */
+    public Map<String, String> generateNodeUsageMap(String type, NodesListItem node) {
+        Map<String, String> result = new HashMap<>();
+        result.put(USAGE, convertUsageUnit(type, node.getUsage().get(type).getNumber().doubleValue()));
+        result.put(PERCENT, convertPercnUnit(findNodePercentage(node, type)));
+        return result;
+    }
+
+
+    /**
+     * Nodes 사용량 Percent 계산 (Get Nodes Usage Percent)
+     *
+     * @param node the nodesListItem
+     * @param type the type
+     * @return the double
+     */
     public double findNodePercentage(NodesListItem node, String type) {
         Quantity capacity = node.getStatus().getAllocatable().get(type);
         Quantity usage = node.getUsage().get(type);
@@ -172,11 +249,24 @@ public class MetricsService {
     }
 
 
+    /**
+     * Percent String 포맷 (Percent String format)
+     *
+     * @param value the value
+     * @return the String
+     */
     public String convertPercnUnit(double value) {
-        return String.format("%.2f%%", (value) * 100);
+        return String.format("%.0f%%", (value) * 100);
     }
 
-
+    
+    /**
+     * 사용량 단위 변환 (Convert Usage Units)
+     *
+     * @param type  the type
+     * @param usage the usage
+     * @return the String
+     */
     public String convertUsageUnit(String type, double usage) {
         BaseExponent baseExpont = null;
         String unit = "";

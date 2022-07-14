@@ -137,8 +137,8 @@ public class GlobalOverviewService {
 
 
         GlobalOverview globalOverview = new GlobalOverview(clusterCnt, namespaceCnt, pvcCnt, pvCnt, podCnt, items,
-                metricsService.topNodes(nodesListAllCluster, Constants.CPU), metricsService.topNodes(nodesListAllCluster, Constants.MEMORY),
-                metricsService.topPods(podsMetricsAllCluster, Constants.CPU), metricsService.topPods(podsMetricsAllCluster, Constants.MEMORY));
+                metricsService.topNodes(nodesListAllCluster, Constants.CPU, params.getTopN()), metricsService.topNodes(nodesListAllCluster, Constants.MEMORY, params.getTopN()),
+                metricsService.topPods(podsMetricsAllCluster, Constants.CPU, params.getTopN()), metricsService.topPods(podsMetricsAllCluster, Constants.MEMORY, params.getTopN()));
 
 
         return (GlobalOverview) commonService.setResultModel(globalOverview, Constants.RESULT_STATUS_SUCCESS);
@@ -220,8 +220,8 @@ public class GlobalOverviewService {
 
         DecimalFormat df = new DecimalFormat("#%");
         Map<String, Object> usage = new HashMap<>();
-        usage.put(Constants.CPU, df.format(metricsService.findClusterUsagePercentage(nodesList, nodesMetricsList, Constants.CPU)));
-        usage.put(Constants.MEMORY, df.format(metricsService.findClusterUsagePercentage(nodesList, nodesMetricsList, Constants.MEMORY)));
+        usage.put(Constants.CPU, df.format(metricsService.findAllNodesAvgUsage(nodesList, nodesMetricsList, Constants.CPU)));
+        usage.put(Constants.MEMORY, df.format(metricsService.findAllNodesAvgUsage(nodesList, nodesMetricsList, Constants.MEMORY)));
 
         return usage;
     }

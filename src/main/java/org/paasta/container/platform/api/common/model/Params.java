@@ -31,6 +31,7 @@ public class Params {
     public String nodeName = Constants.EMPTY_STRING;
     public String resourceUid = Constants.EMPTY_STRING;
     public String clusterName = Constants.EMPTY_STRING;
+    public Integer topN = 5;
 
     // request parameter setting
     public String addParam = Constants.EMPTY_STRING;

@@ -10,8 +10,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
-
 import javax.servlet.http.HttpServletRequest;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -720,20 +718,6 @@ public class CommonService {
 
 
         return (T) resourceReturnList;
-    }
-
-
-    public void setUsersDataFromToken(Params params) {
-        RequestWrapper requestWrapper = new RequestWrapper(request);
-        String jwtToken = jwtUtil.extractJwtFromRequest(requestWrapper);
-
-        if (StringUtils.hasText(jwtToken) && jwtUtil.validateToken(jwtToken)) {
-            params.setUserAuthId(jwtUtil.getClaimsFromToken(jwtToken, "userAuthId"));
-
-            if (params.getUserType().equals(Constants.EMPTY_STRING)) {
-                params.setUserType(jwtUtil.getClaimsFromToken(jwtToken, "userType"));
-            }
-        }
     }
 
 }

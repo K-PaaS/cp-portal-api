@@ -167,8 +167,6 @@ public class UsersController {
     })
     @GetMapping(value = "/clusters/{cluster:.+}/users/namespacesList")
     public UsersList getNamespacesListByUserOwns(Params params) {
-        commonService.setUsersDataFromToken(params);
-        System.out.println("userAuthId: "+params.getUserAuthId() + " userType: " + params.getUserType());
         if (Constants.AUTH_ADMIN_LIST.contains(params.getUserType())) {
             return namespacesService.getMappingNamespacesListByAdmin(params);
         }

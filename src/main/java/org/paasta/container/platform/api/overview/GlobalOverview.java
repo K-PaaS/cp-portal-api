@@ -1,9 +1,7 @@
 package org.paasta.container.platform.api.overview;
-import io.swagger.models.auth.In;
 import lombok.Data;
 import org.paasta.container.platform.api.common.model.CommonItemMetaData;
 import org.paasta.container.platform.api.metrics.TopNodes;
-import org.paasta.container.platform.api.metrics.TopPods;
 
 import java.util.List;
 
@@ -35,16 +33,12 @@ public class GlobalOverview {
     private List<TopNodes> topNodesCPU;
     private List<TopNodes> topNodesMEM;
 
-    private List<TopPods> topPodsCPU;
-    private List<TopPods> topPodsMEM;
-
-
     public GlobalOverview(){
 
     }
 
-    public GlobalOverview(Integer clusterStatus, Integer namespaceStatus, Integer pvcStatus, Integer pvStatus, Integer podStatus, List<GlobalOverviewItems> items,
-                          List<TopNodes> topNodesCPU, List<TopNodes> topNodesMEM, List<TopPods> topPodsCPU, List<TopPods> topPodsMEM) {
+    public GlobalOverview(Integer clusterStatus, Integer namespaceStatus, Integer pvcStatus, Integer pvStatus, Integer podStatus,
+                          List<GlobalOverviewItems> items, List<TopNodes> topNodesCPU, List<TopNodes> topNodesMEM) {
         this.clusterStatus = clusterStatus;
         this.namespaceStatus = namespaceStatus;
         this.pvcStatus = pvcStatus;
@@ -53,7 +47,5 @@ public class GlobalOverview {
         this.items = items;
         this.topNodesCPU = topNodesCPU;
         this.topNodesMEM = topNodesMEM;
-        this.topPodsCPU = topPodsCPU;
-        this.topPodsMEM = topPodsMEM;
     }
 }

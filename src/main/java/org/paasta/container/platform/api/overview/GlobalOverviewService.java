@@ -2,6 +2,7 @@ package org.paasta.container.platform.api.overview;
 
 import org.paasta.container.platform.api.clusters.namespaces.NamespacesList;
 import org.paasta.container.platform.api.clusters.namespaces.NamespacesService;
+import org.paasta.container.platform.api.clusters.namespaces.support.NamespacesListItem;
 import org.paasta.container.platform.api.clusters.nodes.NodesList;
 import org.paasta.container.platform.api.clusters.nodes.NodesService;
 import org.paasta.container.platform.api.clusters.nodes.support.NodesListItem;
@@ -55,6 +56,7 @@ public class GlobalOverviewService {
     public static final String STATUS_RUNNING = "Running";
     public static final String NODE_CONDITIONS_READY = "Ready";
     public static final String STATUS_BOUND = "Bound";
+    public static final String STATUS_ACTIVE = "Active";
 
 
     public static final String CPU_UNIT = "m";
@@ -86,7 +88,7 @@ public class GlobalOverviewService {
 
 
     public GlobalOverview getGlobalOverview(Params params) {
-        List<PodsMetricsItems> podsMetricsAllCluster = new ArrayList<>();
+        // List<PodsMetricsItems> podsMetricsAllCluster = new ArrayList<>();
         List<NodesListItem> nodesListAllCluster = new ArrayList<>();
         params.setIsGlobal(true);
         params.setNamespace(Constants.ALL_NAMESPACES);
@@ -114,20 +116,19 @@ public class GlobalOverviewService {
             // pod data
             PodsList podsList = podsService.getPodsList(params);
             // pod metrics data
-            PodsMetricsList podsMetricsList = metricsService.getPodsMetricsList(params);
-            setPodsMetrics(params, podsMetricsList);
-            podsMetricsAllCluster.addAll(podsMetricsList.getItems());
+            // PodsMetricsList podsMetricsList = metricsService.getPodsMetricsList(params);
+            // setPodsMetrics(params, podsMetricsList);
+            // podsMetricsAllCluster.addAll(podsMetricsList.getItems());
+
 
             GlobalOverviewItems goi = new GlobalOverviewItems(users.getClusterId(), users.getClusterName(), users.getClusterProviderType(),
-                    getKubeletVersion(nodesList), getNodeCount(nodesList), getPodCount(podsList),
-                    getPvcCount(params), getPvCount(params), getClusterUsage(nodesList, nodesMetricsList));
+                    getKubeletVersion(nodesList), getNodeCount(nodesList), getNamespaceCount(params), getPodCount(podsList),
+                    getPvCount(params), getPvcCount(params), getClusterUsage(nodesList, nodesMetricsList));
 
-            // namespace data
-            NamespacesList namespacesList = namespacesService.getNamespacesList(params);
 
             // all count
             clusterCnt++;
-            namespaceCnt += namespacesList.getItems().size();
+            namespaceCnt += goi.getNamespaceCount().getAll();
             pvcCnt += goi.getPvcCount().getAll();
             pvCnt += goi.getPvCount().getAll();
             podCnt += goi.getPodCount().getAll();
@@ -136,10 +137,15 @@ public class GlobalOverviewService {
         }
 
 
+/*
         GlobalOverview globalOverview = new GlobalOverview(clusterCnt, namespaceCnt, pvcCnt, pvCnt, podCnt, items,
                 metricsService.topNodes(nodesListAllCluster, Constants.CPU, params.getTopN()), metricsService.topNodes(nodesListAllCluster, Constants.MEMORY, params.getTopN()),
                 metricsService.topPods(podsMetricsAllCluster, Constants.CPU, params.getTopN()), metricsService.topPods(podsMetricsAllCluster, Constants.MEMORY, params.getTopN()));
+*/
 
+
+        GlobalOverview globalOverview = new GlobalOverview(clusterCnt, namespaceCnt, pvcCnt, pvCnt, podCnt, items,
+                metricsService.topNodes(nodesListAllCluster, Constants.CPU, params.getTopN()), metricsService.topNodes(nodesListAllCluster, Constants.MEMORY, params.getTopN()));
 
         return (GlobalOverview) commonService.setResultModel(globalOverview, Constants.RESULT_STATUS_SUCCESS);
 
@@ -171,6 +177,20 @@ public class GlobalOverviewService {
         List<NodesListItem> readyNodes = nodesList.getItems().stream().filter(x -> x.getReady().equalsIgnoreCase(STATUS_TRUE)).collect(Collectors.toList());
         return new Count(readyNodes.size(), nodesList.getItems().size());
     }
+
+
+    /**
+     * Namespace Status 'Active' Count 조회
+     *
+     * @param params the params
+     * @return count the count
+     */
+    public Count getNamespaceCount(Params params) {
+        NamespacesList namespacesList = namespacesService.getNamespacesList(params);
+        List<NamespacesListItem> activeNamespaces = namespacesList.getItems().stream().filter(x -> x.getNamespaceStatus().equalsIgnoreCase(STATUS_ACTIVE)).collect(Collectors.toList());
+        return new Count(activeNamespaces.size(), namespacesList.getItems().size());
+    }
+
 
     /**
      * Pod Status 'Running' Count 조회

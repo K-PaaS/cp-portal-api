@@ -206,8 +206,10 @@ public class MetricsService {
                     }
                 });
 
-        items = items.subList(0, topN);
 
+        if (items.size() > topN) {
+            items = items.subList(0, topN);
+        }
 
         // top nodes 변환
         List<TopNodes> topNodes = items.stream().map(x ->
@@ -259,7 +261,7 @@ public class MetricsService {
         return String.format("%.0f%%", (value) * 100);
     }
 
-    
+
     /**
      * 사용량 단위 변환 (Convert Usage Units)
      *

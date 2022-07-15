@@ -5,6 +5,7 @@ import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.reflect.CodeSignature;
+import org.paasta.container.platform.api.common.model.Params;
 import org.paasta.container.platform.api.login.CustomUserDetails;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,6 +14,7 @@ import org.springframework.core.annotation.Order;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
 import javax.servlet.http.HttpServletRequest;
@@ -50,31 +52,39 @@ public class AdminCheckAspect {
      */
     @Around("execution(* org.paasta.container.platform.api..*Controller.*(..))" + "&& !@annotation(org.paasta.container.platform.api.config.NoAuth)")
     public Object isAdminAspect(ProceedingJoinPoint joinPoint) throws Throwable {
-        Object[] parameterValues = Arrays.asList(joinPoint.getArgs()).toArray();
+
         String uLang = Constants.U_LANG_KO;
 
         UsernamePasswordAuthenticationToken authentication = (UsernamePasswordAuthenticationToken) SecurityContextHolder.getContext().getAuthentication();
+        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
         List<GrantedAuthority> list = (List<GrantedAuthority>) authentication.getAuthorities();
-        LOGGER.info("YOUR AUTHORITY :: {}", CommonUtils.loggerReplace(list.get(0).getAuthority()));
         String authority = list.get(0).getAuthority();
+        String userAuthId = userDetails.getPassword();
 
-        boolean isAdmin = false;
 
-        if(Constants.AUTH_CLUSTER_ADMIN.equals(authority)) {
-            isAdmin = true;
-        }
+        LOGGER.info("YOUR AUTHORITY :: {}", CommonUtils.loggerReplace(authority));
+        LOGGER.info("YOUR AUTH ID :: {}", CommonUtils.loggerReplace(userAuthId));
 
+
+        Object[] args = Arrays.asList(joinPoint.getArgs()).toArray();
         CodeSignature methodSignature = (CodeSignature) joinPoint.getSignature();
         String[] sigParamNames = methodSignature.getParameterNames();
 
-        int index = 0;
-        for (String name:sigParamNames) {
-            if (IS_ADMIN.equals(name)) {
-                break;
+        int idx = Arrays.asList(sigParamNames).indexOf("params");
+
+
+        if(idx > -1) { // parameter exist
+            Params params = (Params) args[idx];
+            if (params.getUserAuthId().equals(Constants.EMPTY_STRING)) {
+                params.setUserAuthId(userAuthId);
+            }
+            if (params.getUserType().equals(Constants.EMPTY_STRING)) {
+                params.setUserType(authority);
             }
 
-            index++;
+            args = CommonUtils.modifyValue(args, idx, params);
         }
+
 
         //language
         RequestWrapper requestWrapper = new RequestWrapper(request);
@@ -99,8 +109,7 @@ public class AdminCheckAspect {
         authentication.setDetails(customUserDetails);
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
-        parameterValues = CommonUtils.modifyValue(parameterValues, index, isAdmin);
-        return joinPoint.proceed(parameterValues);
+        return joinPoint.proceed(args);
     }
 
 }

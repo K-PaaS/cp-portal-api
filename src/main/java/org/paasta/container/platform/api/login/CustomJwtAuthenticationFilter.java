@@ -63,7 +63,7 @@ public class CustomJwtAuthenticationFilter extends OncePerRequestFilter {
 			}
 
 			if (StringUtils.hasText(jwtToken) && jwtTokenUtil.validateToken(jwtToken)) {
-				UserDetails userDetails = new User(jwtTokenUtil.getUsernameFromToken(jwtToken), "",
+				UserDetails userDetails = new User(jwtTokenUtil.getUsernameFromToken(jwtToken), jwtTokenUtil.getClaimsFromToken(jwtToken,"userAuthId"),
 						jwtTokenUtil.getRolesFromToken(jwtToken));
 
 				String tokenIp = jwtTokenUtil.getClientIpFromToken(jwtToken);

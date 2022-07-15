@@ -289,7 +289,6 @@ public class UsersService {
      * @return the UsersList
      */
     public UsersList getMappingClustersListByUser(Params params) {
-        commonService.setUsersDataFromToken(params);
         UsersList usersList = restTemplateService.send(TARGET_COMMON_API, Constants.URI_COMMON_API_CLUSTER_LIST_BY_USER
                         .replace("{userAuthId:.+}", params.getUserAuthId()).replace("{userType:.+}", params.getUserType()),
                 HttpMethod.GET, null, UsersList.class, params);

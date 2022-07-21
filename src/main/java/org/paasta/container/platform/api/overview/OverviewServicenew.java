@@ -1,6 +1,5 @@
 package org.paasta.container.platform.api.overview;
 
-import org.paasta.container.platform.api.clusters.namespaces.Namespaces;
 import org.paasta.container.platform.api.clusters.namespaces.NamespacesList;
 import org.paasta.container.platform.api.clusters.namespaces.NamespacesService;
 import org.paasta.container.platform.api.common.CommonService;
@@ -25,8 +24,6 @@ import org.paasta.container.platform.api.workloads.replicaSets.ReplicaSetsServic
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
-
-import javax.naming.Name;
 import java.text.DecimalFormat;
 import java.util.HashMap;
 import java.util.List;
@@ -93,10 +90,8 @@ public class OverviewServicenew {
 
         // get deployments count
         DeploymentsList deploymentsList = getDeploymentsList(params);
-
         // get pods count
         PodsList podsList = getPodsList(params);
-
         // get replicaSets count
         ReplicaSetsList replicaSetsList = getReplicaSetsList(params);
 
@@ -122,6 +117,7 @@ public class OverviewServicenew {
 
         overview.setNamespacesCount(getCommonCnt(namespacesList));
         overview.setDeploymentsCount(getCommonCnt(deploymentsList));
+        overview.setReplicaSetsCount(getCommonCnt(replicaSetsList));
         overview.setPodsCount(getCommonCnt(podsList));
         overview.setUsersCount(usersCnt);
         overview.setDeploymentsUsage(deploymentsUsage);

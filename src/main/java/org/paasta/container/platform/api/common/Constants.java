@@ -1,7 +1,4 @@
 package org.paasta.container.platform.api.common;
-
-import org.paasta.container.platform.api.clusters.clusters.support.AWSInfo;
-import org.paasta.container.platform.api.clusters.clusters.support.GCPInfo;
 import org.springframework.http.MediaType;
 import java.util.*;
 
@@ -320,4 +317,10 @@ public class Constants {
     public static final String MEMORY = "memory";
     public static final String CPU_UNIT = "m";
     public static final String MEMORY_UNIT = "Mi";
+
+
+    public static final String CONTAINER_STATE_RUNNING = "running";
+    public static final String CONTAINER_STATE_TERMINATED = "terminated";
+    public static final String CONTAINER_STATE_WAITING = "waiting";
+
 }

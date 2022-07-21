@@ -24,6 +24,7 @@ public class Overview {
     private Integer namespacesCount;
     private Integer deploymentsCount;
     private Integer podsCount;
+    private Integer replicaSetsCount;
     private Integer usersCount;
 
     private Map<String, Object> deploymentsUsage;
@@ -32,5 +33,9 @@ public class Overview {
 
     public String getNextActionUrl() {
         return CommonUtils.procReplaceNullValue(nextActionUrl);
+    }
+
+    public Integer getNamespacesCount() {
+        return  (namespacesCount < 1 ? 1 : namespacesCount);
     }
 }

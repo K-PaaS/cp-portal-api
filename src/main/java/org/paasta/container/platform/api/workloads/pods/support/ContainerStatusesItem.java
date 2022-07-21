@@ -14,7 +14,7 @@ import java.util.Map;
 @Data
 public class ContainerStatusesItem {
     private String name;
-    private Map<String, Object> state;
+    private Map<String, ContainerState> state;
     private String image;
     private Integer restartCount;
 }

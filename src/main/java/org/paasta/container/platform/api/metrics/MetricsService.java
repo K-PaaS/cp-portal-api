@@ -178,8 +178,8 @@ public class MetricsService {
      * @param pm   the podsMetricsItems
      * @return the Map<String, String>
      */
-    public Map<String, String> generatePodsUsageMap(String type, PodsMetricsItems pm) {
-        Map<String, String> result = new HashMap<>();
+    public Map<String, Object> generatePodsUsageMap(String type, PodsMetricsItems pm) {
+        Map<String, Object> result = new HashMap<>();
         result.put(USAGE, convertUsageUnit(type, podMetricSum(pm, type)));
         return result;
     }
@@ -226,8 +226,8 @@ public class MetricsService {
      * @param node the nodesListItem
      * @return the Map<String, String>
      */
-    public Map<String, String> generateNodeUsageMap(String type, NodesListItem node) {
-        Map<String, String> result = new HashMap<>();
+    public Map<String, Object> generateNodeUsageMap(String type, NodesListItem node) {
+        Map<String, Object> result = new HashMap<>();
         result.put(USAGE, convertUsageUnit(type, node.getUsage().get(type).getNumber().doubleValue()));
         result.put(PERCENT, convertPercnUnit(findNodePercentage(node, type)));
         return result;
@@ -257,8 +257,8 @@ public class MetricsService {
      * @param value the value
      * @return the String
      */
-    public String convertPercnUnit(double value) {
-        return String.format("%.0f%%", (value) * 100);
+    public long convertPercnUnit(double value) {
+        return Math.round(value * 100);
     }
 
 
@@ -269,7 +269,7 @@ public class MetricsService {
      * @param usage the usage
      * @return the String
      */
-    public String convertUsageUnit(String type, double usage) {
+    public long convertUsageUnit(String type, double usage) {
         BaseExponent baseExpont = null;
         String unit = "";
         if (type.equals(Constants.MEMORY)) {
@@ -280,7 +280,7 @@ public class MetricsService {
             baseExpont = suffixToDecimal.get(unit);
         }
         double multiply = Math.pow(baseExpont.getBase(), -baseExpont.getExponent());
-        return Math.round(usage * multiply) + unit;
+        return Math.round(usage * multiply);
     }
 
 }

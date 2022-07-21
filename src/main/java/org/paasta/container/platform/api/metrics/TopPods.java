@@ -9,10 +9,10 @@ public class TopPods {
     private String clusterId;
     private String namespace;
     private String name;
-    private Map<String, String> cpu;
-    private Map<String, String> memory;
+    private Map<String, Object> cpu;
+    private Map<String, Object> memory;
 
-    public TopPods(String clusterName, String clusterId, String namespace, String name, Map<String, String> cpu, Map<String, String> memory) {
+    public TopPods(String clusterName, String clusterId, String namespace, String name, Map<String, Object> cpu, Map<String, Object> memory) {
         this.clusterName = clusterName;
         this.clusterId = clusterId;
         this.namespace = namespace;

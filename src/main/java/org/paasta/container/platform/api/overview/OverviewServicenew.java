@@ -17,9 +17,6 @@ import org.paasta.container.platform.api.workloads.deployments.DeploymentsServic
 import org.paasta.container.platform.api.workloads.deployments.support.DeploymentsStatus;
 import org.paasta.container.platform.api.workloads.pods.PodsList;
 import org.paasta.container.platform.api.workloads.pods.PodsService;
-import org.paasta.container.platform.api.workloads.pods.support.ContainerStatusesItem;
-import org.paasta.container.platform.api.workloads.pods.support.PodsListItem;
-import org.paasta.container.platform.api.workloads.pods.support.PodsStatus;
 import org.paasta.container.platform.api.workloads.replicaSets.ReplicaSetsList;
 import org.paasta.container.platform.api.workloads.replicaSets.ReplicaSetsService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,6 +41,8 @@ public class OverviewServicenew {
     private static final String ORDER_BY_DEFAULT = "creationTime";
     private static final String ORDER_DEFAULT = "desc";
     private static final String STATUS_FIELD_NAME = "status";
+    private static final String STATUS_FAILED = "Failed";
+    private static final String STATUS_RUNNING = "Running";
 
     private final NamespacesService namespacesService;
     private final DeploymentsService deploymentsService;
@@ -179,18 +178,18 @@ public class OverviewServicenew {
 
 
     /**
-     * All Overview, Overview 조회를 위한 공통 Deployments 사용량 조회(Get Common Deployment Usage for getting Overview according to namespaces)
+     * Overview 조회를 위한 공통 Deployments 사용량 조회(Get Common Deployment Usage for getting Overview according to namespaces)
      *
      * @param deploymentsList the deployments list
      * @return the map
      */
     private Map<String, Object> getDeploymentsUsage(DeploymentsList deploymentsList) {
+        HashMap<String, Integer> resultMap = new HashMap<>();
         int failedCnt = 0;
         int runningCnt = 0;
 
         for (int i = 0; i < getCommonCnt(deploymentsList); i++) {
             DeploymentsStatus status = commonService.getField(STATUS_FIELD_NAME, deploymentsList.getItems().get(i));
-
             // status: unavailableReplicas, replicas, availableReplicas
             if (status.getUnavailableReplicas() > 0 && status.getReplicas() != 0 && status.getReplicas() != status.getAvailableReplicas()) {
                 failedCnt++;
@@ -198,58 +197,36 @@ public class OverviewServicenew {
                 runningCnt++;
             }
         }
-        return convertToPercentMap(runningCnt, failedCnt, getCommonCnt(deploymentsList));
+
+        resultMap.put(STATUS_FAILED, failedCnt);
+        resultMap.put(STATUS_RUNNING, runningCnt);
+
+        return convertToPercentMap(resultMap, getCommonCnt(deploymentsList));
+
     }
 
 
     /**
-     * All Overview, Overview 조회를 위한 공통 Pods 사용량 조회(Get Common Deployment Usage for getting Overview according to namespaces)
+     * Overview 조회를 위한 공통 Pods 사용량 조회(Get Common Deployment Usage for getting Overview according to namespaces)
      *
      * @param podsList the pods list
      * @return the map
      */
     private Map<String, Object> getPodsUsage(PodsList podsList) {
-
-        Integer pending = 0;
-        Integer running = 0;
-        Integer succeeded = 0;
-        Integer failed = 0;
-        Integer unknown = 0;
-
-        for (PodsListItem pods : podsList.getItems()) {
-            switch (pods.getPhase().toLowerCase()) {
-                case "pending":
-                    pending ++;
-                case "running":
-                    running ++;
-                case "succeeded":
-                    succeeded ++;
-                case "failed":
-                    failed ++;
-                case "unknown":
-                    unknown ++;
-            }
-        }
-
-        Map<String, Integer> result = new HashMap<>();
-        result.put("pending", pending);
-        result.put("running", running);
-        result.put("succeeded", succeeded);
-        result.put("failed", failed);
-        result.put("unknown", unknown);
-
-
-        return convertToPercentMap(result, podsList.getItems().size());
+        HashMap<String, Integer> resultMap = new HashMap<>();
+        podsList.getItems().stream().map(x -> x.getPhase()).collect(Collectors.groupingBy(s -> s)).forEach((k, v) -> resultMap.put(k, v.size()));
+        return convertToPercentMap(resultMap, getCommonCnt(podsList));
     }
 
 
     /**
-     * All Overview, Overview 조회를 위한 공통 ReplicaSets 사용량 조회(Get Common ReplicaSets Usage for getting Overview according to namespaces)
+     * Overview 조회를 위한 공통 ReplicaSets 사용량 조회(Get Common ReplicaSets Usage for getting Overview according to namespaces)
      *
      * @param replicaSetsList the replicaSets list
      * @return the map
      */
     private Map<String, Object> getReplicaSetsUsage(ReplicaSetsList replicaSetsList) {
+        HashMap<String, Integer> resultMap = new HashMap<>();
         int failedCnt = 0;
         int runningCnt = 0;
 
@@ -263,35 +240,12 @@ public class OverviewServicenew {
             }
         }
 
-        return convertToPercentMap(runningCnt, failedCnt, getCommonCnt(replicaSetsList));
+        resultMap.put(STATUS_FAILED, failedCnt);
+        resultMap.put(STATUS_RUNNING, runningCnt);
+
+        return convertToPercentMap(resultMap, getCommonCnt(replicaSetsList));
     }
 
-
-    /**
-     * 사용량 계산 후 퍼센트로 변환(Convert to percentage after calculating usage)
-     *
-     * @param runningCnt the running count
-     * @param failedCnt  the failed count
-     * @param totalCnt   the total count
-     * @return the map
-     */
-    private Map<String, Object> convertToPercentMap(int runningCnt, int failedCnt, int totalCnt) {
-        Map<String, Object> map = new HashMap<>();
-
-        String percentPattern = "0"; // 소수점 표현 시 "0.#, 0.##"
-        DecimalFormat format = new DecimalFormat(percentPattern);
-
-        double runningPercent = ((double) runningCnt / (double) totalCnt) * 100;
-        double failedPercent = ((double) failedCnt / (double) totalCnt) * 100;
-
-        String formedRunningPercent = Double.isNaN(runningPercent) ? "0" : format.format(runningPercent);
-        String formedFailedPercent = Double.isNaN(failedPercent) ? "0" : format.format(failedPercent);
-
-        map.put("running", formedRunningPercent);
-        map.put("failed", formedFailedPercent);
-
-        return map;
-    }
 
     /**
      * 각 Namespace 별 Users 목록 조회(Get Users namespace list)

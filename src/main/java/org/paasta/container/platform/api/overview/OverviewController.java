@@ -46,7 +46,6 @@ public class OverviewController {
     })
     @GetMapping("/clusters/{cluster:.+}/namespaces/{namespace:.+}/overview")
     public Overview getOverview(Params params) {
-
         return overviewService.getOverviewAll(params);
 
     }

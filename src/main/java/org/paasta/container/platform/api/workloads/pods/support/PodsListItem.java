@@ -18,6 +18,7 @@ public class PodsListItem {
     private String podStatus;
     private Integer restarts;
     private String creationTimestamp;
+    private String phase;
 
     @JsonIgnore
     private CommonMetaData metadata;
@@ -54,10 +55,14 @@ public class PodsListItem {
         return CommonUtils.procReplaceNullValue(metadata.getLabels());
     }
 
+    public String getPhase() { return status.getPhase(); }
 
     //If a container is not in either the Running or Terminated state, it is Waiting
     public String getPodStatus() {
-        List<ContainerStatusesItem> containerStatuses = status.getContainerStatuses();
+       return  findPodStatus(status.getContainerStatuses());
+    }
+
+    public String findPodStatus(List<ContainerStatusesItem> containerStatuses) {
         for (ContainerStatusesItem cs : containerStatuses) {
 
             if (cs.getState().containsKey(Constants.CONTAINER_STATE_WAITING)) {
@@ -70,6 +75,4 @@ public class PodsListItem {
         // container running
         return status.getPhase();
     }
-
-
 }

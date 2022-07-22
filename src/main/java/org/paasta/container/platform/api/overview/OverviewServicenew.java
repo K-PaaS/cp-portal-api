@@ -18,12 +18,14 @@ import org.paasta.container.platform.api.workloads.deployments.support.Deploymen
 import org.paasta.container.platform.api.workloads.pods.PodsList;
 import org.paasta.container.platform.api.workloads.pods.PodsService;
 import org.paasta.container.platform.api.workloads.pods.support.ContainerStatusesItem;
+import org.paasta.container.platform.api.workloads.pods.support.PodsListItem;
 import org.paasta.container.platform.api.workloads.pods.support.PodsStatus;
 import org.paasta.container.platform.api.workloads.replicaSets.ReplicaSetsList;
 import org.paasta.container.platform.api.workloads.replicaSets.ReplicaSetsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
+
 import java.text.DecimalFormat;
 import java.util.HashMap;
 import java.util.List;
@@ -207,31 +209,37 @@ public class OverviewServicenew {
      * @return the map
      */
     private Map<String, Object> getPodsUsage(PodsList podsList) {
-        int failedCnt = 0;
-        int runningCnt = 0;
 
-        for (int i = 0; i < getCommonCnt(podsList); i++) {
-            PodsStatus status = commonService.getField(STATUS_FIELD_NAME, podsList.getItems().get(i));
-            if (status.getContainerStatuses() != null) {
-                ContainerStatusesItem item = status.getContainerStatuses().get(0);
-                // containerStatuses -> state: waiting
-                if (item.getState() != null) {
-                    boolean result = item.getState().containsKey("waiting");
-                    if (result) {
-                        failedCnt++;
-                    } else {
-                        runningCnt++;
-                    }
-                } else {
-                    failedCnt++;
-                }
+        Integer pending = 0;
+        Integer running = 0;
+        Integer succeeded = 0;
+        Integer failed = 0;
+        Integer unknown = 0;
 
-            } else {
-                failedCnt++;
+        for (PodsListItem pods : podsList.getItems()) {
+            switch (pods.getPhase().toLowerCase()) {
+                case "pending":
+                    pending ++;
+                case "running":
+                    running ++;
+                case "succeeded":
+                    succeeded ++;
+                case "failed":
+                    failed ++;
+                case "unknown":
+                    unknown ++;
             }
         }
 
-        return convertToPercentMap(runningCnt, failedCnt, getCommonCnt(podsList));
+        Map<String, Integer> result = new HashMap<>();
+        result.put("pending", pending);
+        result.put("running", running);
+        result.put("succeeded", succeeded);
+        result.put("failed", failed);
+        result.put("unknown", unknown);
+
+
+        return convertToPercentMap(result, podsList.getItems().size());
     }
 
 
@@ -300,4 +308,28 @@ public class OverviewServicenew {
         overviewUserList = overviewUserList.stream().distinct().collect(Collectors.toList());
         return overviewUserList.size();
     }
+
+
+    /**
+     * 사용량 계산 후 퍼센트로 변환(Convert to percentage after calculating usage)
+     *
+     * @param totalCnt the total count
+     * @return the map
+     */
+    private Map<String, Object> convertToPercentMap(Map<String, Integer> items, int totalCnt) {
+        Map<String, Object> result = new HashMap<>();
+
+        String percentPattern = "0"; // 소수점 표현 시 "0.#, 0.##"
+        DecimalFormat format = new DecimalFormat(percentPattern);
+
+        for (String key : items.keySet()) {
+            double percent = ((double) items.get(key) / (double) totalCnt) * 100;
+            String formatPercent = Double.isNaN(percent) ? "0" : format.format(percent);
+            result.put(key, formatPercent);
+        }
+
+        return result;
+
+    }
+
 }

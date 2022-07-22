@@ -14,10 +14,8 @@ import javax.servlet.http.HttpServletRequest;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
+import java.text.DecimalFormat;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -718,6 +716,28 @@ public class CommonService {
 
 
         return (T) resourceReturnList;
+    }
+
+    /**
+     * 사용량 계산 후 퍼센트로 변환(Convert to percentage after calculating usage)
+     *
+     * @param totalCnt the total count
+     * @return the map
+     */
+    private Map<String, Object> convertToPercentMap(Map<String, Integer> items, int totalCnt) {
+        Map<String, Object> result = new HashMap<>();
+
+        String percentPattern = "0"; // 소수점 표현 시 "0.#, 0.##"
+        DecimalFormat format = new DecimalFormat(percentPattern);
+
+        for (String key : items.keySet()) {
+            double percent = ((double) items.get(key) / (double) totalCnt) * 100;
+            String formatPercent = Double.isNaN(percent) ? "0" : format.format(percent);
+            result.put(key, formatPercent);
+        }
+
+        return result;
+
     }
 
 }

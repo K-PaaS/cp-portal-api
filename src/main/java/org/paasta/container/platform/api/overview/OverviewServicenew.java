@@ -9,6 +9,7 @@ import org.paasta.container.platform.api.common.RestTemplateService;
 import org.paasta.container.platform.api.common.model.CommonItemMetaData;
 import org.paasta.container.platform.api.common.model.CommonStatus;
 import org.paasta.container.platform.api.common.model.Params;
+import org.paasta.container.platform.api.overview.support.Status;
 import org.paasta.container.platform.api.users.Users;
 import org.paasta.container.platform.api.users.UsersList;
 import org.paasta.container.platform.api.users.UsersService;
@@ -23,10 +24,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
 
-import java.text.DecimalFormat;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -108,13 +106,13 @@ public class OverviewServicenew {
         int usersCnt = getUsersListByNamespaceByOverview(params);
 
         // deployments usage
-        Map<String, Object> deploymentsUsage = getDeploymentsUsage(deploymentsList);
+        List<Status> deploymentsUsage = getDeploymentsUsage(deploymentsList);
 
         // pods usage
-        Map<String, Object> podsUsage = getPodsUsage(podsList);
+        List<Status> podsUsage = getPodsUsage(podsList);
 
         // replicaSets usage
-        Map<String, Object> replicaSetsUsage = getReplicaSetsUsage(replicaSetsList);
+        List<Status> replicaSetsUsage = getReplicaSetsUsage(replicaSetsList);
 
         overview.setNamespacesCount(getCommonCnt(namespacesList));
         overview.setDeploymentsCount(getCommonCnt(deploymentsList));
@@ -183,10 +181,14 @@ public class OverviewServicenew {
      * @param deploymentsList the deployments list
      * @return the map
      */
-    private Map<String, Object> getDeploymentsUsage(DeploymentsList deploymentsList) {
-        HashMap<String, Integer> resultMap = new HashMap<>();
+    private List<Status> getDeploymentsUsage(DeploymentsList deploymentsList) {
+        List<Status> statusList = new ArrayList<>();
         int failedCnt = 0;
         int runningCnt = 0;
+
+        if(getCommonCnt(deploymentsList) < 1) {
+            return statusList;
+        }
 
         for (int i = 0; i < getCommonCnt(deploymentsList); i++) {
             DeploymentsStatus status = commonService.getField(STATUS_FIELD_NAME, deploymentsList.getItems().get(i));
@@ -198,10 +200,14 @@ public class OverviewServicenew {
             }
         }
 
-        resultMap.put(STATUS_FAILED, failedCnt);
-        resultMap.put(STATUS_RUNNING, runningCnt);
 
-        return convertToPercentMap(resultMap, getCommonCnt(deploymentsList));
+        Status running = new Status(STATUS_RUNNING, runningCnt, convertToPercent(runningCnt, getCommonCnt(deploymentsList)));
+        Status failed = new Status(STATUS_FAILED, failedCnt, convertToPercent(failedCnt, getCommonCnt(deploymentsList)));
+
+        statusList.add(running);
+        statusList.add(failed);
+
+        return statusList;
 
     }
 
@@ -212,10 +218,16 @@ public class OverviewServicenew {
      * @param podsList the pods list
      * @return the map
      */
-    private Map<String, Object> getPodsUsage(PodsList podsList) {
-        HashMap<String, Integer> resultMap = new HashMap<>();
-        podsList.getItems().stream().map(x -> x.getPhase()).collect(Collectors.groupingBy(s -> s)).forEach((k, v) -> resultMap.put(k, v.size()));
-        return convertToPercentMap(resultMap, getCommonCnt(podsList));
+    private List<Status> getPodsUsage(PodsList podsList) {
+        List<Status> statusList = new ArrayList<>();
+        podsList.getItems().stream().map(x -> x.getPhase()).collect(Collectors.groupingBy(s -> s)).forEach((k, v) -> {
+            Status status = new Status(k, v.size(), convertToPercent(v.size(), getCommonCnt(podsList)));
+            statusList.add(status);
+        });
+
+        statusList.sort(Comparator.comparing(Status::getPercent).reversed());
+
+        return statusList;
     }
 
 
@@ -225,10 +237,14 @@ public class OverviewServicenew {
      * @param replicaSetsList the replicaSets list
      * @return the map
      */
-    private Map<String, Object> getReplicaSetsUsage(ReplicaSetsList replicaSetsList) {
-        HashMap<String, Integer> resultMap = new HashMap<>();
+    private List<Status> getReplicaSetsUsage(ReplicaSetsList replicaSetsList) {
+        List<Status> statusList = new ArrayList<>();
         int failedCnt = 0;
         int runningCnt = 0;
+
+        if(getCommonCnt(replicaSetsList) < 1) {
+            return statusList;
+        }
 
         for (int i = 0; i < getCommonCnt(replicaSetsList); i++) {
             CommonStatus status = commonService.getField(STATUS_FIELD_NAME, replicaSetsList.getItems().get(i));
@@ -240,11 +256,15 @@ public class OverviewServicenew {
             }
         }
 
-        resultMap.put(STATUS_FAILED, failedCnt);
-        resultMap.put(STATUS_RUNNING, runningCnt);
+        Status running = new Status(STATUS_RUNNING, runningCnt, convertToPercent(runningCnt, getCommonCnt(replicaSetsList)));
+        Status failed = new Status(STATUS_FAILED, failedCnt, convertToPercent(failedCnt, getCommonCnt(replicaSetsList)));
 
-        return convertToPercentMap(resultMap, getCommonCnt(replicaSetsList));
+        statusList.add(running);
+        statusList.add(failed);
+
+        return statusList;
     }
+
 
 
     /**
@@ -264,26 +284,17 @@ public class OverviewServicenew {
     }
 
 
+
     /**
      * 사용량 계산 후 퍼센트로 변환(Convert to percentage after calculating usage)
      *
-     * @param totalCnt the total count
-     * @return the map
+     * @param count the  count
+     * @param total the  total
+     * @return the long
      */
-    private Map<String, Object> convertToPercentMap(Map<String, Integer> items, int totalCnt) {
-        Map<String, Object> result = new HashMap<>();
-
-        String percentPattern = "0"; // 소수점 표현 시 "0.#, 0.##"
-        DecimalFormat format = new DecimalFormat(percentPattern);
-
-        for (String key : items.keySet()) {
-            double percent = ((double) items.get(key) / (double) totalCnt) * 100;
-            String formatPercent = Double.isNaN(percent) ? "0" : format.format(percent);
-            result.put(key, formatPercent);
-        }
-
-        return result;
+    private long convertToPercent(int count, int total) {
+        double percent = ((double) count / (double) total) * 100;
+        return Math.round(percent);
 
     }
-
 }

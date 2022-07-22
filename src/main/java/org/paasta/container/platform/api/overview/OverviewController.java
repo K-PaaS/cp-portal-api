@@ -4,7 +4,6 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
-import org.paasta.container.platform.api.common.Constants;
 import org.paasta.container.platform.api.common.model.Params;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -20,15 +19,16 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 public class OverviewController {
 
-    private final OverviewService overviewService;
+    private final OverviewServicenew overviewService;
     private final GlobalOverviewService globalOverviewService;
+
     /**
      * Instantiates a new Overview controller
      *
      * @param overviewService the overview service
      */
     @Autowired
-    public OverviewController(OverviewService overviewService, GlobalOverviewService globalOverviewService) {
+    public OverviewController(OverviewServicenew overviewService, GlobalOverviewService globalOverviewService) {
         this.overviewService = overviewService;
         this.globalOverviewService = globalOverviewService;
     }
@@ -46,12 +46,7 @@ public class OverviewController {
     })
     @GetMapping("/clusters/{cluster:.+}/namespaces/{namespace:.+}/overview")
     public Overview getOverview(Params params) {
-
-        if (params.getNamespace().equalsIgnoreCase(Constants.ALL_NAMESPACES)) {
-            return overviewService.getOverviewAll(params);
-        }
-
-        return overviewService.getOverview(params);
+        return overviewService.getOverviewAll(params);
 
     }
 
@@ -68,9 +63,8 @@ public class OverviewController {
     })
     @GetMapping("/global/overview")
     public GlobalOverview getGlobalOverview(Params params) {
-      return  globalOverviewService.getGlobalOverview(params);
+        return globalOverviewService.getGlobalOverview(params);
     }
-
 
 
     /**

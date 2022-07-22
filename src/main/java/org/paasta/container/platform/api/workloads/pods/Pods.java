@@ -7,6 +7,7 @@ import org.paasta.container.platform.api.common.Constants;
 import org.paasta.container.platform.api.common.model.CommonAnnotations;
 import org.paasta.container.platform.api.common.model.CommonMetaData;
 import org.paasta.container.platform.api.common.model.CommonSpec;
+import org.paasta.container.platform.api.workloads.pods.support.ContainerStatusesItem;
 import org.paasta.container.platform.api.workloads.pods.support.PodsStatus;
 import org.paasta.container.platform.api.workloads.pods.support.Volume;
 
@@ -104,6 +105,21 @@ public class Pods {
     }
 
     public String getPodStatus() {
+        return findPodStatus(status.getContainerStatuses());
+    }
+
+    public String findPodStatus(List<ContainerStatusesItem> containerStatuses) {
+        for (ContainerStatusesItem cs : containerStatuses) {
+
+            if (cs.getState().containsKey(Constants.CONTAINER_STATE_WAITING)) {
+                return cs.getState().get(Constants.CONTAINER_STATE_WAITING).getReason();
+            }
+            if (cs.getState().containsKey(Constants.CONTAINER_STATE_TERMINATED)) {
+                return cs.getState().get(Constants.CONTAINER_STATE_TERMINATED).getReason();
+            }
+        }
+        // container running
         return status.getPhase();
     }
+
 }

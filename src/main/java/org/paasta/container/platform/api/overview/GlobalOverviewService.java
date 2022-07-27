@@ -200,7 +200,7 @@ public class GlobalOverviewService {
      * @return count the count
      */
     public Count getPodCount(PodsList podsList) {
-        List<PodsListItem> runningPods = podsList.getItems().stream().filter(x -> x.getPodStatus().equalsIgnoreCase(STATUS_RUNNING)).collect(Collectors.toList());
+        List<PodsListItem> runningPods = podsList.getItems().stream().filter(x -> x.getContainerStatus().equalsIgnoreCase(STATUS_RUNNING)).collect(Collectors.toList());
         return new Count(runningPods.size(), podsList.getItems().size());
     }
 
@@ -263,18 +263,5 @@ public class GlobalOverviewService {
     }
 
 
-    /**
-     * Pods 목록 클러스터 정보 설정
-     *
-     * @param params          the params
-     * @param podsMetricsList the podsMetricsList
-     * @return
-     */
-    public void setPodsMetrics(Params params, PodsMetricsList podsMetricsList) {
-        for (PodsMetricsItems pm : podsMetricsList.getItems()) {
-            pm.setClusterId(params.getCluster());
-            pm.setClusterName(params.getClusterName());
-        }
-    }
 }
 

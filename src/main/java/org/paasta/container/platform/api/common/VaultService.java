@@ -40,7 +40,7 @@ public class VaultService {
             vaultResponse = vaultTemplate.read(path);
         }
         catch (Exception e){
-            logger.info("Invalid path");
+            logger.info("vault read exception:" + e.getMessage());
             return null;
         }
         HashMap responseMap = (HashMap) vaultResponse.getData().get("data");

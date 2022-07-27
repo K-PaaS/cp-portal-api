@@ -19,6 +19,7 @@ public class PodsListItem {
     private Integer restarts;
     private String creationTimestamp;
     private String phase;
+    private String containerStatus;
 
     @JsonIgnore
     private CommonMetaData metadata;
@@ -64,11 +65,16 @@ public class PodsListItem {
 
     public String findPodStatus(List<ContainerStatusesItem> containerStatuses) {
         for (ContainerStatusesItem cs : containerStatuses) {
-
+            setContainerStatus(getPhase());
             if (cs.getState().containsKey(Constants.CONTAINER_STATE_WAITING)) {
+                // waiting
+                if(getPhase().equalsIgnoreCase(Constants.STATUS_RUNNING)) {
+                    setContainerStatus(Constants.STATUS_FAILED);
+                }
                 return cs.getState().get(Constants.CONTAINER_STATE_WAITING).getReason();
             }
             if (cs.getState().containsKey(Constants.CONTAINER_STATE_TERMINATED)) {
+                // terminated
                 return cs.getState().get(Constants.CONTAINER_STATE_TERMINATED).getReason();
             }
         }

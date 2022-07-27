@@ -163,9 +163,13 @@ public class MetricsService {
 
                 });
 
-        items = items.subList(0, topN);
-        List<TopPods> topPods = items.stream().map(x -> new TopPods(x.getClusterName(), x.getClusterId(), x.getNamespace(),
-                x.getName(), generatePodsUsageMap(Constants.CPU, x), generatePodsUsageMap(Constants.MEMORY, x))).collect(Collectors.toList());
+        if (items.size() > topN) {
+            items = items.subList(0, topN);
+        }
+
+        // top pods 변환
+        List<TopPods> topPods = items.stream().map(x -> new TopPods(x.getNamespace(), x.getName(),
+                generatePodsUsageMap(Constants.CPU, x), generatePodsUsageMap(Constants.MEMORY, x))).collect(Collectors.toList());
 
         return topPods;
     }
@@ -282,5 +286,6 @@ public class MetricsService {
         double multiply = Math.pow(baseExpont.getBase(), -baseExpont.getExponent());
         return Math.round(usage * multiply);
     }
+
 
 }

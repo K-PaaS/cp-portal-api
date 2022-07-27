@@ -324,4 +324,8 @@ public class Constants {
     public static final String CONTAINER_STATE_TERMINATED = "terminated";
     public static final String CONTAINER_STATE_WAITING = "waiting";
 
+    public static final String STATUS_FAILED = "Failed";
+    public static final String STATUS_RUNNING = "Running";
+
+
 }

@@ -1,9 +1,7 @@
 package org.paasta.container.platform.api.accessInfo;
 
-import org.paasta.container.platform.api.common.CommonService;
-import org.paasta.container.platform.api.common.Constants;
-import org.paasta.container.platform.api.common.PropertyService;
-import org.paasta.container.platform.api.common.RestTemplateService;
+import org.paasta.container.platform.api.common.*;
+import org.paasta.container.platform.api.common.model.Params;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
@@ -24,6 +22,7 @@ public class AccessTokenService {
     private final RestTemplateService restTemplateService;
     private final PropertyService propertyService;
     private final CommonService commonService;
+    private final VaultService vaultService;
 
     /**
      * Instantiates a new AccessToken service
@@ -32,10 +31,11 @@ public class AccessTokenService {
      * @param commonService       the common service
      */
     @Autowired
-    public AccessTokenService(RestTemplateService restTemplateService, PropertyService propertyService, CommonService commonService) {
+    public AccessTokenService(RestTemplateService restTemplateService, PropertyService propertyService, CommonService commonService, VaultService vaultService) {
         this.restTemplateService = restTemplateService;
         this.propertyService = propertyService;
         this.commonService = commonService;
+        this.vaultService = vaultService;
     }
 
     /**
@@ -70,4 +70,42 @@ public class AccessTokenService {
         return (AccessToken) commonService.setResultModel(commonService.setResultObject(accessToken, AccessToken.class), Constants.RESULT_STATUS_SUCCESS);
     }
 
+    /**
+     * Vault Secrets 상세 조회(Get Vault Secrets detail)
+     *
+     * @param params the params
+     */
+    public AccessToken getVaultSecrets(Params params) {
+
+        String apiUrl = "";
+        String id = "";
+        String token = "";
+
+        if (params.getIsClusterToken()) {
+            // vault cluster-token 값 조회
+            apiUrl = vaultService.getClusterDetails(params.getCluster()).getClusterApiUrl();
+            id = vaultService.getClusterDetails(params.getCluster()).getClusterId();
+            token = vaultService.getClusterDetails(params.getCluster()).getClusterToken();
+        }
+        else {
+            // vault user-sa-token 값 조회 -추후 수정
+            apiUrl = vaultService.getClusterDetails(params.getCluster()).getClusterApiUrl();
+            id = vaultService.getClusterDetails(params.getCluster()).getClusterId();
+            token = vaultService.getClusterDetails(params.getCluster()).getClusterToken();
+        }
+
+        //params.setClusterApiUrl(apiUrl);
+        //params.setCluster(id);
+        //params.setClusterToken(token);
+
+        AccessToken accessToken = new AccessToken();
+        accessToken.setClusterApiUrl(apiUrl);
+        accessToken.setClusterId(id);
+        accessToken.setClusterToken(token);
+        accessToken.setUserAuthId(params.getUserAuthId());
+        accessToken.setUserType(params.getUserType());
+        accessToken.setUserId(params.getUserId());
+
+        return (AccessToken) commonService.setResultModel(commonService.setResultObject(accessToken, AccessToken.class), Constants.RESULT_STATUS_SUCCESS);
+    }
 }

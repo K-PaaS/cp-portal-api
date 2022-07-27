@@ -91,6 +91,53 @@ public class UsersController {
         return usersService.getUsersInMultiNamespace(params);
     }
 
+    /**
+     * 하나의 Cluster 내 여러 Namespace 에 속한 User 에 대한 Cluster Url 상세 조회(Get Users cluster namespace)
+     *
+     * @param params the params
+     * @return the users detail
+     */
+    @ApiOperation(value = "하나의 Cluster 내 여러 Namespace 에 속한 User 에 대한 Cluster Url 상세 조회(Get Users cluster namespace)", nickname = "getUsersClusterInfo")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body")
+    })
+    @GetMapping(value = "/clusters/{cluster:.+}/users/{userId:.+}/ClusterInfo")
+    public Object getUsersClusterInfo(Params params) throws Exception {
+        if (params.getUserType().equalsIgnoreCase(Constants.SELECTED_ADMINISTRATOR)) {
+            params.setUserType(Constants.AUTH_CLUSTER_ADMIN);
+        } else {
+            //사용자인 경우
+            params.setUserType(Constants.AUTH_USER);
+        }
+
+        params.setIsActive("false");
+        return usersService.getUsersInMultiNamespace(params);
+    }
+
+    /**
+     * 하나의 Cluster 내 여러 Namespace 에 속한 User 에 대한 Cluster Url 상세 조회(Get Users cluster namespace)
+     *
+     * @param params the params
+     * @return the users detail
+     */
+    @ApiOperation(value = "하나의 Cluster 내 여러 Namespace 에 속한 UserAuthId 에 대한 Cluster Url 상세 조회(Get Users cluster namespace)", nickname = "getUserAuthIds")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body")
+    })
+    @GetMapping(value = "/clusters/{cluster:.+}/userAuthIds/{userAuthId:.+}")
+    public Object getUserAuthIds(Params params) throws Exception {
+        if (params.getUserType().equalsIgnoreCase(Constants.SELECTED_ADMINISTRATOR)) {
+            params.setUserType(Constants.AUTH_CLUSTER_ADMIN);
+        } else {
+            //사용자인 경우
+            params.setUserType(Constants.AUTH_USER);
+        }
+
+        params.setIsActive("false");
+        return usersService.getUsersInMultiNamespace(params);
+    }
+
+
 
     /**
      * Users 수정(Update Users)

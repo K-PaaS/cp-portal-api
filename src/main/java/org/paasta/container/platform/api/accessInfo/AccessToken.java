@@ -18,4 +18,11 @@ public class AccessToken {
 
     private String caCertToken;
     private String userAccessToken;
+    private String userAuthId;
+    private String userType;
+    private String userId;
+
+    public String clusterApiUrl;
+    public String clusterId;
+    public String clusterToken;
 }

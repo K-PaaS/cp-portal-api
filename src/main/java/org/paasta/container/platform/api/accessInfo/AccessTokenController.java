@@ -4,6 +4,7 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
+import org.paasta.container.platform.api.common.model.Params;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -48,4 +49,19 @@ public class AccessTokenController {
                                  @PathVariable("accessTokenName") String accessTokenName) {
         return accessTokenService.getSecrets(namespace, accessTokenName);
     }
+
+    /**
+     * Vault Secrets 상세 조회(Get Vault Secrets detail)
+     *
+     * @param params the params
+     */
+    @ApiOperation(value = "Vault Secrets 상세 조회(Get Vault Secrets detail)", nickname = "getVaultSecrets")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body")
+    })
+    @GetMapping
+    public AccessToken getSecret(Params params){
+        return accessTokenService.getVaultSecrets(params);
+    }
+
 }

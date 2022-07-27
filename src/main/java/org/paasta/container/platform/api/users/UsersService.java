@@ -97,9 +97,16 @@ public class UsersService {
         UsersAdmin usersAdmin = new UsersAdmin();
 
         try {
-            usersAdmin = restTemplateService.send(TARGET_COMMON_API, Constants.URI_COMMON_API_CLUSTER_USER_DETAILS
-                    .replace("{userId:.+}", params.getUserId())
-                    .replace("{userType:.+}", params.getUserType()), HttpMethod.GET, null, UsersAdmin.class, params);
+            if (params.getIsActive() == "false") {
+
+                usersAdmin = restTemplateService.send(TARGET_COMMON_API, Constants.URI_COMMON_API_CLUSTER_INFO_USER_DETAILS
+                        .replace("{userAuthId:.+}", params.getUserAuthId())
+                        .replace("{userType:.+}", params.getUserType()), HttpMethod.GET, null, UsersAdmin.class, params);
+            } else {
+                usersAdmin = restTemplateService.send(TARGET_COMMON_API, Constants.URI_COMMON_API_CLUSTER_USER_DETAILS
+                        .replace("{userId:.+}", params.getUserId())
+                        .replace("{userType:.+}", params.getUserType()), HttpMethod.GET, null, UsersAdmin.class, params);
+            }
 
             if (usersAdmin.getResultMessage().equalsIgnoreCase(MessageConstant.USER_NOT_MAPPED_TO_THE_NAMESPACE_MESSAGE.getMsg())) {
                 List<UsersAdmin.UsersDetails> items = new ArrayList<>();

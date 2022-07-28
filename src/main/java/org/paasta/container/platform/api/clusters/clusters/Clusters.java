@@ -2,6 +2,7 @@ package org.paasta.container.platform.api.clusters.clusters;
 
 import lombok.Data;
 import org.paasta.container.platform.api.common.Constants;
+import org.paasta.container.platform.api.overview.support.Count;
 
 /**
  * Clusters Model 클래스
@@ -24,6 +25,10 @@ public class Clusters {
     private String clusterType;
     private Constants.ProviderType providerType;
     private String description;
+    private String kubernetesVersion;
+    private Count NodeCount;
+    private Count podCount;
     private String created;
     private String lastModified;
+    private Boolean isActive = false;
 }

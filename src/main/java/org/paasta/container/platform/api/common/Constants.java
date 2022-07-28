@@ -156,6 +156,8 @@ public class Constants {
     public static final String URI_COMMON_API_CLUSTER_LIST_BY_USER = "/users/{userAuthId:.+}/clustersList?userType={userType:.+}";
 
 
+
+
     // NEXT ACTION MOVEMENT DASHBOARD URI
     public static final String URI_CLUSTER_NODES = "/container-platform/clusters/nodes";
     public static final String URI_CLUSTER_NAMESPACES = "/container-platform/clusters/namespaces";
@@ -298,7 +300,8 @@ public class Constants {
 
     public enum ProviderType {
         AWS("AWSInfo"),
-        GCP("GCPInfo");
+        GCP("GCPInfo"),
+        OPENSTACK("OpenstackInfo");
 
         private final String classType;
 

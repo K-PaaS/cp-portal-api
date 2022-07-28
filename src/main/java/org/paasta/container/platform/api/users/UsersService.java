@@ -40,7 +40,6 @@ public class UsersService {
     private final CommonService commonService;
     private final ResourceYamlService resourceYamlService;
     private final AccessTokenService accessTokenService;
-    private final ClustersService clustersService;
     private final ResultStatusService resultStatusService;
 
     /**
@@ -51,17 +50,15 @@ public class UsersService {
      * @param commonService       the common service
      * @param resourceYamlService the resource yaml service
      * @param accessTokenService  the access token service
-     * @param clustersService     the clusters service
      */
     @Autowired
     public UsersService(RestTemplateService restTemplateService, PropertyService propertyService, CommonService commonService, ResourceYamlService resourceYamlService,
-                        AccessTokenService accessTokenService, ClustersService clustersService, ResultStatusService resultStatusService) {
+                        AccessTokenService accessTokenService, ResultStatusService resultStatusService) {
         this.restTemplateService = restTemplateService;
         this.propertyService = propertyService;
         this.commonService = commonService;
         this.resourceYamlService = resourceYamlService;
         this.accessTokenService = accessTokenService;
-        this.clustersService = clustersService;
         this.resultStatusService = resultStatusService;
     }
 

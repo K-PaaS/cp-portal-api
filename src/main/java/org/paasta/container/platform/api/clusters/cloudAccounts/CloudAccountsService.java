@@ -104,8 +104,6 @@ public class CloudAccountsService {
             return cloudAccounts;
         }
 
-        LOGGER.info("params: " + params);
-        LOGGER.info("cloudAccounts: " + cloudAccounts);
         params.setProviderType(Constants.ProviderType.valueOf(cloudAccounts.getProvider()));
         cloudAccounts.setProviderInfo(getProviderInfoFromVault(params)); //FIXME 예외처리
 
@@ -121,7 +119,6 @@ public class CloudAccountsService {
     public CloudAccounts updateCloudAccounts(Params params){
         //check id
         CloudAccounts cloudAccounts = setCloudAccounts(params);
-        LOGGER.info("cloudAccounts" + cloudAccounts);
         if(cloudAccounts == null){
             CloudAccounts ret = new CloudAccounts();
             ret.setResultCode(Constants.RESULT_STATUS_FAIL);
@@ -187,7 +184,7 @@ public class CloudAccountsService {
      * @return the Object
      */
     public Object getProviderInfoFromVault(Params params){
-        Object ret = null;
+        Object ret;
         String path = propertyService.getCpVaultPathProviderCredential()
                 .replace("{iaas}", params.getProviderType().name()).replace("{id}", params.getResourceUid());
         try {

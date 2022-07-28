@@ -121,5 +121,10 @@ public class Params {
 
     }
 
+    public Params(String cluster, String clusterName) {
+        this.cluster = cluster;
+        this.clusterName = clusterName;
+    }
+
 
 }

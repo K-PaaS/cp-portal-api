@@ -91,6 +91,9 @@ public class UsersController {
         return usersService.getUsersInMultiNamespace(params);
     }
 
+
+
+    /* //////////////////////////////////////////////////////////////////////////////////add info //////////////////////////////////////////////////////////////////////*/
     /**
      * 하나의 Cluster 내 여러 Namespace 에 속한 User 에 대한 Cluster Url 상세 조회(Get Users cluster namespace)
      *
@@ -113,6 +116,8 @@ public class UsersController {
         params.setIsActive("false");
         return usersService.getUsersInMultiNamespace(params);
     }
+
+
 
     /**
      * 하나의 Cluster 내 여러 Namespace 에 속한 User 에 대한 Cluster Url 상세 조회(Get Users cluster namespace)
@@ -137,7 +142,7 @@ public class UsersController {
         return usersService.getUsersInMultiNamespace(params);
     }
 
-
+    /* //////////////////////////////////////////////////////////////////////////////////add info //////////////////////////////////////////////////////////////////////*/
 
     /**
      * Users 수정(Update Users)

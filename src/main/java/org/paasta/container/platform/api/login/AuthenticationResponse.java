@@ -28,4 +28,12 @@ public class AuthenticationResponse {
     private String token;
     private String clusterId;
     private Boolean isSuperAdmin;
+
+    public AuthenticationResponse(String resultCode, String resultMessage, Integer httpStatusCode, String detailMessage, String token) {
+        this.resultCode = resultCode;
+        this.resultMessage = resultMessage;
+        this.httpStatusCode = httpStatusCode;
+        this.detailMessage = detailMessage;
+        this.token = token;
+    }
 }

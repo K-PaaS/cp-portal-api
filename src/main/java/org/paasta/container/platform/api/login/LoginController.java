@@ -1,6 +1,7 @@
 package org.paasta.container.platform.api.login;
 
 
+import io.jsonwebtoken.impl.DefaultClaims;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
@@ -19,8 +20,10 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 
 /**
@@ -82,7 +85,6 @@ public class LoginController {
     }
 
 
-/*
 
     @NoAuth
     @GetMapping(value = "/refreshtoken")
@@ -98,19 +100,17 @@ public class LoginController {
             Map<String, Object> expectedMap = jwtTokenUtil.getMapFromIoJsonwebtokenClaims(claims);
             String token = jwtTokenUtil.doGenerateRefreshToken(expectedMap, expectedMap.get("sub").toString());
 
-           authResponse = new AuthenticationResponse(Constants.RESULT_STATUS_SUCCESS, MessageConstant.REFRESH_TOKEN_SUCCESS.getMsg(), CommonStatusCode.OK.getCode(),
-                    MessageConstant.REFRESH_TOKEN_SUCCESS.getMsg(), Constants.URI_INTRO_OVERVIEW, Constants.NULL_REPLACE_TEXT, token, null, Constants.NULL_REPLACE_TEXT);
+            authResponse = new AuthenticationResponse(Constants.RESULT_STATUS_SUCCESS, MessageConstant.REFRESH_TOKEN_SUCCESS.getMsg(), CommonStatusCode.OK.getCode(),
+                    MessageConstant.REFRESH_TOKEN_SUCCESS.getMsg(), token);
         }
 
         catch (Exception e){
             authResponse = new AuthenticationResponse(Constants.RESULT_STATUS_FAIL, MessageConstant.REFRESH_TOKEN_FAIL.getMsg(), CommonStatusCode.INTERNAL_SERVER_ERROR.getCode(),
-                    MessageConstant.REFRESH_TOKEN_FAIL.getMsg(), Constants.NULL_REPLACE_TEXT, Constants.NULL_REPLACE_TEXT, Constants.NULL_REPLACE_TEXT, null, Constants.NULL_REPLACE_TEXT);
+                    MessageConstant.REFRESH_TOKEN_FAIL.getMsg(), Constants.NULL_REPLACE_TEXT);
         }
 
 
        return authResponse;
     }
-
-*/
 
 }

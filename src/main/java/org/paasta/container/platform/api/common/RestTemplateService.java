@@ -143,8 +143,6 @@ public class RestTemplateService {
                 reqUrl = reqUrl.replace("namespaces/{namespace}/", "");
              //   reqUrl += commonService.generateFieldSelectorForExceptNamespace(params.getSelectorType());
             }
-
-            reqUrl += params.getAddParam();
             reqUrl = reqUrl.replace("{namespace}", params.getNamespace()).replace("{name}", params.getResourceName()).replace("{userId}", params.getUserId());
         }
 

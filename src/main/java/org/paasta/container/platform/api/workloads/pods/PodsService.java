@@ -127,9 +127,10 @@ public class PodsService {
      * @return the pods list
      */
     public PodsList getPodListWithLabelSelector(Params params) {
-        params.setAddParam("?labelSelector=" + params.getSelector());
+        String labelSelector = "?labelSelector=" + params.getSelector();
+
         HashMap responseMap = (HashMap) restTemplateService.send(Constants.TARGET_CP_MASTER_API,
-                propertyService.getCpMasterApiListPodsListUrl() , HttpMethod.GET, null, Map.class, params);
+                propertyService.getCpMasterApiListPodsListUrl() + labelSelector, HttpMethod.GET, null, Map.class, params);
 
         PodsList podsList = commonService.setResultObject(responseMap, PodsList.class);
 
@@ -150,9 +151,10 @@ public class PodsService {
      * @return the pods list
      */
     public PodsList getPodsListByNode(Params params) {
-        params.setAddParam(",spec.nodeName=" + params.getNodeName());
+        String fieldSelector = "?fieldSelector=spec.nodeName=" + params.getNodeName();
         HashMap responseMap = (HashMap) restTemplateService.send(Constants.TARGET_CP_MASTER_API,
-                propertyService.getCpMasterApiListPodsListAllNamespacesUrl(), HttpMethod.GET, null, Map.class, params);
+                propertyService.getCpMasterApiListPodsListAllNamespacesUrl() + fieldSelector
+                , HttpMethod.GET, null, Map.class, params);
 
         PodsList podsList = commonService.setResultObject(responseMap, PodsList.class);
         podsList = commonService.resourceListProcessing(podsList, params, PodsList.class);

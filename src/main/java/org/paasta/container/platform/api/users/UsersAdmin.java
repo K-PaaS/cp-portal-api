@@ -49,6 +49,7 @@ public class UsersAdmin {
 
         private String serviceAccountUid;
         public String isActive;
+        public String userId;
         public String cpNamespace;
         public String userType;
         public String roleSetCode;

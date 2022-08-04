@@ -143,6 +143,21 @@ public class UsersService {
     }
 
 
+    public Object getUsersAccessInfo(Params params) throws Exception {
+        UsersAdmin usersAdmin = new UsersAdmin();
+
+        usersAdmin = restTemplateService.send(TARGET_COMMON_API, Constants.URI_COMMON_API_CLUSTER_INFO_USER_DETAILS
+                .replace("{userAuthId:.+}", params.getUserAuthId())
+                .replace("{cluster:.+}", params.getCluster())
+                .replace("{namespace:.+}", params.getNamespace()), HttpMethod.GET, null, UsersAdmin.class, params);
+
+        usersAdmin = commonService.userListProcessing(usersAdmin, params, UsersAdmin.class);
+        return commonService.setResultModel(usersAdmin, Constants.RESULT_STATUS_SUCCESS);
+
+    }
+
+
+
     /**
      * Users 수정(Update Users)
      *

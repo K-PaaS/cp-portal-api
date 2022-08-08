@@ -395,6 +395,9 @@ public class PropertyService {
     @Value("${vault.path.provider-credential}")
     private String cpVaultPathProviderCredential;
 
+    @Value("${cpTerraman.template.path}")
+    private String cpTerramanTemplatePath;
+
     // metrics api
     @Value("${cpMaster.api.metrics.node.list}")
     private String cpMasterApiMetricsNodesListUrl;

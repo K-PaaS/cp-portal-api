@@ -1,6 +1,7 @@
 package org.paasta.container.platform.api.clusters.clusters.support;
 
 import lombok.Data;
+import org.paasta.container.platform.api.common.Constants;
 
 /**
  * OpenstackInfo Model 클래스
@@ -11,7 +12,7 @@ import lombok.Data;
  **/
 @Data
 public class OpenstackInfo {
-    String auth_url;
-    String password;
-    String user_name;
+    private String auth_url = Constants.EMPTY_STRING;
+    private String password = Constants.EMPTY_STRING;
+    private String user_name = Constants.EMPTY_STRING;
 }

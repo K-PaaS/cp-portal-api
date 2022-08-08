@@ -207,7 +207,12 @@ commonApi:
   authorization:
     id: admin
     password: PaaS-TA
- 
+
+
+cpTerraman:
+  template:
+    path: "C:/Temp/"
+
 ---
 spring:
   profiles:     
@@ -229,3 +234,7 @@ commonApi:
   authorization:
     id: admin
     password: PaaS-TA
+
+cpTerraman:
+  template:
+    path: "/tmp/"

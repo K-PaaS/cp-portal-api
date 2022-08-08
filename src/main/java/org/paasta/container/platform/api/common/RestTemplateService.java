@@ -557,15 +557,15 @@ public class RestTemplateService {
 
         // CONTAINER PLATFORM MASTER API
         if (Constants.TARGET_CP_MASTER_API.equals(reqApi)) {
-            Clusters clusters = getClusters(params.getCluster());
+            Clusters clusters = vaultService.getClusterDetails(params.getCluster());
             apiUrl = clusters.getClusterApiUrl();
             if(params.getIsClusterToken()) {
                 // vault cluster-token 값 조회
-                authorization = "Bearer " + vaultService.getClusterDetails(params.getCluster()).getClusterToken();
+                authorization = "Bearer " + clusters.getClusterToken();
             }
             else {
                 // vault user-sa-token 값 조회 -추후 수정
-                authorization = "Bearer " + vaultService.getClusterDetails(params.getCluster()).getClusterToken();
+                authorization = "Bearer " + clusters.getClusterToken();
             }
 
         }
@@ -573,6 +573,11 @@ public class RestTemplateService {
         if (TARGET_COMMON_API.equals(reqApi)) {
             apiUrl = propertyService.getCommonApiUrl();
             authorization = commonApiBase64Authorization;
+        }
+
+        // TERRAMAN API
+        if (TARGET_TERRAMAN_API.equals(reqApi)) {
+            apiUrl = propertyService.getTerramanApiUrl();
         }
 
         this.base64Authorization = authorization;

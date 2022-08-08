@@ -31,4 +31,5 @@ public class Clusters {
     private String created;
     private String lastModified;
     private Boolean isActive = false;
+    private String status = Constants.ClusterStatus.DISABLED.getInitial();
 }

@@ -58,6 +58,7 @@ public class Params {
     public String cloudAccountId = Constants.EMPTY_STRING;
     public String clusterType = Constants.CLUSTER_TYPE_SUB;
     public String description = Constants.EMPTY_STRING;
+    public String clusterStatus = Constants.ClusterStatus.DISABLED.getInitial();
 
     // sign Up
     public Boolean isSuperAdmin = false;

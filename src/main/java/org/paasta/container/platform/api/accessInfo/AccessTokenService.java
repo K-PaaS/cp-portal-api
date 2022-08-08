@@ -1,5 +1,6 @@
 package org.paasta.container.platform.api.accessInfo;
 
+import org.paasta.container.platform.api.clusters.clusters.Clusters;
 import org.paasta.container.platform.api.common.*;
 import org.paasta.container.platform.api.common.model.Params;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -82,16 +83,18 @@ public class AccessTokenService {
         String token = "";
 
         if (params.getIsClusterToken()) {
+            Clusters clusters = vaultService.getClusterDetails(params.getCluster());
             // vault cluster-token 값 조회
-            apiUrl = vaultService.getClusterDetails(params.getCluster()).getClusterApiUrl();
-            id = vaultService.getClusterDetails(params.getCluster()).getClusterId();
-            token = vaultService.getClusterDetails(params.getCluster()).getClusterToken();
+            apiUrl = clusters.getClusterApiUrl();
+            id = clusters.getClusterId();
+            token = clusters.getClusterToken();
         }
         else {
+            Clusters clusters = vaultService.getClusterDetails(params.getCluster());
             // vault user-sa-token 값 조회 -추후 수정
-            apiUrl = vaultService.getClusterDetails(params.getCluster()).getClusterApiUrl();
-            id = vaultService.getClusterDetails(params.getCluster()).getClusterId();
-            token = vaultService.getClusterDetails(params.getCluster()).getClusterToken();
+            apiUrl = clusters.getClusterApiUrl();
+            id = clusters.getClusterId();
+            token = clusters.getClusterToken();
         }
 
         //params.setClusterApiUrl(apiUrl);

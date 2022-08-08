@@ -89,7 +89,7 @@ public class ClustersController {
     @ApiImplicitParams({
             @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body")
     })
-    @PutMapping
+    @PatchMapping
     public Object updateClusters(@RequestBody Params params){
         return clustersService.updateClusters(params);
     }

@@ -30,7 +30,7 @@ public class Constants {
     public static final String TARGET_CP_MASTER_API = "cpMasterApi/{cluster}";
     public static final String TARGET_COMMON_API = "commonApi";
     //FIXME!!
-    public static final String TARGET_TERRAMAN_API = "";
+    public static final String TARGET_TERRAMAN_API = "terramanApi";
 
     public static final String CLUSTER_TYPE_HOST = "host";
     public static final String CLUSTER_TYPE_SUB = "sub";
@@ -312,6 +312,21 @@ public class Constants {
         public String getClassType() {
             return classType;
         }
+    }
+
+    public enum ClusterStatus {
+        ACTIVE("A"),
+        CREATING("C"),
+        DISABLED("D");
+
+        private final String initial;
+        ClusterStatus(String initial) {
+            this.initial = initial;
+        }
+        public String getInitial() {
+            return initial;
+        }
+
     }
 
     public static final String STRING_CONDITION_READY = "Ready";

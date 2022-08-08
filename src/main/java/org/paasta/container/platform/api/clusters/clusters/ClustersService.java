@@ -1,6 +1,7 @@
 package org.paasta.container.platform.api.clusters.clusters;
 
 import org.paasta.container.platform.api.clusters.clusters.support.ClusterInfo;
+import org.paasta.container.platform.api.clusters.clusters.support.TerramanParams;
 import org.paasta.container.platform.api.clusters.nodes.NodesList;
 import org.paasta.container.platform.api.clusters.nodes.NodesService;
 import org.paasta.container.platform.api.common.*;
@@ -17,6 +18,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
 
+import java.io.BufferedOutputStream;
+import java.io.FileOutputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -71,11 +75,39 @@ public class ClustersService {
         Clusters clusters = setClusters(params);
         if (params.getIsClusterRegister() && !createClusterInfoToVault(params)) {
             clusters.setResultMessage("createClusterInfoToVault Failed");
-            return (Clusters)commonService.setResultModel(clusters, Constants.RESULT_STATUS_FAIL);
+            clusters.setResultCode(Constants.RESULT_STATUS_FAIL);
+            return clusters;
         }
 
         if (!params.getIsClusterRegister()) {
-            //FIXME!! TERRAMAN API call
+            //Create Files
+            try {
+                String path = propertyService.getCpTerramanTemplatePath() + params.getCluster();
+                LOGGER.info("File write Start : " + path);
+                OutputStream outputStream = new FileOutputStream(path);
+                BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(outputStream);
+                bufferedOutputStream.write(params.getHclScript().getBytes());
+                bufferedOutputStream.close();
+                outputStream.close();
+                LOGGER.info("File write End");
+
+            } catch (Exception e) {
+                LOGGER.info("Template file write Error");
+                clusters.setResultMessage("Template file write Error");
+                clusters.setResultCode(Constants.RESULT_STATUS_FAIL);
+                return clusters;
+            }
+            //Setting arguments
+            TerramanParams terramanParams = new TerramanParams();
+            terramanParams.setCluster_id(params.getCluster());
+            terramanParams.setProvider(params.getProviderType().name());
+            terramanParams.setSeq(Integer.parseInt(params.getCloudAccountId()));
+            LOGGER.info("Terraman API call Start : " + terramanParams);
+            restTemplateService.sendGlobal(Constants.TARGET_TERRAMAN_API, "/clusters/create", HttpMethod.POST, terramanParams, TerramanParams.class, params);
+            LOGGER.info("Terraman API call end");
+        }
+        else {
+            clusters.setStatus(Constants.ClusterStatus.ACTIVE.getInitial());
         }
         return (Clusters) commonService.setResultModel(restTemplateService.sendGlobal(Constants.TARGET_COMMON_API, "/clusters", HttpMethod.POST, clusters, Clusters.class, params), Constants.RESULT_STATUS_SUCCESS);
     }
@@ -88,7 +120,31 @@ public class ClustersService {
      * @return the clusters
      */
     public Clusters getClusters(Params params) {
-        return (Clusters) commonService.setResultModel(restTemplateService.sendGlobal(Constants.TARGET_COMMON_API, "/clusters/" + params.getCluster(), HttpMethod.GET, null, Clusters.class, params), Constants.RESULT_STATUS_SUCCESS);
+        // get k8s Info
+        Clusters clusters = restTemplateService.sendGlobal(Constants.TARGET_COMMON_API, "/clusters/" + params.getCluster(), HttpMethod.GET, null, Clusters.class, params);
+        try {
+            Clusters vaultClusters = vaultService.getClusterDetails(params.getCluster());
+            clusters.setClusterApiUrl(vaultClusters.getClusterApiUrl());
+            clusters.setClusterToken(vaultClusters.getClusterToken());
+        } catch (Exception e) {
+            LOGGER.info("not exist vault info");
+        }
+
+        clusters.setKubernetesVersion(Constants.noName);
+        if (clusters.getStatus().equals(Constants.ClusterStatus.ACTIVE.getInitial())) {
+            try {
+                clusters.setKubernetesVersion(
+                        nodesService.getNodesList(new Params(clusters.getClusterId(), clusters.getName())).getItems().stream()
+                        .filter(x -> x.getMetadata().getLabels().containsKey("node-role.kubernetes.io/control-plane"))
+                        .filter(Objects::nonNull)
+                        .collect(Collectors.toList())
+                        .get(0).getStatus().getNodeInfo().getKubeletVersion());
+                clusters.setIsActive(true);
+            } catch (Exception e) {
+                LOGGER.info("Cluster is not Active");
+            }
+        }
+        return (Clusters) commonService.setResultModel(clusters, Constants.RESULT_STATUS_SUCCESS);
     }
 
     /**
@@ -104,6 +160,10 @@ public class ClustersService {
                 .replace("{userType}", params.getUserType()), HttpMethod.GET, null, ClustersList.class, params);
 
         for (Clusters clusters : clustersList.getItems()) {
+            if(!clusters.getStatus().equals(Constants.ClusterStatus.ACTIVE.getInitial())){
+//                clusters.setIsActive(false);
+                continue;
+            }
             try {
                 NodesList nodesList = nodesService.getNodesList(new Params(clusters.getClusterId(), clusters.getName())); //status check
 
@@ -153,7 +213,7 @@ public class ClustersService {
      * @return the clusters
      */
     public Clusters updateClusters(Params params) {
-        return (Clusters) commonService.setResultModel(restTemplateService.sendGlobal(Constants.TARGET_COMMON_API, "/clusters" , HttpMethod.PUT, setClusters(params), Clusters.class, params), Constants.RESULT_STATUS_SUCCESS);
+        return (Clusters) commonService.setResultModel(restTemplateService.sendGlobal(Constants.TARGET_COMMON_API, "/clusters" , HttpMethod.PATCH, setClusters(params), Clusters.class, params), Constants.RESULT_STATUS_SUCCESS);
     }
 
     /**
@@ -175,7 +235,6 @@ public class ClustersService {
     public Clusters setClusters(Params params) {
         Clusters clusters = new Clusters();
         clusters.setClusterId(params.getCluster());
-        clusters.setClusterApiUrl(params.getClusterApiUrl());
         clusters.setName(params.getResourceName());
         clusters.setClusterType(params.getClusterType());
         clusters.setProviderType(params.getProviderType());
@@ -192,9 +251,12 @@ public class ClustersService {
      */
     public boolean createClusterInfoToVault(Params params) {
         //Check ClusterId
-        if (vaultService.getClusterDetails(params.getCluster()) != null) {
+        try {
+            vaultService.getClusterDetails(params.getCluster());
             LOGGER.info("cluster is already registered");
             return false;
+        } catch (Exception e) {
+            LOGGER.info("cluster is not registered");
         }
 
         ClusterInfo clusterInfo = new ClusterInfo();

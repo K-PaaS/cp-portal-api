@@ -18,6 +18,9 @@ public class Clusters {
     private Integer httpStatusCode;
     private String detailMessage;
 
+    private String userAuthId;
+    private String namespace;
+
     private String clusterId;
     private String clusterApiUrl;
     private String name;

@@ -94,5 +94,44 @@ public class VaultService {
       return read(propertyService.getVaultClusterTokenPath().replace("{id}", clusterId), Clusters.class);
     }
 
+    /**
+     * Vault를 통한 Super Admin Cluster 정보 조회
+     *
+     * @param clusterId the clusterId
+     * @return the String
+     */
+    public Clusters getClusterInfoDetails(String clusterId){
+        return read(propertyService.getVaultSuperAdminTokenPath()
+                .replace("{clusterId}", clusterId), Clusters.class);
+    }
+
+    /**
+     * Vault를 통한 Cluster Admin Cluster 정보 조회
+     *
+     * @param userAuthId the userAuthId
+     * @param clusterId the clusterId
+     * @return the String
+     */
+    public Clusters getClusterInfoDetails(String userAuthId, String clusterId){
+        return read(propertyService.getVaultClusterAdminTokenPath()
+                .replace("{userAuthId}", userAuthId)
+                .replace("{clusterId}", clusterId), Clusters.class);
+    }
+
+    /**
+     * Vault를 통한 User Cluster 정보 조회
+     *
+     * @param userAuthId the userAuthId
+     * @param clusterId the clusterId
+     * @param namespace the namespace
+     * @return the String
+     */
+    public Clusters getClusterInfoDetails(String userAuthId, String clusterId, String namespace){
+        return read(propertyService.getVaultUserTokenPath()
+                .replace("{userAuthId}", userAuthId)
+                .replace("{clusterId}", clusterId)
+                .replace("{namespace}", namespace), Clusters.class);
+    }
+
 
 }

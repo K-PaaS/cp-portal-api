@@ -20,6 +20,9 @@ management:
 
 vault:
   path:
+    super-admin-token: "secret/cluster/{clusterId}"
+    cluster-admin-token: "secret/user/{userAuthId}/{clusterId}"
+    user-token: "secret/user/{userAuthId}/{clusterId}/{namespace}"
     cluster-token: "secret/cluster/{id}"
     sa-token: "/user/{id}"
     provider-credential: "secret/{iaas}/{id}"

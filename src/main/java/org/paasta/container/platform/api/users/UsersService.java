@@ -151,12 +151,18 @@ public class UsersService {
                 .replace("{cluster:.+}", params.getCluster())
                 .replace("{namespace:.+}", params.getNamespace()), HttpMethod.GET, null, UsersAdmin.class, params);
 
+        params.setUserType(usersAdmin.getItems().get(0).getUserType());
+
+        accessTokenService.getVaultSecrets(params);
+
+        usersAdmin.setClusterApiUrl(params.getClusterApiUrl());
+        usersAdmin.setClusterName(params.getCluster());
+        usersAdmin.setClusterToken(params.getClusterToken());
+
         usersAdmin = commonService.userListProcessing(usersAdmin, params, UsersAdmin.class);
         return commonService.setResultModel(usersAdmin, Constants.RESULT_STATUS_SUCCESS);
 
     }
-
-
 
     /**
      * Users 수정(Update Users)

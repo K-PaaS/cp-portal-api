@@ -4,6 +4,7 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
+import org.paasta.container.platform.api.accessInfo.AccessTokenService;
 import org.paasta.container.platform.api.clusters.namespaces.NamespacesService;
 import org.paasta.container.platform.api.common.CommonService;
 import org.paasta.container.platform.api.common.Constants;
@@ -38,13 +39,15 @@ public class UsersController {
     private final ResultStatusService resultStatusService;
     private final NamespacesService namespacesService;
     private final CommonService commonService;
+    private final AccessTokenService accessTokenService;
 
     @Autowired
-    public UsersController(UsersService usersService, ResultStatusService resultStatusService, NamespacesService namespacesService, CommonService commonService) {
+    public UsersController(UsersService usersService, ResultStatusService resultStatusService, NamespacesService namespacesService, CommonService commonService, AccessTokenService accessTokenService) {
         this.usersService = usersService;
         this.resultStatusService = resultStatusService;
         this.namespacesService = namespacesService;
         this.commonService = commonService;
+        this.accessTokenService = accessTokenService;
     }
 
 

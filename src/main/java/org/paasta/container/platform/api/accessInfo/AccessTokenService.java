@@ -76,39 +76,34 @@ public class AccessTokenService {
      *
      * @param params the params
      */
-    public AccessToken getVaultSecrets(Params params) {
+    public Params getVaultSecrets(Params params) {
 
         String apiUrl = "";
         String id = "";
         String token = "";
 
-        if (params.getIsClusterToken()) {
-            Clusters clusters = vaultService.getClusterDetails(params.getCluster());
-            // vault cluster-token 값 조회
+        if (params.getUserType().equals("SUPER_ADMIN")) {
+            Clusters clusters = vaultService.getClusterInfoDetails(params.getCluster());
+            apiUrl = clusters.getClusterApiUrl();
+            id = clusters.getClusterId();
+            token = clusters.getClusterToken();
+        } else if (params.getUserType().equals("CLUSTER_ADMIN")) {
+            Clusters clusters = vaultService.getClusterInfoDetails(params.getUserAuthId(), params.getCluster());
+            apiUrl = clusters.getClusterApiUrl();
+            id = clusters.getClusterId();
+            token = clusters.getClusterToken();
+        } else if (params.getUserType().equals("USER")) {
+            Clusters clusters = vaultService.getClusterInfoDetails(params.getUserAuthId(), params.getCluster(), params.getNamespace());
             apiUrl = clusters.getClusterApiUrl();
             id = clusters.getClusterId();
             token = clusters.getClusterToken();
         }
-        else {
-            Clusters clusters = vaultService.getClusterDetails(params.getCluster());
-            // vault user-sa-token 값 조회 -추후 수정
-            apiUrl = clusters.getClusterApiUrl();
-            id = clusters.getClusterId();
-            token = clusters.getClusterToken();
-        }
 
-        //params.setClusterApiUrl(apiUrl);
-        //params.setCluster(id);
-        //params.setClusterToken(token);
+        params.setClusterApiUrl(apiUrl);
+        params.setCluster(id);
+        params.setClusterToken(token);
 
-        AccessToken accessToken = new AccessToken();
-        accessToken.setClusterApiUrl(apiUrl);
-        accessToken.setClusterId(id);
-        accessToken.setClusterToken(token);
-        accessToken.setUserAuthId(params.getUserAuthId());
-        accessToken.setUserType(params.getUserType());
-        accessToken.setUserId(params.getUserId());
-
-        return (AccessToken) commonService.setResultModel(commonService.setResultObject(accessToken, AccessToken.class), Constants.RESULT_STATUS_SUCCESS);
+        return params;
     }
+
 }

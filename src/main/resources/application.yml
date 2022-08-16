@@ -24,7 +24,7 @@ vault:
     cluster-admin-token: "secret/user/{userAuthId}/{clusterId}"
     user-token: "secret/user/{userAuthId}/{clusterId}/{namespace}"
     cluster-token: "secret/cluster/{id}"
-    sa-token: "/user/{id}"
+    user-sa-token: "secret/user/{id}/{clusterId}/{namespace}"
     provider-credential: "secret/{iaas}/{id}"
 
 cp:
@@ -34,6 +34,7 @@ cp:
 cpNamespace:
   ignoreNamespace: ${IGNORE_NAMESPACES}
   defaultNamespace: cp-portal-temp-namespace
+  clusterAdminNamespace: kube-system
   role:
     list: cp-init-role, cp-admin-role
     init: cp-init-role

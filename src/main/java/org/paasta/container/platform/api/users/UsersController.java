@@ -52,8 +52,9 @@ public class UsersController {
 
 
     /**
-     * Users 전체 목록 조회(Get Users List)
-     *
+     * Users 전체 목록 조회(Get Users List) -
+     * 개발 0809 클러스터 관리자 목록 조회 (완)
+     * 개발 0809 사용자 목록 조회
      * @param params the params
      * @return the users list
      */
@@ -61,10 +62,10 @@ public class UsersController {
     @ApiImplicitParams({
             @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body")
     })
-    @GetMapping(value = "/clusters/{cluster:.+}/users")
+    @GetMapping(value = "/clusters/{cluster:.+}/namespaces/{namespace:.+}/usersList")
     public Object getUsersList(Params params) {
-        if (params.getUserType().equalsIgnoreCase(Constants.SELECTED_ADMINISTRATOR)) {
-            return usersService.getClusterAdminAllByCluster(params);
+        if (params.getType().equalsIgnoreCase(Constants.SELECTED_ADMINISTRATOR)) {
+            return usersService.getClusterAdminListByCluster(params);
         }
         return usersService.getUsersAllByCluster(params);
 
@@ -73,8 +74,8 @@ public class UsersController {
 
 
     /**
-     * 하나의 Cluster 내 여러 Namespace 에 속한 User 에 대한 상세 조회(Get Users cluster namespace)
-     *
+     * 특정 Cluster 내 여러 Namespace 에 속한 User 에 대한 상세 조회(Get Users cluster namespace)
+     * 개발 0811 사용자 상세 조회
      * @param params the params
      * @return the users detail
      */
@@ -82,16 +83,15 @@ public class UsersController {
     @ApiImplicitParams({
             @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body")
     })
-    @GetMapping(value = "/clusters/{cluster:.+}/users/{userId:.+}")
-    public Object getUsers(Params params) throws Exception {
+    @GetMapping(value = "/clusters/{cluster:.+}/users/{userAuthId:.+}")
+    public UsersDetails getUsers(Params params) throws Exception {
         if (params.getUserType().equalsIgnoreCase(Constants.SELECTED_ADMINISTRATOR)) {
             params.setUserType(Constants.AUTH_CLUSTER_ADMIN);
         } else {
             //사용자인 경우
             params.setUserType(Constants.AUTH_USER);
         }
-
-        return usersService.getUsersInMultiNamespace(params);
+        return usersService.getUsersDetailsByCluster(params);
     }
 
 
@@ -134,6 +134,9 @@ public class UsersController {
     })
     @PutMapping(value = "/clusters/{cluster:.+}/users/{userId:.+}")
     public Object modifyUsers(Params params, @RequestBody Users users) throws Exception {
+        if(users.getUserType().equalsIgnoreCase(Constants.AUTH_CLUSTER_ADMIN)) {
+            return usersService.mappingClusterAdmin(params, users);
+        }
         return usersService.modifyUsersAdmin(params, users);
     }
 
@@ -259,67 +262,8 @@ public class UsersController {
     }
 
 
-    /**
-     * 각 Namespace 별 등록 되어 있는 사용자들의 이름 목록 조회(Get Users registered list namespace)
-     *
-     * @param cluster   the cluster
-     * @param namespace the namespace
-     * @return the users list
-     */
-    @ApiOperation(value = "각 Namespace 별 등록 되어 있는 사용자들의 이름 목록 조회(Get Users registered list namespace)", nickname = "getUsersNameList")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "cluster", value = "클러스터 명", required = true, dataType = "string", paramType = "path"),
-            @ApiImplicitParam(name = "namespace", value = "네임스페이스 명", required = true, dataType = "string", paramType = "path")
-    })
-    @GetMapping(value = "/clusters/{cluster:.+}/namespaces/{namespace:.+}/users/names")
-    public Map<String, List> getUsersNameList(@PathVariable(value = "cluster") String cluster,
-                                              @PathVariable(value = "namespace") String namespace) {
-        return usersService.getUsersNameListByNamespace(cluster, namespace);
-    }
 
 
-    /**
-     * 운영자 정보 수정 (Update admin info)
-     *
-     * @param cluster   the cluster
-     * @param namespace the namespace
-     * @param userId    the user id
-     * @param users     the users
-     * @param isAdmin   the isAdmin
-     * @return return is succeeded
-     */
-    @ApiOperation(value = "Users 수정(Update Users)", nickname = "modifyUsers")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "cluster", value = "클러스터 명", required = true, dataType = "string", paramType = "path"),
-            @ApiImplicitParam(name = "namespace", value = "네임스페이스 명", required = true, dataType = "string", paramType = "path"),
-            @ApiImplicitParam(name = "userId", value = "유저 Id", required = true, dataType = "string", paramType = "path"),
-            @ApiImplicitParam(name = "users", value = "유저", required = true, dataType = "Users", paramType = "body")
-    })
-    @PutMapping(value = "/clusters/{cluster:.+}/namespaces/{namespace:.+}/users/{userId:.+}")
-    public Object modifyUsersInfo(@PathVariable(value = "cluster") String cluster,
-                                  @PathVariable(value = "namespace") String namespace,
-                                  @PathVariable(value = "userId") String userId,
-                                  @RequestBody Users users,
-                                  @ApiIgnore @RequestParam(required = false, name = "isAdmin") boolean isAdmin) {
-
-        // input parameter regex
-        if (!Constants.RESULT_STATUS_SUCCESS.equals(regexMatch(users))) {
-            return ResultStatus.builder().resultCode(Constants.RESULT_STATUS_FAIL)
-                    .resultMessage(MessageConstant.RE_CONFIRM_INPUT_VALUE.getMsg())
-                    .httpStatusCode(400)
-                    .detailMessage(regexMatch(users)).build();
-        }
-
-        if (isAdmin) {
-            return usersService.modifyUsers(userId, users);
-        }
-
-        return resultStatusService.FORBIDDEN_ACCESS_RESULT_STATUS();
-    }
-
-
-    /*
-     */
 /**
  * Users 권한 설정(Set Users authority)
  *

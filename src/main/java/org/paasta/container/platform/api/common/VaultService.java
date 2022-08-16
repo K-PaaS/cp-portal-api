@@ -1,6 +1,7 @@
 package org.paasta.container.platform.api.common;
 
 import org.paasta.container.platform.api.clusters.clusters.Clusters;
+import org.paasta.container.platform.api.common.model.Params;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,20 +32,19 @@ public class VaultService {
      * @param path the path
      * @return the object
      */
-    public <T> T read(String path,  Class<T> requestClass) {
+    public <T> T read(String path, Class<T> requestClass) {
         VaultResponse vaultResponse;
 
         path = setPath(path);
 
         try {
             vaultResponse = vaultTemplate.read(path);
-        }
-        catch (Exception e){
+        } catch (Exception e) {
             logger.info("vault read exception:" + e.getMessage());
             return null;
         }
         HashMap responseMap = (HashMap) vaultResponse.getData().get("data");
-        return  commonService.setResultObject(responseMap, requestClass);
+        return commonService.setResultObject(responseMap, requestClass);
     }
 
     /**
@@ -53,7 +53,7 @@ public class VaultService {
      * @param path the path
      * @return the object
      */
-    public Object write(String path, Object body){
+    public Object write(String path, Object body) {
         path = setPath(path);
 
         Map<String, Object> data = new HashMap<>();
@@ -68,7 +68,7 @@ public class VaultService {
      * @param path the path
      * @return the object
      */
-    public void delete(String path){
+    public void delete(String path) {
         path = setPath(path);
         vaultTemplate.delete(path);
     }
@@ -79,7 +79,7 @@ public class VaultService {
      * @param path the path
      * @return the String
      */
-    String setPath(String path){
+    String setPath(String path) {
         return new StringBuilder(path).insert(path.indexOf("/") + 1, "data/").toString();
     }
 
@@ -90,8 +90,29 @@ public class VaultService {
      * @param clusterId the clusterId
      * @return the String
      */
-    public Clusters getClusterDetails(String clusterId){
-      return read(propertyService.getVaultClusterTokenPath().replace("{id}", clusterId), Clusters.class);
+    public Clusters getClusterDetails(String clusterId) {
+        return read(propertyService.getVaultClusterTokenPath().replace("{id}", clusterId), Clusters.class);
+    }
+
+
+    public void saveUserAccessToken(Params params) {
+
+        String userTokenPath = propertyService.getVaultUserSaTokenPath();
+
+        if (params.getUserType().equalsIgnoreCase(Constants.AUTH_CLUSTER_ADMIN)) {
+            userTokenPath = userTokenPath.replace("/{namespace}", "");
+        }
+
+        userTokenPath = userTokenPath.replace("{id}", params.getUserAuthId())
+                .replace("{clusterId}", params.getCluster())
+                .replace("{namespace}", params.getNamespace());
+
+
+        Map<String, Object> token = new HashMap<>();
+        token.put("secret", params.getResourceName());
+        token.put("token", params.getSaToken());
+
+        write(userTokenPath, token);
     }
 
     /**

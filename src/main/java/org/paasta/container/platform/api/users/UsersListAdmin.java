@@ -24,6 +24,7 @@ public class UsersListAdmin {
     @Data
     public static class UserDetail {
         private String userId;
+        private String userAuthId;
         private String serviceAccountName;
         private String cpNamespace;
         private String roleSetCode;

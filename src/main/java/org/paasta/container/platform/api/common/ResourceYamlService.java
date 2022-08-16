@@ -12,6 +12,8 @@ import org.paasta.container.platform.api.clusters.resourceQuotas.ResourceQuotasD
 import org.paasta.container.platform.api.clusters.resourceQuotas.ResourceQuotasService;
 import org.paasta.container.platform.api.common.model.Params;
 import org.paasta.container.platform.api.common.model.ResultStatus;
+import org.paasta.container.platform.api.secret.Secrets;
+import org.paasta.container.platform.api.users.Users;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,7 +25,6 @@ import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.paasta.container.platform.api.common.Constants.*;
 
 /**
  * Resource Yaml Service 클래스
@@ -41,14 +42,17 @@ public class ResourceYamlService {
     private final TemplateService templateService;
     private final RestTemplateService restTemplateService;
     private final ResourceQuotasService resourceQuotasService;
+    private final VaultService vaultService;
 
     @Autowired
-    public ResourceYamlService(CommonService commonService, PropertyService propertyService, TemplateService templateService, RestTemplateService restTemplateService, ResourceQuotasService resourceQuotasService) {
+    public ResourceYamlService(CommonService commonService, PropertyService propertyService, TemplateService templateService, RestTemplateService restTemplateService,
+                               ResourceQuotasService resourceQuotasService, VaultService vaultService) {
         this.commonService = commonService;
         this.propertyService = propertyService;
         this.templateService = templateService;
         this.restTemplateService = restTemplateService;
         this.resourceQuotasService = resourceQuotasService;
+        this. vaultService = vaultService;
     }
 
 
@@ -236,28 +240,6 @@ public class ResourceYamlService {
 
 
     /**
-     * ftl 파일로 ClusterRole Binding 생성(Create ClusterRole Binding)
-     *
-     * @param username
-     * @param namespace
-     * @return
-     */
-    public ResultStatus createClusterRoleBinding(String username, String namespace) {
-        Map map = new HashMap();
-        String roleBindingYaml;
-
-        map.put("userName", username);
-        map.put("spaceName", namespace);
-
-        roleBindingYaml = templateService.convert("create_clusterRoleBinding.ftl", map);
-
-        Object rbResult = restTemplateService.sendYaml(TARGET_CP_MASTER_API, propertyService.getCpMasterApiListClusterRoleBindingsCreateUrl(), HttpMethod.POST, roleBindingYaml, Object.class, true);
-
-        return (ResultStatus) commonService.setResultModelWithNextUrl(commonService.setResultObject(rbResult, ResultStatus.class),
-                Constants.RESULT_STATUS_SUCCESS, null);
-    }
-
-    /**
      * ServiceAccount 와 RoleBinding 삭제 (Delete ServiceAccount and Role binding)
      *
      * @param params the params
@@ -304,9 +286,11 @@ public class ResourceYamlService {
         JsonObject jsonObject = JsonParser.parseString(jsonObj).getAsJsonObject();
         JsonElement element = jsonObject.getAsJsonObject().get("secrets");
         element = element.getAsJsonArray().get(0);
-        String token = element.getAsJsonObject().get("name").toString();
-        token = token.replaceAll("\"", "");
-        return token;
+        String secretName = element.getAsJsonObject().get("name").toString();
+        secretName = secretName.replaceAll("\"", "");
+
+        params.setSaSecret(secretName);
+        return secretName;
     }
 
 
@@ -333,7 +317,7 @@ public class ResourceYamlService {
         HashMap responseMap = (HashMap) restTemplateService.send(Constants.TARGET_CP_MASTER_API,
                 propertyService.getCpMasterApiListSecretsGetUrl()
                         .replace("{namespace}", params.getNamespace())
-                        .replace("{name}", params.getResourceName()), HttpMethod.GET, null, Map.class, params);
+                        .replace("{name}", params.getSaSecret()), HttpMethod.GET, null, Map.class, params);
 
         Map map = (Map) responseMap.get("data");
 
@@ -348,7 +332,54 @@ public class ResourceYamlService {
         accessToken.setCaCertToken(caCertDecodeToken);
         accessToken.setUserAccessToken(userDecodeToken);
 
+        params.setSaToken(userDecodeToken);
         return (AccessToken) commonService.setResultModel(commonService.setResultObject(accessToken, AccessToken.class), Constants.RESULT_STATUS_SUCCESS);
+    }
+
+
+
+    //////////////////////////////////////////////
+    public void createClusterAdminSaAndRb(Params params) {
+        // 1. 'kube-system' 에 service-account, rolebinding 생성
+        params.setIsClusterToken(true);
+        params.setNamespace(propertyService.getClusterAdminNamespace());
+        params.setRs_sa(params.getUserAuthId());
+        createServiceAccount(params);
+        createClusterRoleBinding(params);
+        getSecretName(params);
+        getSecrets(params);
+        vaultService.saveUserAccessToken(params);
+       }
+
+
+    /**
+     * ftl 파일로 ClusterRole Binding 생성(Create ClusterRole Binding)
+     *
+     * @param params the params
+     * @return
+     */
+    public ResultStatus createClusterRoleBinding(Params params) {
+        Map map = new HashMap();
+        map.put("userName", params.getRs_sa());
+        map.put("spaceName", params.getNamespace());
+        params.setYaml(templateService.convert("create_clusterRoleBinding.ftl", map));
+
+        ResultStatus resultStatus = restTemplateService.sendYaml(Constants.TARGET_CP_MASTER_API,
+                propertyService.getCpMasterApiListClusterRoleBindingsCreateUrl(), HttpMethod.POST, ResultStatus.class, params);
+        return (ResultStatus) commonService.setResultModel(resultStatus, Constants.RESULT_STATUS_SUCCESS);
+    }
+
+
+    /**
+     * Secret 조회(Get Secret of Service Account)
+     *
+     * @param params the params
+     * @return the resultStatus
+     */
+    public Secrets getSecret(Params params) {
+         return restTemplateService.send(Constants.TARGET_CP_MASTER_API, propertyService.getCpMasterApiListSecretsGetUrl()
+                .replace("{namespace}", params.getNamespace())
+                .replace("{name}", params.getResourceName()), HttpMethod.GET, null, Secrets.class, params);
     }
 
 

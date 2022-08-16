@@ -131,7 +131,7 @@ public class Constants {
     public static final String URI_COMMON_API_USERS_DETAIL =  "/users/{userId:.+}/{userAuthId:.+}";
     public static final String URI_COMMON_API_USERS_LIST =  "/users";
     public static final String URI_COMMON_API_USERS_NAMES =  "/users/names";
-    public static final String URI_COMMON_API_USERS_LIST_BY_CLUSTER = "/clusters/{cluster:.+}/users";
+    public static final String URI_COMMON_API_USERS_LIST_BY_CLUSTER = "/clusters/{cluster:.+}/namespaces/{namespace:.+}/usersList";
     public static final String URI_COMMON_API_USERS_LIST_BY_CLUSTER_TEMPNAMESPACE = "/clusters/{cluster:.+}/users/tempNamespace";
 
 
@@ -148,12 +148,13 @@ public class Constants {
     public static final String URI_COMMON_API_USER_SIGNUP = "/user/signUp";
     public static final String URI_COMMON_API_CHECK_USER_REGISTER =  "/userRegisterCheck?userId={userId:.+}&userAuthId={userAuthId:.+}&userType={userType:.+}";
 
-    public static final String URI_COMMON_API_CLUSTER_ADMIN_INFO = "/cluster/all/admin/info?searchName={searchName:.+}";
-    public static final String URI_COMMON_API_CLUSTER_USER_DETAILS = "/cluster/all/user/details?userId={userId:.+}&userType={userType:.+}";
+    public static final String URI_COMMON_API_CLUSTER_ADMIN_LIST = "/cluster/{cluster:.+}/admin?searchName={searchName:.+}";
+    public static final String URI_COMMON_API_CLUSTER_USER_DETAILS = "/clusters/{cluster:.+}/users/{userAuthId:.+}/details?userType={userType:.+}";
     public static final String URI_COMMON_API_CLUSTER_INFO_USER_DETAILS = "/cluster/info/all/user/details?userAuthId={userAuthId:.+}&cluster={cluster:.+}&namespace={namespace:.+}";
     public static final String URI_COMMON_API_NAMESPACE_OR_NOT_CHECK = "/clusters/all/namespaces/{namespace:.+}/adminCheck";
     public static final String URI_COMMON_API_DELETE_USER_BY_ID_AND_AUTHID = "/cluster/all/user/delete?userId={userId:.+}&userAuthId={userAuthId:.+}&namespace={namespace:.+}";
     public static final String URI_COMMON_API_CLUSTER_LIST_BY_USER = "/users/{userAuthId:.+}/clustersList?userType={userType:.+}";
+    public static final String URI_COMMON_API_CREATE_CLUSTER_ADMIN = "/users/create/clusterAdmin";
 
 
 
@@ -345,5 +346,5 @@ public class Constants {
     public static final String STATUS_FAILED = "Failed";
     public static final String STATUS_RUNNING = "Running";
 
-
+    public static final String CLUSTER_ADMIN_SERVICE_ACCOUNT = "cp-cluster-admin-{userAuthId}";
 }

@@ -57,6 +57,15 @@ public class Users {
     private String cpProviderType;
     private String serviceInstanceId;
 
+
+    ///secret info
+    private String secretName;
+    private Object secretLabels;
+    private String secretType;
+
+
+    private String oldUserType;
+
     @Data
     public static class NamespaceRole {
         private String namespace;
@@ -143,6 +152,7 @@ public class Users {
         return CommonUtils.procReplaceNullValue(userType);
     }
 
+    public Object getSecretLabels() {return CommonUtils.procReplaceNullValue(secretLabels); }
 
     public List<NamespaceRole> getSelectValues() {
         return (StringUtils.isEmpty(selectValues)) ? new ArrayList<NamespaceRole>() {{

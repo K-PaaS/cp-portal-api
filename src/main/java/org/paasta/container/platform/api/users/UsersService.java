@@ -1,14 +1,12 @@
 package org.paasta.container.platform.api.users;
 
-
 import org.paasta.container.platform.api.accessInfo.AccessTokenService;
-import org.paasta.container.platform.api.clusters.clusters.ClustersService;
 import org.paasta.container.platform.api.common.*;
 import org.paasta.container.platform.api.common.model.CommonStatusCode;
 import org.paasta.container.platform.api.common.model.Params;
 import org.paasta.container.platform.api.common.model.ResultStatus;
+import org.paasta.container.platform.api.exception.ResultStatusException;
 import org.paasta.container.platform.api.secret.Secrets;
-import org.paasta.container.platform.api.users.serviceAccount.ServiceAccount;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,6 +39,7 @@ public class UsersService {
     private final ResourceYamlService resourceYamlService;
     private final AccessTokenService accessTokenService;
     private final ResultStatusService resultStatusService;
+    private final VaultService vaultService;
 
     /**
      * Instantiates a new Users service
@@ -53,93 +52,73 @@ public class UsersService {
      */
     @Autowired
     public UsersService(RestTemplateService restTemplateService, PropertyService propertyService, CommonService commonService, ResourceYamlService resourceYamlService,
-                        AccessTokenService accessTokenService, ResultStatusService resultStatusService) {
+                        AccessTokenService accessTokenService, ResultStatusService resultStatusService, VaultService vaultService) {
         this.restTemplateService = restTemplateService;
         this.propertyService = propertyService;
         this.commonService = commonService;
         this.resourceYamlService = resourceYamlService;
         this.accessTokenService = accessTokenService;
         this.resultStatusService = resultStatusService;
+        this.vaultService = vaultService;
     }
 
 
     /**
      * Users 전체 목록 조회(Get Users list)
-     *
+     * 개발 0809 사용자 목록 조회 - active
      * @param params the params
      * @return the users list
      */
-    public UsersAdminList getUsersAllByCluster(Params params) {
+    public UsersDetailsList getUsersAllByCluster(Params params) {
         String reqUrlParam = "?searchName=" + params.getSearchName().trim();
         if (params.getIsActive().equalsIgnoreCase(CHECK_FALSE)) {
             reqUrlParam += "&isActive=false";
         }
 
-        UsersAdminList usersAdminList = restTemplateService.send(TARGET_COMMON_API,
-                Constants.URI_COMMON_API_USERS_LIST_BY_CLUSTER.replace("{cluster:.+}", params.getCluster()) + reqUrlParam, HttpMethod.GET, null, UsersAdminList.class, params);
+        UsersDetailsList usersDetailsList = restTemplateService.send(TARGET_COMMON_API,
+                Constants.URI_COMMON_API_USERS_LIST_BY_CLUSTER
+                        .replace("{cluster:.+}", params.getCluster())
+                        .replace("{namespace:.+}", params.getNamespace()) + reqUrlParam, HttpMethod.GET,
+                null, UsersDetailsList.class, params);
 
         // 페이징 적용
-        usersAdminList = commonService.userListProcessing(usersAdminList, params, UsersAdminList.class);
-        return (UsersAdminList) commonService.setResultModel(usersAdminList, Constants.RESULT_STATUS_SUCCESS);
+        usersDetailsList = commonService.userListProcessing(usersDetailsList, params, UsersDetailsList.class);
+        return (UsersDetailsList) commonService.setResultModel(usersDetailsList, Constants.RESULT_STATUS_SUCCESS);
     }
 
 
     /**
      * 하나의 Cluster 내 여러 Namespaces 에 속한 User 에 대한 상세 조회(Get Users cluster namespace)
-     *
+     * 개발 0811 사용자 상세 조회
      * @param params the params
      * @return the users detail
      */
-    public Object getUsersInMultiNamespace(Params params) throws Exception {
-        UsersAdmin usersAdmin = new UsersAdmin();
+    public UsersDetails getUsersDetailsByCluster(Params params) {
+        UsersDetails usersDetails = new UsersDetails();
+        try{
+            usersDetails = restTemplateService.send(TARGET_COMMON_API, Constants.URI_COMMON_API_CLUSTER_USER_DETAILS
+                    .replace("{cluster:.+}", params.getCluster())
+                    .replace("{userAuthId:.+}", params.getUserAuthId())
+                    .replace("{userType:.+}", params.getUserType()), HttpMethod.GET, null, UsersDetails.class, params);
 
-        try {
-            usersAdmin = restTemplateService.send(TARGET_COMMON_API, Constants.URI_COMMON_API_CLUSTER_USER_DETAILS
-                    .replace("{userId:.+}", params.getUserId())
-                    .replace("{userType:.+}", params.getUserType()), HttpMethod.GET, null, UsersAdmin.class, params);
-
-            if (usersAdmin.getResultMessage().equalsIgnoreCase(MessageConstant.USER_NOT_MAPPED_TO_THE_NAMESPACE_MESSAGE.getMsg())) {
-                List<UsersAdmin.UsersDetails> items = new ArrayList<>();
-                usersAdmin.setItems(items);
-                return commonService.setResultModel(commonService.setResultObject(usersAdmin, UsersAdmin.class), Constants.RESULT_STATUS_SUCCESS);
+            for (Users user : usersDetails.getItems()) {
+                System.out.println("user.toString():" + user.toString());
+                if (user.getUserType().equalsIgnoreCase(AUTH_CLUSTER_ADMIN)) {
+                    user.setCpNamespace(propertyService.getClusterAdminNamespace());
+                }
+                Params p = new Params(user.getClusterId(), user.getCpNamespace(), user.getSaSecret(), true);
+                Secrets secrets  = resourceYamlService.getSecret(p);
+                user.setSecretName(secrets.getMetadata().getName());
+                user.setSecretLabels(secrets.getMetadata().getLabels());
+                user.setSecretType(secrets.getType());
             }
 
-
-            for (UsersAdmin.UsersDetails usersDetails : usersAdmin.getItems()) {
-
-                //serviceAccount 조회
-                Object sa_obj = restTemplateService.send(TARGET_CP_MASTER_API, propertyService.getCpMasterApiListUsersGetUrl()
-                        .replace("{namespace}", usersDetails.getCpNamespace())
-                        .replace("{name}", usersAdmin.getServiceAccountName()), HttpMethod.GET, null, Map.class, params);
-
-
-                if (!(sa_obj instanceof ResultStatus)) {
-                    // k8s에서 serviceAccount 정보 조회(Get SA from k8s)
-                    ServiceAccount serviceAccount = commonService.setResultObject(sa_obj, ServiceAccount.class);
-                    usersDetails.setServiceAccountUid(serviceAccount.getMetadata().getUid());
-                }
-
-                //secret 조회
-                Object obj = restTemplateService.send(TARGET_CP_MASTER_API, propertyService.getCpMasterApiListSecretsGetUrl()
-                        .replace("{namespace}", usersDetails.getCpNamespace())
-                        .replace("{name}", usersDetails.getSaSecret()), HttpMethod.GET, null, Map.class, params);
-
-                if (!(obj instanceof ResultStatus)) {
-                    // k8s에서 secret 정보 조회(Get secret from k8s)
-                    Secrets secrets = (Secrets) commonService.setResultModel(commonService.setResultObject(obj, Secrets.class), Constants.RESULT_STATUS_SUCCESS);
-                    usersDetails.setSecrets(UsersAdmin.Secrets.builder()
-                            .saSecret(secrets.getMetadata().getName())
-                            .secretLabels(secrets.getMetadata().getLabels())
-                            .secretType(secrets.getType()).build());
-                }
-            }
 
         } catch (Exception e) {
-            return resultStatusService.NOT_FOUND_RESULT_STATUS();
+            throw new ResultStatusException(CommonStatusCode.NOT_FOUND.getMsg());
         }
 
-        usersAdmin = commonService.userListProcessing(usersAdmin, params, UsersAdmin.class);
-        return commonService.setResultModel(usersAdmin, Constants.RESULT_STATUS_SUCCESS);
+        return (UsersDetails) commonService.setResultModel(usersDetails, Constants.RESULT_STATUS_SUCCESS);
     }
 
 
@@ -243,7 +222,7 @@ public class UsersService {
             resourceYamlService.createServiceAccount(params_add);
             resourceYamlService.createRoleBinding(params_add);
             String saSecretName = resourceYamlService.getSecretName(params_add);
-            params_add.setResourceName(saSecretName);
+            params_add.setSaSecret(saSecretName);
 
 
             Users newUser = new Users(params.getCluster(), nr.getNamespace(), users.getUserId(), users.getUserAuthId(), AUTH_USER, nr.getRole(), users.getUserAuthId(),
@@ -272,18 +251,6 @@ public class UsersService {
         return (UsersListInNamespaceAdmin) commonService.setResultModel(usersListInNamespaceAdmin, Constants.RESULT_STATUS_SUCCESS);
     }
 
-
-    /**
-     * 클러스터 관리자 조회(Get cluster admin)
-     *
-     * @return the usersList
-     */
-    public UsersListAdmin getClusterAdminAllByCluster(Params params) {
-        UsersListAdmin usersListAdmin = restTemplateService.send(TARGET_COMMON_API,
-                Constants.URI_COMMON_API_CLUSTER_ADMIN_INFO.replace("{searchName:.+}", params.getSearchName().trim()), HttpMethod.GET, null, UsersListAdmin.class, params);
-        usersListAdmin = commonService.userListProcessing(usersListAdmin, params, UsersListAdmin.class);
-        return (UsersListAdmin) commonService.setResultModel(usersListAdmin, Constants.RESULT_STATUS_SUCCESS);
-    }
 
 
     /**
@@ -454,7 +421,7 @@ public class UsersService {
      * @return return is succeeded
      */
     public ResultStatus createUsers(Users users) {
-        return restTemplateService.sendAdmin(TARGET_COMMON_API, "/users", HttpMethod.POST, users, ResultStatus.class);
+        return restTemplateService.send(TARGET_COMMON_API, "/users", HttpMethod.POST, users, ResultStatus.class, new Params());
     }
 
 
@@ -686,6 +653,69 @@ public class UsersService {
 
         return rsDb;
     }
+
+
+
+    public ResultStatus mappingClusterAdmin(Params params, Users users){
+
+        // 1. kube-system 네임스페이스에 sa, cluster-admin-role binding 추가
+
+        try{
+             params.setUserAuthId(users.getUserAuthId());
+             resourceYamlService.createClusterAdminSaAndRb(params);
+
+        }
+        catch (Exception e){
+            System.out.println("exception :" + e.getMessage());
+        }
+
+
+        // 2. 해당 클러스터 내 맵핑되어있는 K8S SA, ROLEBINDING 삭제 진행
+        UsersList currentUserNsMappingList = getMappingNamespacesListByUser(params);
+        for(Users u: currentUserNsMappingList.getItems()) {
+            Params p = new Params(u.getClusterId(), u.getCpNamespace(), u.getServiceAccountName(), u.getRoleSetCode(), true);
+            resourceYamlService.deleteSaAndRb(p);
+        }
+
+
+        users.setClusterId(params.getCluster());
+        users.setServiceAccountName(params.getRs_sa());
+        users.setSaSecret(params.getSaSecret());
+        ResultStatus resultStatus = createClusterAdmin(users);
+
+        return (ResultStatus) commonService.setResultModel(resultStatus, Constants.RESULT_STATUS_SUCCESS);
+    }
+
+    /**
+     * 사용자 DB 저장(Save Users DB)
+     *
+     * @param users the users
+     * @return return is succeeded
+     */
+    public ResultStatus createClusterAdmin(Users users) {
+        users.setUserType(AUTH_CLUSTER_ADMIN);
+        users.setRoleSetCode(DEFAULT_CLUSTER_ADMIN_ROLE);
+        users.setCpNamespace(propertyService.getDefaultNamespace());
+        return restTemplateService.send(TARGET_COMMON_API, "/clusterAdmin", HttpMethod.POST, users, ResultStatus.class, new Params());
+    }
+
+
+    /**
+     * 클러스터 관리자 조회(Get cluster admin)
+     *
+     * @return the usersList
+     */
+    public UsersListAdmin getClusterAdminListByCluster(Params params) {
+        UsersListAdmin usersListAdmin = restTemplateService.send(TARGET_COMMON_API,
+                Constants.URI_COMMON_API_CLUSTER_ADMIN_LIST
+                        .replace("{cluster:.+}", params.getCluster())
+                        .replace("{searchName:.+}", params.getSearchName().trim()), HttpMethod.GET, null, UsersListAdmin.class, params);
+        usersListAdmin = commonService.userListProcessing(usersListAdmin, params, UsersListAdmin.class);
+        return (UsersListAdmin) commonService.setResultModel(usersListAdmin, Constants.RESULT_STATUS_SUCCESS);
+    }
+
+
+
 
 
 }

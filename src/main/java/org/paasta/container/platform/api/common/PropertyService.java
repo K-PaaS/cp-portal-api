@@ -35,6 +35,11 @@ public class PropertyService {
     @Value("${cpNamespace.defaultNamespace}")
     private String defaultNamespace;
 
+
+    @Value("${cpNamespace.clusterAdminNamespace}")
+    private String clusterAdminNamespace;
+
+
     @Value("${cpNamespace.role.list}")
     List<String> rolesList;
 
@@ -391,14 +396,9 @@ public class PropertyService {
     @Value("${vault.path.cluster-token}")
     private String vaultClusterTokenPath;
 
-    @Value("${vault.path.super-admin-token}")
-    private String vaultSuperAdminTokenPath;
 
-    @Value("${vault.path.cluster-admin-token}")
-    private String vaultClusterAdminTokenPath;
-
-    @Value("${vault.path.user-token}")
-    private String vaultUserTokenPath;
+    @Value("${vault.path.user-sa-token}")
+    private String vaultUserSaTokenPath;
 
     //clusters
     @Value("${vault.path.provider-credential}")

@@ -32,6 +32,8 @@ public class Params {
     public String resourceUid = Constants.EMPTY_STRING;
     public String clusterName = Constants.EMPTY_STRING;
     public Integer topN = 5;
+    public String saToken = Constants.EMPTY_STRING;
+    public String saSecret =  Constants.EMPTY_STRING;
 
     // request parameter setting
     public String addParam = Constants.EMPTY_STRING;
@@ -118,6 +120,15 @@ public class Params {
         this.namespace = namespace;
         this.rs_sa = sa;
         this.rs_role = role;
+        this.isClusterToken = isClusterToken;
+
+    }
+
+    // resourceName 조회
+    public Params(String cluster, String namespace, String resourceName, Boolean isClusterToken) {
+        this.cluster = cluster;
+        this.namespace = namespace;
+        this.resourceName = resourceName;
         this.isClusterToken = isClusterToken;
 
     }

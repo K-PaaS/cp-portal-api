@@ -66,9 +66,10 @@ public class ReplicaSetsService {
      * @return the replicaSets list
      */
     public ReplicaSetsList getReplicaSetsListLabelSelector(Params params) {
-        params.setAddParam("?labelSelector=" + params.getSelector());
+        String labelSelector = "?labelSelector=" + params.getSelector();
         HashMap responseMap = (HashMap) restTemplateService.send(Constants.TARGET_CP_MASTER_API,
-                propertyService.getCpMasterApiListReplicaSetsListUrl(), HttpMethod.GET, null, Map.class, params);
+                propertyService.getCpMasterApiListReplicaSetsListUrl() + labelSelector,
+                HttpMethod.GET, null, Map.class, params);
         ReplicaSetsList replicaSetsList = commonService.setResultObject(responseMap, ReplicaSetsList.class);
         replicaSetsList = commonService.setCommonItemMetaDataBySelector(replicaSetsList, ReplicaSetsList.class);
         return (ReplicaSetsList) commonService.setResultModel(replicaSetsList, Constants.RESULT_STATUS_SUCCESS);

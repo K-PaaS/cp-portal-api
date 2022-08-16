@@ -333,7 +333,7 @@ public class PropertyService {
     //limitRanges
     @Value("${cpMaster.api.list.limitRanges.create}")
     private String cpMasterApiListLimitRangesCreateUrl;
-    
+
     @Value("${cpMaster.api.list.limitRanges.list}")
     private String cpMasterApiListLimitRangesListUrl;
 

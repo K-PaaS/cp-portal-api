@@ -102,7 +102,6 @@ public class UsersService {
                     .replace("{userType:.+}", params.getUserType()), HttpMethod.GET, null, UsersDetails.class, params);
 
             for (Users user : usersDetails.getItems()) {
-                System.out.println("user.toString():" + user.toString());
                 if (user.getUserType().equalsIgnoreCase(AUTH_CLUSTER_ADMIN)) {
                     user.setCpNamespace(propertyService.getClusterAdminNamespace());
                 }

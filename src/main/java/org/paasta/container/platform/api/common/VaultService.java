@@ -97,7 +97,7 @@ public class VaultService {
 
     public void saveUserAccessToken(Params params) {
 
-        String userTokenPath = propertyService.getVaultUserSaTokenPath();
+        String userTokenPath = propertyService.getVaultUserTokenPath();
 
         if (params.getUserType().equalsIgnoreCase(Constants.AUTH_CLUSTER_ADMIN)) {
             userTokenPath = userTokenPath.replace("/{namespace}", "");

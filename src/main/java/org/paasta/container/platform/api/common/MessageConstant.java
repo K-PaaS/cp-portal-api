@@ -67,7 +67,8 @@ public enum MessageConstant {
     INVALID_SERVICE_INSTANCE_ID("INVALID_SERVICE_INSTANCE_ID","INVALID_SERVICE_INSTANCE_ID"),
     SUPER_ADMINISTRATOR_IS_ALREADY_REGISTERED_MESSAGE("SUPER_ADMIN_ALREADY_REGISTERED","SUPER_ADMIN_ALREADY_REGISTERED"),
     USER_ALREADY_REGISTERED_MESSAGE("USER_ALREADY_REGISTERED","USER_ALREADY_REGISTERED"),
-    INVALID_PORT_INFO("포트 정보가 올바르지 않습니다.","The port information is incorrect.");
+    INVALID_PORT_INFO("포트 정보가 올바르지 않습니다.","The port information is incorrect."),
+    NO_CHANGED("변경된 사항이 없습니다.","There's no change.");
 
     private String ko_msg;
     private String eng_msg;

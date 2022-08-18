@@ -142,6 +142,7 @@ public class Constants {
     public static final String URI_COMMON_API_USER_DELETE = "/users/";
     public static final String URI_COMMON_API_USERS_BY_NAMESPACE_NS_ADMIN = "/clusters/{cluster:.+}/namespaces/{namespace:.+}";
     public static final String URI_COMMON_API_NAMESPACES_ROLE_BY_CLUSTER_USER_AUTH_ID = "/clusters/{cluster:.+}/users/{userAuthId:.+}";
+
     public static final String URI_COMMON_API_PRIVATE_REGISTRY = "/privateRegistry/{imageName:.+}";
     public static final String URI_COMMON_API_CLUSTER_ADMIN_ROLE_BY_CLUSTER_NAME_USER_ID = "/clusters/{cluster:.+}/users/{userId:.+}/userType";
 
@@ -149,13 +150,13 @@ public class Constants {
     public static final String URI_COMMON_API_CHECK_USER_REGISTER =  "/userRegisterCheck?userId={userId:.+}&userAuthId={userAuthId:.+}&userType={userType:.+}";
 
     public static final String URI_COMMON_API_CLUSTER_ADMIN_LIST = "/cluster/{cluster:.+}/admin?searchName={searchName:.+}";
-    public static final String URI_COMMON_API_CLUSTER_USER_DETAILS = "/clusters/{cluster:.+}/users/{userAuthId:.+}/details?userType={userType:.+}";
+    public static final String URI_COMMON_API_CLUSTER_USER_DETAILS = "/clusters/{cluster:.+}/users/{userAuthId:.+}/details";
     public static final String URI_COMMON_API_CLUSTER_INFO_USER_DETAILS = "/cluster/info/all/user/details?userAuthId={userAuthId:.+}&cluster={cluster:.+}&namespace={namespace:.+}";
     public static final String URI_COMMON_API_NAMESPACE_OR_NOT_CHECK = "/clusters/all/namespaces/{namespace:.+}/adminCheck";
     public static final String URI_COMMON_API_DELETE_USER_BY_ID_AND_AUTHID = "/cluster/all/user/delete?userId={userId:.+}&userAuthId={userAuthId:.+}&namespace={namespace:.+}";
     public static final String URI_COMMON_API_CLUSTER_LIST_BY_USER = "/users/{userAuthId:.+}/clustersList?userType={userType:.+}";
-    public static final String URI_COMMON_API_CREATE_CLUSTER_ADMIN = "/users/create/clusterAdmin";
-
+    public static final String URI_COMMON_API_DELETE_USER = "/clusters/{cluster:.+}/namespaces/{namespace:.+}/users/{userAuthId:.+}/{userType:.+}";
+    public static final String URI_COMMON_API_DELETE_USER_BY_IDS = "/users/ids?ids=";
 
 
 
@@ -347,4 +348,5 @@ public class Constants {
     public static final String STATUS_RUNNING = "Running";
 
     public static final String CLUSTER_ADMIN_SERVICE_ACCOUNT = "cp-cluster-admin-{userAuthId}";
+    public static final String CLUSTER_ROLE_BINDING_NAME = "{name}-binding";
 }

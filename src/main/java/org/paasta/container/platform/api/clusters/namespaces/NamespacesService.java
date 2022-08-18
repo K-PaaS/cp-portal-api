@@ -135,7 +135,7 @@ public class NamespacesService {
 
         List<String> userNamesList = usersService.getUsersNameListByNamespace(params.getCluster(), params.getNamespace()).get(USERS);
         for (String userId : userNamesList) {
-            usersService.deleteUsers(usersService.getUsers(params.getCluster(), params.getNamespace(), userId));
+         //   usersService.deleteUsers(usersService.getUsers(params.getCluster(), params.getNamespace(), userId));
         }
         return (ResultStatus) commonService.setResultModel(resultStatus, Constants.RESULT_STATUS_SUCCESS);
     }
@@ -294,7 +294,7 @@ public class NamespacesService {
 
             if (newNamespaceAdmin != null) {
                 // If the new namespace admin is current a namespace member, it deletes the user.
-                usersService.deleteUsers(newNamespaceAdmin);
+         //       usersService.deleteUsers(newNamespaceAdmin);
 
             }
 

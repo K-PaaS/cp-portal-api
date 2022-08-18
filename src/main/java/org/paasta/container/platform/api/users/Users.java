@@ -5,6 +5,7 @@ import java.util.List;
 
 import lombok.Data;
 
+import org.paasta.container.platform.api.users.support.NamespaceRole;
 import org.springframework.util.StringUtils;
 
 import org.paasta.container.platform.api.common.CommonUtils;
@@ -66,11 +67,7 @@ public class Users {
 
     private String oldUserType;
 
-    @Data
-    public static class NamespaceRole {
-        private String namespace;
-        private String role;
-    }
+
 
     public String getUserId() {
         return CommonUtils.procReplaceNullValue(userId);
@@ -185,6 +182,17 @@ public class Users {
         this.serviceAccountName = serviceAccountName;
         this.saSecret = saSecret;
         this.saToken = saToken;
+    }
+
+    public Users(String cluterId, String namespace, String userId, String userAuthId, String userType, String roleSetCode, String serviceAccountName,  String saSecret) {
+        this.clusterId = cluterId;
+        this.cpNamespace = namespace;
+        this.userId = userId;
+        this.userAuthId = userAuthId;
+        this.userType = userType;
+        this.roleSetCode = roleSetCode;
+        this.serviceAccountName = serviceAccountName;
+        this.saSecret = saSecret;
     }
 
     public Users() {};

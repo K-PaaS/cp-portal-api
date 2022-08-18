@@ -23,9 +23,8 @@ vault:
     super-admin-token: "secret/cluster/{clusterId}"
     cluster-admin-token: "secret/user/{userAuthId}/{clusterId}"
     user-token: "secret/user/{userAuthId}/{clusterId}/{namespace}"
-    cluster-token: "secret/cluster/{id}"
-    user-sa-token: "secret/user/{id}/{clusterId}/{namespace}"
     provider-credential: "secret/{iaas}/{id}"
+    cluster-token: "secret/cluster/{id}"
 
 cp:
   provide-as-service: cp-portal-service

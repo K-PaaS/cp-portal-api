@@ -21,6 +21,7 @@ public class IngressesList {
     private String resultMessage;
     private Integer httpStatusCode;
     private String detailMessage;
+    private List ingressControllerPort;
     private Map metadata;
     private CommonItemMetaData itemMetaData;
     private List<IngressesListItem> items;

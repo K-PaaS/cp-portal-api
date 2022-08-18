@@ -73,6 +73,9 @@ public class Constants {
     public static final String SUPPORTED_RESOURCE_STORAGE = "storage";
     public static final String SUPPORTED_RESOURCE_PORT = "port";
 
+    public static final String INGRESS_CONTROLLER_NAMESPACE= "ingress-nginx";
+    public static final String INGRESS_CONTROLLER_RESOURCE_NAME= "ingress-nginx-controller";
+
     public static final List<String> LIMIT_RANGE_TYPE_LIST = Collections.unmodifiableList(new ArrayList<String>(){
         {
             add(LIMIT_RANGE_TYPE_POD);

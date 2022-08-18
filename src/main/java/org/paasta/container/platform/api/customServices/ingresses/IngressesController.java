@@ -4,12 +4,16 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
+import org.paasta.container.platform.api.common.Constants;
 import org.paasta.container.platform.api.common.model.CommonResourcesYaml;
 import org.paasta.container.platform.api.common.model.Params;
 import org.paasta.container.platform.api.common.model.ResultStatus;
 import org.paasta.container.platform.api.common.util.ResourceExecuteManager;
+import org.paasta.container.platform.api.customServices.services.CustomServices;
+import org.paasta.container.platform.api.customServices.services.CustomServicesService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+
 
 /**
  * Ingresses Controller 클래스
@@ -24,15 +28,18 @@ import org.springframework.web.bind.annotation.*;
 public class IngressesController {
 
     private final IngressesService ingressesService;
+    private final CustomServicesService customServicesService;
 
     /**
      * Instantiates a new Ingresses controller
      *
      * @param ingressesService the ingresses service
+     * @param customServicesService
      */
     @Autowired
-    public IngressesController(IngressesService ingressesService){
+    public IngressesController(IngressesService ingressesService, CustomServicesService customServicesService){
         this.ingressesService = ingressesService;
+        this.customServicesService = customServicesService;
     }
 
     /**
@@ -129,4 +136,29 @@ public class IngressesController {
     public ResultStatus updateIngresses(@RequestBody Params params) {
         return ingressesService.updateIngresses(params);
     }
+
+
+    /**
+     * Ingresses 목록 및 Ingress Controller 정보 조회 (Get Ingresses List Ingress Controller)
+     *
+     * @param params the params
+     * @return the IngressesList
+     */
+    @ApiOperation(value = "Ingresses List Ingress Controller 정보 조회(Get Ingresses List Ingress Controller Info)", nickname = "getIngressesListIngressControllerInfo")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body")
+    })
+    @GetMapping("/ingressControllerInfo")
+    public IngressesList getIngressesListIngressControllerInfo(Params params){
+        IngressesList ingressesList = ingressesService.getIngressesList(params);
+
+        params.setNamespace(Constants.INGRESS_CONTROLLER_NAMESPACE);
+        params.setResourceName(Constants.INGRESS_CONTROLLER_RESOURCE_NAME);
+
+        CustomServices customServices = customServicesService.getCustomServices(params);
+        ingressesList.setIngressControllerPort(customServices.getPort());
+
+        return ingressesList;
+    }
+
 }

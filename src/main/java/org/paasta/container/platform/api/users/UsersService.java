@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
 
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -163,7 +164,8 @@ public class UsersService {
 
         // CLUSTER ADMIN -> USER 권한 변경의 경우 CLUSTER ADMIN 권한 제거
         if (usersDetails.getUserType().equalsIgnoreCase(AUTH_CLUSTER_ADMIN)) {
-            resourceYamlService.deleteClusterAdminResource(users);
+            Users clusterAdminInfo = currentUserNsMappingList.get(0);
+            resourceYamlService.deleteClusterAdminResource(clusterAdminInfo);
             currentUserNsMappingList = new ArrayList<>();
         }
 
@@ -172,19 +174,28 @@ public class UsersService {
 
         List<String> newNamespacesList = newNamespaceRoleList.stream().map(NamespaceRole::getNamespace).collect(Collectors.toList());
         List<String> currentNamespacesList = currentUserNsMappingList.stream().map(Users::getCpNamespace).collect(Collectors.toList());
+
+
+        List<NamespaceRole> asis = newNamespaceRoleList.stream().filter(x -> currentNamespacesList.contains(x.getNamespace())).collect(Collectors.toList());
         List<NamespaceRole> toBeDelete = currentNamespaceRoleList.stream().filter(x -> !newNamespacesList.contains(x.getNamespace())).collect(Collectors.toList());
         List<NamespaceRole> toBeAdd = newNamespaceRoleList.stream().filter(x -> !currentNamespacesList.contains(x.getNamespace())).collect(Collectors.toList());
 
 
-        for (NamespaceRole newNr : newNamespaceRoleList) {
-            NamespaceRole asis = currentNamespaceRoleList.stream().filter(x -> x.getNamespace().equals(newNr.getNamespace())).collect(Collectors.toList()).get(0);
-            if (!asis.getRole().equals(newNr.getRole())) {
-                toBeDelete.add(asis);
+        System.out.println("asis:"+ asis.toString());
+        System.out.println("toBeDelete:" + toBeDelete.toString());
+        System.out.println("toBeAdd:" + toBeAdd.toString());
+
+
+        for (NamespaceRole newNr : asis) {
+            NamespaceRole currentNr = currentNamespaceRoleList.stream().filter(x -> x.getNamespace().equals(newNr.getNamespace())).collect(Collectors.toList()).get(0);
+            if (!currentNr.getRole().equals(newNr.getRole())) {
+                toBeDelete.add(currentNr);
                 toBeAdd.add(newNr);
             }
         }
 
         System.out.println("---------------------------------");
+        System.out.println("asis:"+ asis.toString());
         System.out.println("toBeDelete:" + toBeDelete.toString());
         System.out.println("toBeAdd:" + toBeAdd.toString());
 
@@ -602,10 +613,6 @@ public class UsersService {
      * @return the resultStatus
      */
     public ResultStatus modifyToClusterAdmin(Params params, Users users) {
-
-        // 1. USER -> CLUSTER ADMIN
-        // 2. CLUTSER_ADMIN -> CLUSTER_ADMIN
-
         params.setUserAuthId(users.getUserAuthId());
         UsersDetails usersDetails = getUsersDetailByCluster(params);
 
@@ -613,34 +620,30 @@ public class UsersService {
             throw new ResultStatusException(MessageConstant.NO_CHANGED.getMsg());
         }
 
-        ResultStatus resultStatus = new ResultStatus();
         try {
+            resourceYamlService.createClusterAdminResource(params, users);
 
-            // sa, clusterrolebinding, token 저장
-            resourceYamlService.createClusterAdminSaAndRb(params);
-            setClusterAdmin(params, users);
-            resultStatus = createUsers(users);
-
-            System.out.println(params.toString());
         } catch (Exception e) {
             LOGGER.info("EXCEPTION OCCURRED WHILE MODIFY TO CLUSTER ADMIN ...");
-            // resourceYamlService.deleteClusterAdminSaAndRb(params, users);
+            params.setNamespace(propertyService.getClusterAdminNamespace());
+            params.setRs_sa(users.getServiceAccountName());
+            resourceYamlService.deleteServiceAccount(params);
+            resourceYamlService.deleteClusterRoleBinding(params);
+
+            params.setNamespace(propertyService.getDefaultNamespace());
+            params.setUserType(AUTH_CLUSTER_ADMIN);
             deleteUsers(params);
             throw new ResultStatusException(CommonStatusCode.INTERNAL_SERVER_ERROR.getMsg());
-
         }
 
 
-        // 2. 해당 클러스터 내 맵핑되어있는 K8S SA, ROLEBINDING 삭제 진행
+        // 해당 클러스터 내 맵핑되어있는 K8S SA, ROLEBINDING 삭제 진행
         UsersList currentUserNsMappingList = getMappingNamespacesListByUser(params);
-        List<Long> ids = new ArrayList<>();
         for (Users u : currentUserNsMappingList.getItems()) {
-            Params p = new Params(u.getClusterId(), u.getCpNamespace(), u.getServiceAccountName(), u.getRoleSetCode(), true);
-            resourceYamlService.deleteSaAndRb(p);
-            ids.add(u.getId());
+             resourceYamlService.deleteUserResource(u);
         }
-        deleteUsers(ids);
 
+        ResultStatus resultStatus = new ResultStatus();
         return (ResultStatus) commonService.setResultModel(resultStatus, Constants.RESULT_STATUS_SUCCESS);
     }
 
@@ -657,22 +660,6 @@ public class UsersService {
                         .replace("{searchName:.+}", params.getSearchName().trim()), HttpMethod.GET, null, UsersListAdmin.class, params);
         usersListAdmin = commonService.userListProcessing(usersListAdmin, params, UsersListAdmin.class);
         return (UsersListAdmin) commonService.setResultModel(usersListAdmin, Constants.RESULT_STATUS_SUCCESS);
-    }
-
-
-    /**
-     * 클러스터 관리자 정보 설정 (Set Data for Cluster Admin)
-     *
-     * @param users the users
-     * @return return is succeeded
-     */
-    public void setClusterAdmin(Params params, Users users) {
-        users.setClusterId(params.getCluster());
-        users.setServiceAccountName(params.getRs_sa());
-        users.setSaSecret(params.getSaSecret());
-        users.setUserType(AUTH_CLUSTER_ADMIN);
-        users.setRoleSetCode(DEFAULT_CLUSTER_ADMIN_ROLE);
-        users.setCpNamespace(propertyService.getDefaultNamespace());
     }
 
 

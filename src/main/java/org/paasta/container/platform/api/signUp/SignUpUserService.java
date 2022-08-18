@@ -1,3 +1,4 @@
+/*
 package org.paasta.container.platform.api.signUp;
 
 import org.paasta.container.platform.api.accessInfo.AccessTokenService;
@@ -18,13 +19,15 @@ import java.util.stream.Collectors;
 
 import static org.paasta.container.platform.api.common.Constants.*;
 
+*/
 /**
  * Sign Up User Service 클래스
  *
  * @author hrjin
  * @version 1.0
  * @since 2020.09.22
- **/
+ **//*
+
 @Service
 public class SignUpUserService {
 
@@ -38,7 +41,8 @@ public class SignUpUserService {
     private final ResourceYamlRemoveService resourceYamlService;
     private final ResultStatusService resultStatusService;
 
-    /**
+    */
+/**
      * Instantiates a new SignUpUserService service
      *
      * @param commonService the common service
@@ -47,7 +51,8 @@ public class SignUpUserService {
      * @param accessTokenService the access token service
      * @param usersService the users service
      * @param resourceYamlService the resource yaml service
-     */
+     *//*
+
     @Autowired
     public SignUpUserService(CommonService commonService, PropertyService propertyService, RestTemplateService restTemplateService,
                              AccessTokenService accessTokenService, UsersService usersService, ResourceYamlRemoveService resourceYamlService, ResultStatusService resultStatusService) {
@@ -61,12 +66,14 @@ public class SignUpUserService {
     }
 
 
-    /**
+    */
+/**
      * 단독배포 타입의 사용자 회원가입(Sign Up Users By Provider As StandAlone)
      *
      * @param users the users
      * @return the resultStatus
-     */
+     *//*
+
     public ResultStatus signUpUsersByProviderAsStandAlone(Users users) {
 
         // 1. 해당 계정이 KEYCLOAK, CP USER 에 등록된 계정인지 확인
@@ -114,12 +121,14 @@ public class SignUpUserService {
     }
 
 
-    /**
+    */
+/**
      * 서비스 타입의 사용자 회원가입(Sign Up Users By Provider As Service)
      *
      * @param users the users
      * @return the resultStatus
-     */
+     *//*
+
     public ResultStatus signUpUsersByProviderAsService(Users users) {
 
         ServiceInstanceList findServiceInstance = new ServiceInstanceList();
@@ -244,58 +253,68 @@ public class SignUpUserService {
         return (ResultStatus) commonService.setResultModelWithNextUrl(commonService.setResultObject(rsDb, ResultStatus.class), Constants.RESULT_STATUS_SUCCESS, "/");
     }
 
-    /**
+    */
+/**
      * Users 이름 목록 조회(Get Users names list)
      *
      * @return the Map
-     */
+     *//*
+
     public Map<String, List<String>> getUsersNameList() {
         return restTemplateService.send(TARGET_COMMON_API, "/users/names", HttpMethod.GET, null, Map.class);
     }
 
 
-    /**
+    */
+/**
      * 사용자 등록 여부 확인(Check for registered User)
      *
      * @param users the users
      * @return the usersList
-     */
+     *//*
+
     public UsersList checkRegisterUser(Users users) {
         return restTemplateService.sendAdmin(TARGET_COMMON_API, URI_COMMON_API_CHECK_USER_REGISTER.replace("{userId:.+}", users.getUserId())
                 .replace("{userAuthId:.+}", users.getUserAuthId()), HttpMethod.GET, null, UsersList.class);
     }
 
 
-    /**
+    */
+/**
      * 사용자 회원가입 (Send user registration)
      *
      * @param users the users
      * @return return is succeeded
-     */
+     *//*
+
     public ResultStatus sendSignUpUser(Users users) {
         return restTemplateService.sendAdmin(TARGET_COMMON_API, Constants.URI_COMMON_API_USER_SIGNUP, HttpMethod.POST, users, ResultStatus.class);
     }
 
 
-    /**
+    */
+/**
      * 아이디로 존재하는 USER 계정 조회(Get users by user id)
      *
      * @param userId the userId
      * @return the users detail
-     */
+     *//*
+
     public UsersList getUsersListByUserId(String userId) {
         return restTemplateService.send(TARGET_COMMON_API, Constants.URI_COMMON_API_USERS_DETAIL.replace("{userId:.+}", userId), HttpMethod.GET, null, UsersList.class);
     }
 
 
-    /**
+    */
+/**
      * 서비스 인스턴스 정보 조회(Get serviceInstance Info)
      *
      * @param serviceInstanceId the serviceInstanceId
      * @return the serviceInstance
-     */
+     *//*
+
     public ServiceInstanceList getServiceInstanceById(String serviceInstanceId) {
         return restTemplateService.send(TARGET_COMMON_API, Constants.URI_SERVICEINSTANCE_DETAIL.replace("{serviceInstanceId:.+}", serviceInstanceId), HttpMethod.GET, null, ServiceInstanceList.class);
     }
 
-}
+}*/

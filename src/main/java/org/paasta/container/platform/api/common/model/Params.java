@@ -24,6 +24,7 @@ public class Params {
     public String ownerReferencesName = Constants.EMPTY_STRING;
     public String selector = Constants.EMPTY_STRING;
     public String type = Constants.EMPTY_STRING;
+    public long id = 0;
     public String userId = Constants.EMPTY_STRING;
     public String userAuthId = Constants.EMPTY_STRING;
     public String userType = Constants.EMPTY_STRING;
@@ -118,6 +119,17 @@ public class Params {
     public Params(String cluster, String namespace, String sa, String role, Boolean isClusterToken) {
         this.cluster = cluster;
         this.namespace = namespace;
+        this.rs_sa = sa;
+        this.rs_role = role;
+        this.isClusterToken = isClusterToken;
+
+    }
+
+    // sa, rb 관련 생성자
+    public Params(String cluster, String namespace, long id, String sa, String role, Boolean isClusterToken) {
+        this.cluster = cluster;
+        this.namespace = namespace;
+        this.id = id;
         this.rs_sa = sa;
         this.rs_role = role;
         this.isClusterToken = isClusterToken;

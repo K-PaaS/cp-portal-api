@@ -85,12 +85,6 @@ public class UsersController {
     })
     @GetMapping(value = "/clusters/{cluster:.+}/users/{userAuthId:.+}")
     public UsersDetails getUsers(Params params) throws Exception {
-        if (params.getUserType().equalsIgnoreCase(Constants.SELECTED_ADMINISTRATOR)) {
-            params.setUserType(Constants.AUTH_CLUSTER_ADMIN);
-        } else {
-            //사용자인 경우
-            params.setUserType(Constants.AUTH_USER);
-        }
         return usersService.getUsersDetailsByCluster(params);
     }
 
@@ -135,9 +129,9 @@ public class UsersController {
     @PutMapping(value = "/clusters/{cluster:.+}/users/{userId:.+}")
     public Object modifyUsers(Params params, @RequestBody Users users) throws Exception {
         if(users.getUserType().equalsIgnoreCase(Constants.AUTH_CLUSTER_ADMIN)) {
-            return usersService.mappingClusterAdmin(params, users);
+            return usersService.modifyToClusterAdmin(params, users);
         }
-        return usersService.modifyUsersAdmin(params, users);
+        return usersService.modifyToUser(params, users);
     }
 
 

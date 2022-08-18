@@ -26,19 +26,16 @@ import java.util.Map;
 @RestController
 public class SignUpController {
 
-    private final SignUpUserService signUpUserService;
     private final SignUpService signUpService;
 
 
     /**
      * Instantiates a new SignUp controller
      *
-     * @param signUpUserService the signUpUserService service
      * @param signUpService     the signUpService
      */
     @Autowired
-    public SignUpController(SignUpUserService signUpUserService, SignUpService signUpService) {
-        this.signUpUserService = signUpUserService;
+    public SignUpController(SignUpService signUpService) {
         this.signUpService = signUpService;
     }
 
@@ -70,18 +67,6 @@ public class SignUpController {
         params.setUserId(params.getUserId().toLowerCase());
         return signUpService.signUpUsers(params);
 
-    }
-
-
-    /**
-     * Users 이름 목록 조회(Get Users names list)
-     *
-     * @return the map
-     */
-    @ApiOperation(value = "Users 이름 목록 조회(Get Users names list)", nickname = "getUsersNameList")
-    @GetMapping(value = "/users/names")
-    public Map<String, List<String>> getUsersNameList() {
-        return signUpUserService.getUsersNameList();
     }
 
 

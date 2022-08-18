@@ -4,6 +4,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
+import org.apache.commons.lang3.StringUtils;
 import org.paasta.container.platform.api.accessInfo.AccessToken;
 import org.paasta.container.platform.api.clusters.limitRanges.LimitRangesDefault;
 import org.paasta.container.platform.api.clusters.limitRanges.LimitRangesDefaultList;
@@ -21,9 +22,9 @@ import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
 
 
-import java.util.Base64;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
+
+import static org.paasta.container.platform.api.common.Constants.*;
 
 
 /**
@@ -52,7 +53,7 @@ public class ResourceYamlService {
         this.templateService = templateService;
         this.restTemplateService = restTemplateService;
         this.resourceQuotasService = resourceQuotasService;
-        this. vaultService = vaultService;
+        this.vaultService = vaultService;
     }
 
 
@@ -100,17 +101,10 @@ public class ResourceYamlService {
     public ResultStatus createRoleBinding(Params params) {
         Map map = new HashMap();
 
-
-        if (params.getRs_role().equalsIgnoreCase("")) {
-            map.put("userName", params.getRs_sa());
-            map.put("spaceName", params.getNamespace());
-            params.setYaml(templateService.convert("create_clusterRoleBinding.ftl", map));
-        } else {
-            map.put("userName", params.getRs_sa());
-            map.put("roleName", params.getRs_role());
-            map.put("spaceName", params.getNamespace());
-            params.setYaml(templateService.convert("create_roleBinding.ftl", map));
-        }
+        map.put("userName", params.getRs_sa());
+        map.put("roleName", params.getRs_role());
+        map.put("spaceName", params.getNamespace());
+        params.setYaml(templateService.convert("create_roleBinding.ftl", map));
 
         ResultStatus resultStatus = restTemplateService.sendYaml(Constants.TARGET_CP_MASTER_API,
                 propertyService.getCpMasterApiListRoleBindingsCreateUrl(), HttpMethod.POST, ResultStatus.class, params);
@@ -294,7 +288,6 @@ public class ResourceYamlService {
     }
 
 
-
     /**
      * ftl 파일로 init role 생성(Create init role)
      *
@@ -302,7 +295,7 @@ public class ResourceYamlService {
      * @return the resultStatus
      */
     public void deleteRoleBinding(Params params) {
-      restTemplateService.send(Constants.TARGET_CP_MASTER_API,
+        restTemplateService.send(Constants.TARGET_CP_MASTER_API,
                 propertyService.getCpMasterApiListRoleBindingsDeleteUrl()
                         .replace("{namespace}", params.getNamespace())
                         .replace("{name}", params.getRs_sa() + Constants.NULL_REPLACE_TEXT + params.getRs_role() + "-binding"),
@@ -337,19 +330,7 @@ public class ResourceYamlService {
     }
 
 
-
     //////////////////////////////////////////////
-    public void createClusterAdminSaAndRb(Params params) {
-        // 1. 'kube-system' 에 service-account, rolebinding 생성
-        params.setIsClusterToken(true);
-        params.setNamespace(propertyService.getClusterAdminNamespace());
-        params.setRs_sa(params.getUserAuthId());
-        createServiceAccount(params);
-        createClusterRoleBinding(params);
-        getSecretName(params);
-        getSecrets(params);
-        vaultService.saveUserAccessToken(params);
-       }
 
 
     /**
@@ -360,7 +341,7 @@ public class ResourceYamlService {
      */
     public ResultStatus createClusterRoleBinding(Params params) {
         Map map = new HashMap();
-        map.put("userName", params.getRs_sa());
+        map.put("userName", Constants.CLUSTER_ROLE_BINDING_NAME.replace("{name}", params.getRs_sa()));
         map.put("spaceName", params.getNamespace());
         params.setYaml(templateService.convert("create_clusterRoleBinding.ftl", map));
 
@@ -377,9 +358,145 @@ public class ResourceYamlService {
      * @return the resultStatus
      */
     public Secrets getSecret(Params params) {
-         return restTemplateService.send(Constants.TARGET_CP_MASTER_API, propertyService.getCpMasterApiListSecretsGetUrl()
+        return restTemplateService.send(Constants.TARGET_CP_MASTER_API, propertyService.getCpMasterApiListSecretsGetUrl()
                 .replace("{namespace}", params.getNamespace())
                 .replace("{name}", params.getResourceName()), HttpMethod.GET, null, Secrets.class, params);
+    }
+
+
+
+
+    /**
+     * Service Account 삭제(Delete Service Account)
+     *
+     * @param params the params
+     * @return the resultStatus
+     */
+    public ResultStatus deleteServiceAccount(Params params) {
+        return restTemplateService.send(Constants.TARGET_CP_MASTER_API,
+                propertyService.getCpMasterApiListUsersDeleteUrl().replace("{namespace}", params.getNamespace()).replace("{name}", params.getRs_sa()),
+                HttpMethod.DELETE, null, ResultStatus.class, params);
+    }
+
+
+    /**
+     * ClusterRole Binding 삭제(Delete ClusterRole Binding)
+     *
+     * @param params the params
+     * @return
+     */
+    public ResultStatus deleteClusterRoleBinding(Params params) {
+        return restTemplateService.send(Constants.TARGET_CP_MASTER_API,
+                propertyService.getCpMasterApiListClusterRoleBindingsDeleteUrl()
+                        .replace("{name}", Constants.CLUSTER_ROLE_BINDING_NAME.replace("{name}", params.getRs_sa())),
+                HttpMethod.DELETE, null, ResultStatus.class, params);
+    }
+
+
+    public void createUserResource(Params params, Users users) {
+        params.setIsClusterToken(true);
+        // service-account  생성
+        params.setRs_sa(users.getServiceAccountName());
+        createServiceAccount(params);
+        // role-binding 생성
+        createRoleBinding(params);
+        getSecretName(params);
+        getSecrets(params);
+
+        // vault-user-token 등록
+        params.setUserType(AUTH_USER);
+        vaultService.saveUserAccessToken(params);
+
+        Users newUser = new Users(params.getCluster(), params.getNamespace(), users.getUserId(), users.getUserAuthId(),
+                AUTH_USER, params.getRs_role(), users.getServiceAccountName(), params.getSaSecret());
+
+        createUsers(newUser);
+    }
+
+
+    public void createClusterAdminResource(Params params, Users users) {
+        params.setIsClusterToken(true);
+        params.setRs_sa(users.getServiceAccountName());
+        params.setNamespace(propertyService.getClusterAdminNamespace());
+        // service-account 생성
+        createServiceAccount(params);
+        // cluster-role-binding 생성
+        createClusterRoleBinding(params);
+        getSecretName(params);
+        getSecrets(params);
+
+        // vault user path에 token 저장
+        params.setUserType(AUTH_CLUSTER_ADMIN);
+        vaultService.saveUserAccessToken(params);
+
+        Users newClusterAdmin = new Users(params.getCluster(), propertyService.getDefaultNamespace(), users.getUserId(), users.getUserAuthId(),
+                AUTH_CLUSTER_ADMIN, params.getRs_role(), users.getServiceAccountName(), params.getSaSecret());
+
+        createUsers(newClusterAdmin);
+    }
+
+
+    /**
+     * Users Resource 삭제(Delete Users Resource)
+     *
+     * @param users the users
+     * @return return is succeeded
+     */
+
+    public void deleteUserResource(Users users) {
+        // SA and RoleBinding 삭제
+        Params params = new Params(users.getClusterId(), users.getCpNamespace(), users.getId(),
+                users.getServiceAccountName(), users.getRoleSetCode(), true);
+
+        deleteSaAndRb(params);
+        // vault Token 삭제
+        params.setUserAuthId(users.getUserAuthId());
+        params.setUserType(Constants.AUTH_USER);
+        vaultService.deleteUserAccessToken(params);
+
+        // DB 삭제
+        deleteUsers(params);
+
+
+    }
+
+    //////////////////////////////////////////////
+    public void deleteClusterAdminResource(Users users) {
+        Params params = new Params(users.getClusterId(), propertyService.getClusterAdminNamespace(), users.getId(),
+                users.getServiceAccountName(), users.getRoleSetCode(), true);
+        // SA and RoleBinding 삭제
+        deleteServiceAccount(params);
+        deleteClusterRoleBinding(params);
+        // vault 내 access-token 삭제
+        params.setUserAuthId(users.getUserAuthId());
+        params.setUserType(Constants.AUTH_CLUSTER_ADMIN);
+        vaultService.deleteUserAccessToken(params);
+        // db 삭제
+        deleteUsers(params);
+
+
+    }
+
+
+    /**
+     * 사용자 DB 저장(Save Users DB)
+     *
+     * @param users the users
+     * @return return is succeeded
+     */
+    public ResultStatus createUsers(Users users) {
+        return restTemplateService.send(TARGET_COMMON_API, "/users", HttpMethod.POST, users, ResultStatus.class, new Params());
+    }
+
+    /**
+     * Users 삭제(Delete Users)
+     *
+     * @param params the params
+     * @return return is succeeded
+     */
+    public ResultStatus deleteUsers(Params params) {
+        return restTemplateService.send(TARGET_COMMON_API,
+                Constants.URI_COMMON_API_USER_DELETE + params.getId(), HttpMethod.DELETE, null, ResultStatus.class, params);
     }
 
 

@@ -95,25 +95,6 @@ public class VaultService {
     }
 
 
-    public void saveUserAccessToken(Params params) {
-
-        String userTokenPath = propertyService.getVaultUserTokenPath();
-
-        if (params.getUserType().equalsIgnoreCase(Constants.AUTH_CLUSTER_ADMIN)) {
-            userTokenPath = userTokenPath.replace("/{namespace}", "");
-        }
-
-        userTokenPath = userTokenPath.replace("{id}", params.getUserAuthId())
-                .replace("{clusterId}", params.getCluster())
-                .replace("{namespace}", params.getNamespace());
-
-
-        Map<String, Object> token = new HashMap<>();
-        token.put("secret", params.getResourceName());
-        token.put("token", params.getSaToken());
-
-        write(userTokenPath, token);
-    }
 
     /**
      * Vault를 통한 Super Admin Cluster 정보 조회
@@ -155,4 +136,29 @@ public class VaultService {
     }
 
 
+
+    public void saveUserAccessToken(Params params) {
+        Map<String, Object> token = new HashMap<>();
+        token.put("token", params.getSaToken());
+        write(replaceUserAccessTokenPath(params), token);
+    }
+
+
+    public void deleteUserAccessToken(Params params) {
+        delete(replaceUserAccessTokenPath(params));
+    }
+
+    public String replaceUserAccessTokenPath(Params params){
+        String userTokenPath = propertyService.getVaultUserTokenPath();
+
+        if (params.getUserType().equalsIgnoreCase(Constants.AUTH_CLUSTER_ADMIN)) {
+            userTokenPath = userTokenPath.replace("/{namespace}", "");
+        }
+
+        userTokenPath = userTokenPath.replace("{userAuthId}", params.getUserAuthId())
+                .replace("{clusterId}", params.getCluster())
+                .replace("{namespace}", params.getNamespace());
+
+        return userTokenPath;
+    }
 }

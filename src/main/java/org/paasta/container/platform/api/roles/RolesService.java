@@ -6,6 +6,7 @@ import org.paasta.container.platform.api.common.model.Params;
 import org.paasta.container.platform.api.common.model.ResultStatus;
 import org.paasta.container.platform.api.users.Users;
 import org.paasta.container.platform.api.users.UsersList;
+import org.paasta.container.platform.api.users.UsersService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
@@ -28,6 +29,7 @@ public class RolesService {
     private final CommonService commonService;
     private final PropertyService propertyService;
     private final ResultStatusService resultStatusService;
+    private final UsersService usersService;
 
 
     /**
@@ -38,11 +40,12 @@ public class RolesService {
      * @param propertyService     the property service
      */
     @Autowired
-    public RolesService(RestTemplateService restTemplateService, CommonService commonService, PropertyService propertyService, ResultStatusService resultStatusService) {
+    public RolesService(RestTemplateService restTemplateService, CommonService commonService, PropertyService propertyService, ResultStatusService resultStatusService, UsersService usersService) {
         this.restTemplateService = restTemplateService;
         this.commonService = commonService;
         this.propertyService = propertyService;
         this.resultStatusService = resultStatusService;
+        this.usersService = usersService;
     }
 
 
@@ -109,7 +112,7 @@ public class RolesService {
      * @return return is succeeded
      */
     public ResultStatus deleteRoles(Params params) {
-        if(propertyService.getRolesList().contains(params.getResourceName())) {
+        if (propertyService.getRolesList().contains(params.getResourceName())) {
             return resultStatusService.DO_NOT_DELETE_DEFAULT_RESOURCES();
         }
 
@@ -141,21 +144,12 @@ public class RolesService {
     public Object getNamespacesRolesTemplateList(Params params) {
         params.setNamespace(Constants.ALL_NAMESPACES);
         RolesList rolesLIst = getRolesList(params);
+        UsersList usersList = usersService.getMappingNamespacesListByUser(params);
 
-        if (!params.getUserId().equals(Constants.ALL_USER_ID)) {
-            UsersList usersList = restTemplateService.send(Constants.TARGET_COMMON_API, Constants.URI_COMMON_API_NAMESPACES_ROLE_BY_CLUSTER_USER_AUTH_ID
-                    .replace("{cluster:.+}", params.getCluster())
-                    .replace("{userAuthId:.+}", params.getUserAuthId()), HttpMethod.GET, null, UsersList.class, params);
-
-            for (RolesListItem item : rolesLIst.getItems()) {
-                for (Users user : usersList.getItems()) {
-                    if (user.getCpNamespace().equals(item.getNamespace()) && user.getRoleSetCode().equals(item.getName())) {
-                        item.setCheckYn(Constants.CHECK_Y);
-                        item.setUserType(user.getUserType());
-                        if(Constants.AUTH_NAMESPACE_ADMIN.equals(user.getUserType())) {
-                            item.setIsNamespaceAdminRole(Constants.CHECK_Y);
-                        }
-                    }
+        for (RolesListItem item : rolesLIst.getItems()) {
+            for (Users user : usersList.getItems()) {
+                if (user.getCpNamespace().equals(item.getNamespace()) && user.getRoleSetCode().equals(item.getName())) {
+                    item.setCheckYn(Constants.CHECK_Y);
                 }
             }
         }

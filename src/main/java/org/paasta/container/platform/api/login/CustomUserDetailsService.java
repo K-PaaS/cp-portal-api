@@ -6,6 +6,8 @@ import org.paasta.container.platform.api.common.model.Params;
 import org.paasta.container.platform.api.users.Users;
 import org.paasta.container.platform.api.users.UsersList;
 import org.paasta.container.platform.api.users.UsersService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpMethod;
 
@@ -41,6 +43,8 @@ public class CustomUserDetailsService implements UserDetailsService {
     private final UsersService usersService;
 
     private final RestTemplateService restTemplateService;
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(CustomUserDetailsService.class);
 
     @Autowired
     private JwtUtil jwtUtil;
@@ -107,7 +111,7 @@ public class CustomUserDetailsService implements UserDetailsService {
             }
         }
 
-        String token = jwtUtil.generateToken(userDetails, params);
+        String token = jwtUtil.generatePortalToken(userDetails, params);
         return new AuthenticationResponse(Constants.RESULT_STATUS_SUCCESS, MessageConstant.LOGIN_SUCCESS.getMsg(), CommonStatusCode.OK.getCode(),
                 MessageConstant.LOGIN_SUCCESS.getMsg(), params.getUserId(), params.getUserAuthId(), params.getUserType(), token, "cp-cluster", params.getIsSuperAdmin());
     }

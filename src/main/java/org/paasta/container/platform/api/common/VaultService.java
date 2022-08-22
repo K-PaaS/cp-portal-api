@@ -1,5 +1,6 @@
 package org.paasta.container.platform.api.common;
 
+import io.jsonwebtoken.lang.Assert;
 import org.paasta.container.platform.api.clusters.clusters.Clusters;
 import org.paasta.container.platform.api.common.model.Params;
 import org.slf4j.Logger;
@@ -11,6 +12,7 @@ import org.springframework.vault.support.VaultResponse;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 @Service
 public class VaultService {
@@ -32,19 +34,30 @@ public class VaultService {
      * @param path the path
      * @return the object
      */
-    public <T> T read(String path, Class<T> requestClass) {
-        VaultResponse vaultResponse;
-
+    @TrackExecutionTime
+    public <T> T read(String path,  Class<T> requestClass) {
         path = setPath(path);
+//        VaultResponse vaultResponse;
+//        try {
+//            vaultResponse = vaultTemplate.read(path);
+//        } catch (Exception e) {
+//            logger.info("vault read exception:" + e.getMessage());
+//            return null;
+//        }
+//        HashMap responseMap = (HashMap) vaultResponse.getData().get("data");
+//
+//        System.out.println("Vault read value: " + commonService.setResultObject(responseMap, requestClass));
+//        return commonService.setResultObject(responseMap, requestClass);
 
-        try {
-            vaultResponse = vaultTemplate.read(path);
-        } catch (Exception e) {
-            logger.info("vault read exception:" + e.getMessage());
-            return null;
-        }
-        HashMap responseMap = (HashMap) vaultResponse.getData().get("data");
-        return commonService.setResultObject(responseMap, requestClass);
+        Object response = Optional.ofNullable(vaultTemplate.read(path))
+                .map(VaultResponse::getData)
+                .filter(x -> x.keySet().contains("data"))
+                .orElseGet(HashMap::new)
+                .getOrDefault("data", null);
+
+        System.out.println("Vault read value: " + commonService.setResultObject(response, requestClass)); //FIXME! for debugging
+
+        return commonService.setResultObject(response, requestClass);
     }
 
     /**
@@ -53,7 +66,8 @@ public class VaultService {
      * @param path the path
      * @return the object
      */
-    public Object write(String path, Object body) {
+    @TrackExecutionTime
+    public Object write(String path, Object body){
         path = setPath(path);
 
         Map<String, Object> data = new HashMap<>();
@@ -79,7 +93,7 @@ public class VaultService {
      * @param path the path
      * @return the String
      */
-    String setPath(String path) {
+    private String setPath(String path) {
         return new StringBuilder(path).insert(path.indexOf("/") + 1, "data/").toString();
     }
 
@@ -91,6 +105,7 @@ public class VaultService {
      * @return the String
      */
     public Clusters getClusterDetails(String clusterId) {
+        Assert.hasText(clusterId);
         return read(propertyService.getVaultClusterTokenPath().replace("{id}", clusterId), Clusters.class);
     }
 
@@ -99,66 +114,61 @@ public class VaultService {
     /**
      * Vault를 통한 Super Admin Cluster 정보 조회
      *
-     * @param clusterId the clusterId
+     * @param params the params
      * @return the String
      */
-    public Clusters getClusterInfoDetails(String clusterId){
-        return read(propertyService.getVaultSuperAdminTokenPath()
-                .replace("{clusterId}", clusterId), Clusters.class);
+    public Clusters getClusterInfoDetails(Params params){
+        Assert.hasText(params.getCluster());
+        Assert.hasText(params.getUserType());
+        String userType = params.getUserType();
+
+        if(!userType.equals(Constants.AUTH_SUPER_ADMIN)) Assert.hasText(params.getUserAuthId());
+        if(userType.equals(Constants.AUTH_USER)) Assert.hasText(params.getNamespace());
+
+        return read(getAccessTokenPath(params), Clusters.class);
     }
-
-    /**
-     * Vault를 통한 Cluster Admin Cluster 정보 조회
-     *
-     * @param userAuthId the userAuthId
-     * @param clusterId the clusterId
-     * @return the String
-     */
-    public Clusters getClusterInfoDetails(String userAuthId, String clusterId){
-        return read(propertyService.getVaultClusterAdminTokenPath()
-                .replace("{userAuthId}", userAuthId)
-                .replace("{clusterId}", clusterId), Clusters.class);
-    }
-
-    /**
-     * Vault를 통한 User Cluster 정보 조회
-     *
-     * @param userAuthId the userAuthId
-     * @param clusterId the clusterId
-     * @param namespace the namespace
-     * @return the String
-     */
-    public Clusters getClusterInfoDetails(String userAuthId, String clusterId, String namespace){
-        return read(propertyService.getVaultUserTokenPath()
-                .replace("{userAuthId}", userAuthId)
-                .replace("{clusterId}", clusterId)
-                .replace("{namespace}", namespace), Clusters.class);
-    }
-
-
 
     public void saveUserAccessToken(Params params) {
         Map<String, Object> token = new HashMap<>();
-        token.put("token", params.getSaToken());
-        write(replaceUserAccessTokenPath(params), token);
+        token.put("clusterToken", params.getSaToken());
+        write(getAccessTokenPath(params), token);
     }
 
 
     public void deleteUserAccessToken(Params params) {
-        delete(replaceUserAccessTokenPath(params));
+        delete(getAccessTokenPath(params));
     }
 
-    public String replaceUserAccessTokenPath(Params params){
-        String userTokenPath = propertyService.getVaultUserTokenPath();
+    public String getAccessTokenPath(Params params){
+//        String userTokenPath = propertyService.getVaultUserTokenPath();
+//
+//        if (params.getUserType().equalsIgnoreCase(Constants.AUTH_CLUSTER_ADMIN)) {
+//            userTokenPath = userTokenPath.replace("/{namespace}", "");
+//        }
+//
+//        userTokenPath = userTokenPath.replace("{userAuthId}", params.getUserAuthId())
+//                .replace("{clusterId}", params.getCluster())
+//                .replace("{namespace}", params.getNamespace());
+        String userType = params.getUserType();
+        String tokenPath;
 
-        if (params.getUserType().equalsIgnoreCase(Constants.AUTH_CLUSTER_ADMIN)) {
-            userTokenPath = userTokenPath.replace("/{namespace}", "");
+        switch (userType) {
+            case Constants.AUTH_SUPER_ADMIN:
+                tokenPath = propertyService.getVaultSuperAdminTokenPath().replace("{clusterId}", params.getCluster());
+                break;
+            case Constants.AUTH_CLUSTER_ADMIN:
+            case Constants.AUTH_USER:
+                tokenPath = propertyService.getVaultUserTokenPath()
+                        .replace("{userAuthId}", params.getUserAuthId())
+                        .replace("{clusterId}", params.getCluster());
+                tokenPath = params.getUserType().equalsIgnoreCase(Constants.AUTH_CLUSTER_ADMIN) ?
+                        tokenPath.replace("/{namespace}", "") : tokenPath.replace("{namespace}", params.getNamespace());
+                break;
+            default:
+                //WARN, Invalid userType
+                tokenPath = null;
         }
 
-        userTokenPath = userTokenPath.replace("{userAuthId}", params.getUserAuthId())
-                .replace("{clusterId}", params.getCluster())
-                .replace("{namespace}", params.getNamespace());
-
-        return userTokenPath;
+        return tokenPath;
     }
 }

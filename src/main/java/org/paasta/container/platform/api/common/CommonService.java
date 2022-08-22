@@ -3,13 +3,19 @@ package org.paasta.container.platform.api.common;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
 import lombok.SneakyThrows;
+import org.paasta.container.platform.api.clusters.clusters.Clusters;
 import org.paasta.container.platform.api.common.model.*;
 import org.paasta.container.platform.api.login.JwtUtil;
+import org.paasta.container.platform.api.login.support.PortalGrantedAuthority;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
+
 import javax.servlet.http.HttpServletRequest;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -33,6 +39,7 @@ public class CommonService {
     private final PropertyService propertyService;
     private final HttpServletRequest request;
     private final JwtUtil jwtUtil;
+
     @Value("${cpNamespace.ignoreNamespace}")
     List<String> ignoreNamespaceList;
 
@@ -738,6 +745,61 @@ public class CommonService {
 
         return result;
 
+    }
+
+    /**
+     * 컨텍스트에서 권한 읽어오기(Read authority from SecurityContext)
+     *
+     * @param clusterId the clusterId
+     * @return the string
+     */
+    public String getClusterAuthorityFromContext(String clusterId) {
+        Assert.hasText(clusterId, "clusterId is null");
+
+        return SecurityContextHolder.getContext().getAuthentication().getAuthorities().stream()
+                .filter(x -> x instanceof PortalGrantedAuthority)
+                .filter(x -> ((PortalGrantedAuthority) x).equals(clusterId, Constants.ContextType.CLUSTER.name()))
+                .collect(Collectors.collectingAndThen(Collectors.toList(), c -> !c.isEmpty() ? c.get(0).getAuthority() : null));
+    }
+
+    /**
+     * 컨텍스트에서 Global 권한 읽어오기(Read authority from SecurityContext)
+     *
+     * @return the string
+     */
+    public String getGlobalAuthority() {
+        return SecurityContextHolder.getContext().getAuthentication().getAuthorities().stream().filter(x -> x instanceof SimpleGrantedAuthority)
+                .collect(Collectors.collectingAndThen(Collectors.toList(), c -> !c.isEmpty() ? c.get(0).getAuthority() : null));
+    }
+
+    public Clusters getKubernetesInfo(Params params) {
+        //clusterId, namespaceId로 조회.
+        Clusters clusters = new Clusters();
+        PortalGrantedAuthority portalGrantedAuthority;
+        LOGGER.info("in getKubernetesInfo, params: "  + params);
+        LOGGER.info("cluster AUTHORITY: " + getClusterAuthorityFromContext(params.getCluster()));
+        switch (getClusterAuthorityFromContext(params.getCluster())) {
+            case Constants.AUTH_SUPER_ADMIN:
+            case Constants.AUTH_CLUSTER_ADMIN:
+                portalGrantedAuthority = (PortalGrantedAuthority) SecurityContextHolder.getContext().getAuthentication().getAuthorities().stream().filter(x -> x instanceof PortalGrantedAuthority)
+                        .filter(x -> ((PortalGrantedAuthority) x).equals(params.getCluster(), Constants.ContextType.CLUSTER.name()))
+                        .collect(Collectors.collectingAndThen(Collectors.toList(), c -> !c.isEmpty() ? c.get(0) : null));
+                break;
+
+            case Constants.AUTH_USER:
+                portalGrantedAuthority = (PortalGrantedAuthority) SecurityContextHolder.getContext().getAuthentication().getAuthorities().stream().filter(x -> x instanceof PortalGrantedAuthority)
+                        .filter(x -> ((PortalGrantedAuthority) x).equals(params.getNamespace(), params.getCluster(), Constants.ContextType.NAMESPACE.name()))
+                        .collect(Collectors.collectingAndThen(Collectors.toList(), c -> !c.isEmpty() ? c.get(0) : null));
+                break;
+            default:
+                //Context Error
+                return null;
+        }
+        clusters.setClusterApiUrl(portalGrantedAuthority.geturl());
+        clusters.setClusterToken(portalGrantedAuthority.getToken());
+
+        LOGGER.info("clusters: " + clusters);
+        return clusters;
     }
 
 }

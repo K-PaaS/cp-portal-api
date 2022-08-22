@@ -138,8 +138,15 @@ public class CloudAccountsController {
     @ApiImplicitParams({
             @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body")
     })
+
     @GetMapping(value = "/provider/info")
     public Object getProviderInfo(Params params) {
         return cloudAccountsService.getProviderInfoList(params);
+    }
+
+
+    @GetMapping(value = "/provider/info/{providerType:.+}")
+    public Object getProviderInfoDetail(Params params) {
+        return cloudAccountsService.getProviderInfo(params);
     }
 }

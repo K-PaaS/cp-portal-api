@@ -1,6 +1,7 @@
 spring:
   cloud:
     vault:
+
       scheme: http
       host: ${VAULT_IP}
       port: ${VAULT_PORT}
@@ -13,3 +14,8 @@ spring:
         secret-id: ${VAULT_SECRET_ID}
         role: ${VAULT_ROLE_NAME}
         app-role-path: approle
+      config:
+        lifecycle:
+          enabled: true
+          min-renewal: 10s
+          expiry-threshold: 1m

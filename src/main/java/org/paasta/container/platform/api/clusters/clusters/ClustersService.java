@@ -82,7 +82,7 @@ public class ClustersService {
         if (!params.getIsClusterRegister()) {
             //Create Files
             try {
-                String path = propertyService.getCpTerramanTemplatePath() + params.getCluster();
+                String path = propertyService.getCpTerramanTemplatePath().replace("{id}", params.getCluster());
                 LOGGER.info("File write Start : " + path);
                 OutputStream outputStream = new FileOutputStream(path);
                 BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(outputStream);
@@ -123,7 +123,7 @@ public class ClustersService {
         // get k8s Info
         Clusters clusters = restTemplateService.sendGlobal(Constants.TARGET_COMMON_API, "/clusters/" + params.getCluster(), HttpMethod.GET, null, Clusters.class, params);
         try {
-            Clusters vaultClusters = vaultService.getClusterDetails(params.getCluster());
+            Clusters vaultClusters = commonService.getKubernetesInfo(params);
             clusters.setClusterApiUrl(vaultClusters.getClusterApiUrl());
             clusters.setClusterToken(vaultClusters.getClusterToken());
         } catch (Exception e) {
@@ -202,6 +202,9 @@ public class ClustersService {
                                 podsService.getPodsList(new Params(e.getClusterId(), e.getName())).getItems().size())));
  */
 
+        clustersList.getItems().stream().forEach(x -> LOGGER.info("getAuthorityFromContext Test :: Cluster: " + x.getClusterId() +
+                " Authority : " + commonService.getClusterAuthorityFromContext(x.getClusterId())));
+
         clustersList = commonService.globalListProcessing(clustersList, params, ClustersList.class);
         return (ClustersList) commonService.setResultModel(clustersList, Constants.RESULT_STATUS_SUCCESS);
     }
@@ -252,7 +255,7 @@ public class ClustersService {
     public boolean createClusterInfoToVault(Params params) {
         //Check ClusterId
         try {
-            vaultService.getClusterDetails(params.getCluster());
+            Clusters clusters = vaultService.getClusterDetails(params.getCluster());
             LOGGER.info("cluster is already registered");
             return false;
         } catch (Exception e) {

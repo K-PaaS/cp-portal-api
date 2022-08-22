@@ -160,6 +160,8 @@ public class Constants {
     public static final String URI_COMMON_API_CLUSTER_LIST_BY_USER = "/users/{userAuthId:.+}/clustersList?userType={userType:.+}";
     public static final String URI_COMMON_API_DELETE_USER = "/clusters/{cluster:.+}/namespaces/{namespace:.+}/users/{userAuthId:.+}/{userType:.+}";
     public static final String URI_COMMON_API_DELETE_USER_BY_IDS = "/users/ids?ids=";
+    public static final String URI_COMMON_API_CLUSTER_AND_NAMESPACE_LIST_BY_USER = "/users/{userAuthId:.+}/clustersAndNamespacesList?userType={userType:.+}";
+    public static final String URI_COMMON_API_CREATE_CLUSTER_ADMIN = "/users/create/clusterAdmin";
 
 
 
@@ -317,6 +319,11 @@ public class Constants {
         public String getClassType() {
             return classType;
         }
+    }
+
+    public enum ContextType {
+        CLUSTER,
+        NAMESPACE
     }
 
     public enum ClusterStatus {

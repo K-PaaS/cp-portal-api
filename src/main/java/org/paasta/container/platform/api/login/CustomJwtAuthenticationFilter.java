@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -22,6 +23,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.List;
 
 import static org.paasta.container.platform.api.common.Constants.CHECK_Y;
 
@@ -35,8 +37,13 @@ import static org.paasta.container.platform.api.common.Constants.CHECK_Y;
 @Component
 public class CustomJwtAuthenticationFilter extends OncePerRequestFilter {
 
-	@Autowired
+
 	private JwtUtil jwtTokenUtil;
+
+	@Autowired
+	public CustomJwtAuthenticationFilter(JwtUtil jwtUtil) {
+		this.jwtTokenUtil = jwtUtil;
+	}
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandler.class);
 
@@ -63,8 +70,10 @@ public class CustomJwtAuthenticationFilter extends OncePerRequestFilter {
 			}
 
 			if (StringUtils.hasText(jwtToken) && jwtTokenUtil.validateToken(jwtToken)) {
-				UserDetails userDetails = new User(jwtTokenUtil.getUsernameFromToken(jwtToken), jwtTokenUtil.getClaimsFromToken(jwtToken,"userAuthId"),
-						jwtTokenUtil.getRolesFromToken(jwtToken));
+				List<GrantedAuthority> parsedTokens = jwtTokenUtil.getPortalRolesFromToken(jwtToken);
+				UserDetails userDetails = new User(jwtTokenUtil.getUsernameFromToken(jwtToken), jwtTokenUtil.getClaimsFromToken(jwtToken,"userAuthId"), parsedTokens);
+
+				LOGGER.info("parsed Token: " + parsedTokens);
 
 				String tokenIp = jwtTokenUtil.getClientIpFromToken(jwtToken);
 
@@ -79,7 +88,7 @@ public class CustomJwtAuthenticationFilter extends OncePerRequestFilter {
 					}
 				}else{
 					UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(
-							userDetails, null, userDetails.getAuthorities());
+							userDetails, null, parsedTokens);
 					SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
 				}
 

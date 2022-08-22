@@ -2,12 +2,15 @@ package org.paasta.container.platform.api.login;
 
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.impl.DefaultClaims;
-import org.paasta.container.platform.api.common.Constants;
-import org.paasta.container.platform.api.common.MessageConstant;
-import org.paasta.container.platform.api.common.RequestWrapper;
+import org.paasta.container.platform.api.accessInfo.AccessTokenService;
+import org.paasta.container.platform.api.common.*;
 import org.paasta.container.platform.api.common.model.Params;
+import org.paasta.container.platform.api.login.support.JWTRoleInfoItem;
+import org.paasta.container.platform.api.login.support.PortalGrantedAuthority;
 import org.paasta.container.platform.api.users.Users;
 import org.paasta.container.platform.api.users.UsersList;
+import org.paasta.container.platform.api.users.UsersService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -34,6 +37,15 @@ public class JwtUtil {
     private String secret;
     public static int jwtExpirationInMs;
     public static int refreshExpirationDateInMs;
+
+    @Autowired
+    private UsersService usersService;
+
+    @Autowired
+    private AccessTokenService accessTokenService;
+
+    @Autowired
+    private CommonService commonService;
 
     @Value("${jwt.secret}")
     public void setSecret(String secret) {
@@ -73,6 +85,45 @@ public class JwtUtil {
         claims.put("userAuthId", params.getUserAuthId());
         claims.put("IP", params.getClientIp());
         claims.put("Browser", params.getBrowser());
+
+        return doGenerateToken(claims, userDetails.getUsername());
+    }
+
+    public String generatePortalToken(UserDetails userDetails, Params params) {
+        Map<String, Object> claims = new HashMap<>();
+        Map<String, Object> roleInfo = new HashMap<>();
+        Collection<? extends GrantedAuthority> roles = userDetails.getAuthorities();
+
+        if (roles.contains(new SimpleGrantedAuthority(Constants.AUTH_SUPER_ADMIN))) {
+            claims.put("userType", Constants.AUTH_SUPER_ADMIN);
+            params.setIsSuperAdmin(true);
+            params.setUserType(Constants.AUTH_SUPER_ADMIN);
+            usersService.getMappingClustersAndNamespacesListByUser(params).getItems()
+                    .forEach(x -> roleInfo.put(x.getClusterId(), new JWTRoleInfoItem(x.userType)));
+        } else {
+            claims.put("userType", params.getUserType());
+            params.setIsSuperAdmin(false);
+            UsersList usersList = usersService.getMappingClustersAndNamespacesListByUser(params);
+            if(!usersList.getItems().isEmpty())
+                usersList.getItems()
+                    .forEach(x -> {
+                          try {
+                              ((JWTRoleInfoItem) roleInfo.get(x.getClusterId())).getNamespaceList().add(x.cpNamespace);
+                          }
+                          catch (NullPointerException e){
+                              if (x.userType.equals(Constants.AUTH_USER))
+                                  roleInfo.put(x.getClusterId(), new JWTRoleInfoItem(x.userType, x.cpNamespace));
+                              else
+                                  roleInfo.put(x.getClusterId(), new JWTRoleInfoItem(x.userType));
+                          }
+                });
+
+        }
+
+        claims.put("userAuthId", params.getUserAuthId());
+        claims.put("IP", params.getClientIp());
+        claims.put("Browser", params.getBrowser());
+        claims.put("rolesInfo", roleInfo);
 
         return doGenerateToken(claims, userDetails.getUsername());
     }
@@ -136,6 +187,51 @@ public class JwtUtil {
 
         String userType = claims.get("userType", String.class);
         roles = Arrays.asList(new SimpleGrantedAuthority(userType));
+        return roles;
+    }
+
+
+    /**
+     * 토큰을 통한 Vault 권한 조회(Get Roles from token)
+     *
+     * @param authToken the auth token
+     * @return the list
+     */
+    @TrackExecutionTime
+    public List<GrantedAuthority> getPortalRolesFromToken(String authToken) {
+        List<GrantedAuthority> roles = new ArrayList<>();
+        Claims claims = Jwts.parser().setSigningKey(secret).parseClaimsJws(authToken).getBody();
+
+        Map<String, Object> rolesInfo = claims.get("rolesInfo", Map.class);
+        String userType = claims.get("userType", String.class);
+        String userAuthId = claims.get("userAuthId", String.class);
+
+
+        roles.add(new SimpleGrantedAuthority(userType)); //Default role
+        rolesInfo.keySet().forEach(clusterId -> {
+            JWTRoleInfoItem item = commonService.setResultObject(rolesInfo.get(clusterId), JWTRoleInfoItem.class);
+            if(item.getUserType().equals(Constants.AUTH_USER)){ //USER Type의 경우
+                roles.add(new PortalGrantedAuthority(clusterId, Constants.ContextType.CLUSTER.name(), item.getUserType()));
+                item.getNamespaceList().forEach(namespaceName -> {
+                    try {
+                        Params vaultResult = accessTokenService.getVaultSecrets(new Params(clusterId, userAuthId, item.getUserType(), namespaceName));
+                        roles.add(new PortalGrantedAuthority(namespaceName, Constants.ContextType.NAMESPACE.name(),
+                                item.getUserType(), vaultResult.getClusterToken(), vaultResult.getClusterApiUrl(), clusterId));
+                    } catch (Exception e) {
+                    }
+                });
+            }
+            else { //ADMIN인 경우
+                try {
+                    Params vaultResult = accessTokenService.getVaultSecrets(new Params(clusterId, userAuthId, item.getUserType(), Constants.EMPTY_STRING));
+                    roles.add(new PortalGrantedAuthority(clusterId, Constants.ContextType.CLUSTER.name(),
+                            item.getUserType(), vaultResult.getClusterToken(), vaultResult.getClusterApiUrl()));
+                } catch (Exception e) {
+                    //pass
+                }
+            }
+        });
+
         return roles;
     }
 

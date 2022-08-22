@@ -358,5 +358,5 @@ public class Constants {
     public static final String STATUS_RUNNING = "Running";
 
     public static final String CLUSTER_ADMIN_SERVICE_ACCOUNT = "cp-cluster-admin-{userAuthId}";
-    public static final String CLUSTER_ROLE_BINDING_NAME = "{name}-binding";
+    public static final String CLUSTER_ROLE_BINDING_NAME = "-cluster-admin-binding";
 }

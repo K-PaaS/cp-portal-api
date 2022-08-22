@@ -1,8 +1,7 @@
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: ${userName}
-  namespace: ${spaceName}
+  name: ${userName}${crbName}
 subjects:
 - kind: ServiceAccount
   name: ${userName}

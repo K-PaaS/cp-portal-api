@@ -80,13 +80,8 @@ public class popUpController {
     @ApiImplicitParams({
             @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body")
     })
-    @GetMapping("/users/{userId:.+}/namespacesRolesList")
+    @GetMapping("/users/{userAuthId:.+}/namespacesRolesList")
     public Object getNamespacesRolesTemplateList(Params params) {
-        if (params.getNamespace().equalsIgnoreCase(Constants.ALL_NAMESPACES)) {
-            return rolesService.getNamespacesRolesTemplateList(params);
-        }
-
-        return resultStatusService.FORBIDDEN_ACCESS_RESULT_STATUS();
-
+        return rolesService.getNamespacesRolesTemplateList(params);
     }
 }

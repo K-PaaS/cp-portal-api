@@ -4,7 +4,6 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
-import org.apache.commons.lang3.StringUtils;
 import org.paasta.container.platform.api.accessInfo.AccessToken;
 import org.paasta.container.platform.api.clusters.limitRanges.LimitRangesDefault;
 import org.paasta.container.platform.api.clusters.limitRanges.LimitRangesDefaultList;
@@ -341,10 +340,12 @@ public class ResourceYamlService {
      */
     public ResultStatus createClusterRoleBinding(Params params) {
         Map map = new HashMap();
-        map.put("userName", Constants.CLUSTER_ROLE_BINDING_NAME.replace("{name}", params.getRs_sa()));
+        map.put("userName", params.getRs_sa());
+        map.put("crbName", Constants.CLUSTER_ROLE_BINDING_NAME);
         map.put("spaceName", params.getNamespace());
         params.setYaml(templateService.convert("create_clusterRoleBinding.ftl", map));
 
+        System.out.println("cluster admin yaml:" + params.getYaml());
         ResultStatus resultStatus = restTemplateService.sendYaml(Constants.TARGET_CP_MASTER_API,
                 propertyService.getCpMasterApiListClusterRoleBindingsCreateUrl(), HttpMethod.POST, ResultStatus.class, params);
         return (ResultStatus) commonService.setResultModel(resultStatus, Constants.RESULT_STATUS_SUCCESS);
@@ -388,7 +389,7 @@ public class ResourceYamlService {
     public ResultStatus deleteClusterRoleBinding(Params params) {
         return restTemplateService.send(Constants.TARGET_CP_MASTER_API,
                 propertyService.getCpMasterApiListClusterRoleBindingsDeleteUrl()
-                        .replace("{name}", Constants.CLUSTER_ROLE_BINDING_NAME.replace("{name}", params.getRs_sa())),
+                        .replace("{name}", params.getRs_sa() + Constants.CLUSTER_ROLE_BINDING_NAME),
                 HttpMethod.DELETE, null, ResultStatus.class, params);
     }
 
@@ -430,7 +431,7 @@ public class ResourceYamlService {
         vaultService.saveUserAccessToken(params);
 
         Users newClusterAdmin = new Users(params.getCluster(), propertyService.getDefaultNamespace(), users.getUserId(), users.getUserAuthId(),
-                AUTH_CLUSTER_ADMIN, params.getRs_role(), users.getServiceAccountName(), params.getSaSecret());
+                AUTH_CLUSTER_ADMIN, DEFAULT_CLUSTER_ADMIN_ROLE, users.getServiceAccountName(), params.getSaSecret());
 
         createUsers(newClusterAdmin);
     }

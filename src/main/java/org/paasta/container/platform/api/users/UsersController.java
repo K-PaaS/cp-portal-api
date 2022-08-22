@@ -8,19 +8,13 @@ import org.paasta.container.platform.api.accessInfo.AccessTokenService;
 import org.paasta.container.platform.api.clusters.namespaces.NamespacesService;
 import org.paasta.container.platform.api.common.CommonService;
 import org.paasta.container.platform.api.common.Constants;
-import org.paasta.container.platform.api.common.MessageConstant;
 import org.paasta.container.platform.api.common.ResultStatusService;
 import org.paasta.container.platform.api.common.model.Params;
-import org.paasta.container.platform.api.common.model.ResultStatus;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
 
-import java.util.List;
-import java.util.Map;
-
-import static org.paasta.container.platform.api.common.CommonUtils.regexMatch;
 
 /**
  * User Controller 클래스
@@ -55,6 +49,7 @@ public class UsersController {
      * Users 전체 목록 조회(Get Users List) -
      * 개발 0809 클러스터 관리자 목록 조회 (완)
      * 개발 0809 사용자 목록 조회
+     * 개발 0819 클러스터 관리자 목록 조회 테스트
      * @param params the params
      * @return the users list
      */

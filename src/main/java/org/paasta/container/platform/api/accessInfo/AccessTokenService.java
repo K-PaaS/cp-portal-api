@@ -6,6 +6,8 @@ import org.paasta.container.platform.api.common.model.Params;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
+import org.springframework.util.StringUtils;
 
 import java.util.Base64;
 import java.util.HashMap;
@@ -77,31 +79,38 @@ public class AccessTokenService {
      * @param params the params
      */
     public Params getVaultSecrets(Params params) {
+        Assert.hasText(params.getCluster(), "cluster id not null");
+        Assert.hasText(params.getUserType(), "userType must valid");
 
-        String apiUrl = "";
-        String id = "";
-        String token = "";
+        String clusterId = params.getCluster();
 
-        if (params.getUserType().equals("SUPER_ADMIN")) {
-            Clusters clusters = vaultService.getClusterInfoDetails(params.getCluster());
-            apiUrl = clusters.getClusterApiUrl();
-            id = clusters.getClusterId();
-            token = clusters.getClusterToken();
-        } else if (params.getUserType().equals("CLUSTER_ADMIN")) {
-            Clusters clusters = vaultService.getClusterInfoDetails(params.getUserAuthId(), params.getCluster());
-            apiUrl = clusters.getClusterApiUrl();
-            id = clusters.getClusterId();
-            token = clusters.getClusterToken();
-        } else if (params.getUserType().equals("USER")) {
-            Clusters clusters = vaultService.getClusterInfoDetails(params.getUserAuthId(), params.getCluster(), params.getNamespace());
-            apiUrl = clusters.getClusterApiUrl();
-            id = clusters.getClusterId();
-            token = clusters.getClusterToken();
-        }
+        Clusters clusters = vaultService.getClusterDetails(clusterId);
+        Clusters detailsClusters = vaultService.getClusterInfoDetails(params);
+        System.out.println("detailsClusters = " + detailsClusters);
+        params.setCluster(clusterId);
+        params.setClusterApiUrl(clusters.getClusterApiUrl());
+        params.setClusterToken(vaultService.getClusterInfoDetails(params).getClusterToken());
 
-        params.setClusterApiUrl(apiUrl);
-        params.setCluster(id);
-        params.setClusterToken(token);
+//        if (params.getUserType().equals("SUPER_ADMIN")) {
+//            Clusters clusters = vaultService.getClusterInfoDetails(params);
+//            apiUrl = clusters.getClusterApiUrl();
+//            id = clusters.getClusterId();
+//            token = clusters.getClusterToken();
+//        } else if (params.getUserType().equals("CLUSTER_ADMIN")) {
+//            Clusters clusters = vaultService.getClusterInfoDetails(params.getUserAuthId(), params.getCluster());
+//            apiUrl = clusters.getClusterApiUrl();
+//            id = clusters.getClusterId();
+//            token = clusters.getClusterToken();
+//        } else if (params.getUserType().equals("USER")) {
+//            Clusters clusters = vaultService.getClusterInfoDetails(params.getUserAuthId(), params.getCluster(), params.getNamespace());
+//            apiUrl = clusters.getClusterApiUrl();
+//            id = clusters.getClusterId();
+//            token = clusters.getClusterToken();
+//        }
+
+//        params.setClusterApiUrl(apiUrl);
+//        params.setCluster(id);
+//        params.setClusterToken(token);
 
         return params;
     }

@@ -1,7 +1,14 @@
 package org.paasta.container.platform.api.login;
 
+import org.paasta.container.platform.api.accessInfo.AccessTokenService;
+import org.paasta.container.platform.api.common.Constants;
 import org.paasta.container.platform.api.common.MessageConstant;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.paasta.container.platform.api.common.model.Params;
+import org.paasta.container.platform.api.login.support.PortalGrantedAuthority;
+import org.paasta.container.platform.api.users.UsersList;
+import org.paasta.container.platform.api.users.UsersService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.*;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
@@ -10,6 +17,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -23,8 +31,18 @@ import java.util.List;
 @Component
 public class CustomAuthenticationProvider implements AuthenticationProvider {
 
-    @Autowired
+
     private CustomUserDetailsService customUserDetailsService;
+    private UsersService usersService;
+    private AccessTokenService accessTokenService;
+
+    public CustomAuthenticationProvider(CustomUserDetailsService customUserDetailsService, UsersService usersService, AccessTokenService accessTokenService) {
+        this.customUserDetailsService = customUserDetailsService;
+        this.usersService = usersService;
+        this.accessTokenService = accessTokenService;
+    }
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(CustomAuthenticationProvider.class);
 
     @Override
     public Authentication authenticate(Authentication authentication) throws AuthenticationException {
@@ -46,7 +64,35 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
         }
 
         UserDetails loadedUser = customUserDetailsService.loadUserByUsername(userId);
-        Collection<? extends GrantedAuthority> authorities = loadedUser.getAuthorities();
+
+        Params params = new Params();
+        params.setUserAuthId(userAuthId);
+        params.setUserType(userType);
+        UsersList loadedUsersList = usersService.getMappingClustersAndNamespacesListByUser(params);
+
+        List<GrantedAuthority> portalGrantedAuthorityList = new ArrayList<>();
+
+        portalGrantedAuthorityList.add(list.get(0));
+
+
+        loadedUsersList.getItems().forEach(x -> {
+            Params vaultResult = null;
+            try {
+                vaultResult = accessTokenService.getVaultSecrets(new Params(x.getClusterId(), userAuthId, x.getUserType(), x.getCpNamespace()));
+            } catch (Exception e) {
+                LOGGER.info("error from vault VaultSecrets");
+                return;
+            }
+            String id = x.userType.equals(Constants.AUTH_USER) ? x.getCpNamespace() : x.getClusterId();
+            String type = x.userType.equals(Constants.AUTH_USER) ? Constants.ContextType.NAMESPACE.name() : Constants.ContextType.CLUSTER.name();
+            portalGrantedAuthorityList.add(new PortalGrantedAuthority(id, type, x.userType, vaultResult.getClusterToken(), vaultResult.getClusterApiUrl()));
+        });
+
+
+        portalGrantedAuthorityList.forEach(x -> LOGGER.info("x: " + x));
+
+//        Collection<? extends GrantedAuthority> authorities = loadedUser.getAuthorities();
+        Collection<? extends GrantedAuthority> authorities = portalGrantedAuthorityList;
 
         if (loadedUser == null) {
             throw new InternalAuthenticationServiceException(MessageConstant.INVALID_LOGIN_INFO.getMsg());
@@ -71,8 +117,11 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
         if (!loadedUser.isCredentialsNonExpired()) {
             throw new CredentialsExpiredException(MessageConstant.UNAVAILABLE_ID.getMsg());
         }
-        UsernamePasswordAuthenticationToken result = new UsernamePasswordAuthenticationToken(loadedUser, null, loadedUser.getAuthorities());
+//        UsernamePasswordAuthenticationToken result = new UsernamePasswordAuthenticationToken(loadedUser, null, loadedUser.getAuthorities());
+        UsernamePasswordAuthenticationToken result = new UsernamePasswordAuthenticationToken(loadedUser, null, authorities);
         result.setDetails(authentication.getDetails());
+
+        LOGGER.info("authenticate END, result : " + result);
         return result;
     }
 

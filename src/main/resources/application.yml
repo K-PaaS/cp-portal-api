@@ -214,7 +214,7 @@ commonApi:
 
 cpTerraman:
   template:
-    path: "C:/Temp/"
+    path: "C:/Temp/{id}/{id}.tf"
 
 ---
 spring:
@@ -240,4 +240,4 @@ commonApi:
 
 cpTerraman:
   template:
-    path: "/tmp/"
+    path: "/tmp/{id}/{id}.tf"

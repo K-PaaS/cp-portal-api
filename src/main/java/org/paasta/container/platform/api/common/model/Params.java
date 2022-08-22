@@ -133,7 +133,14 @@ public class Params {
         this.rs_sa = sa;
         this.rs_role = role;
         this.isClusterToken = isClusterToken;
+    }
 
+    // getVaultToken 관련 생성자
+    public Params(String cluster, String userAuthId, String userType, String namespace) {
+        this.cluster = cluster;
+        this.userAuthId = userAuthId;
+        this.userType = userType;
+        this.namespace = namespace;
     }
 
     // resourceName 조회

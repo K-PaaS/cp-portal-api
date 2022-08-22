@@ -19,6 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
 import org.springframework.util.Base64Utils;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestTemplate;
@@ -117,6 +118,7 @@ public class RestTemplateService {
         return sendAdmin(reqApi, reqUrl, httpMethod, bodyObject, responseType, Constants.ACCEPT_TYPE_JSON, MediaType.APPLICATION_JSON_VALUE, params);
     }
 
+    @TrackExecutionTime
     public <T> T sendGlobal(String reqApi, String reqUrl, HttpMethod httpMethod, Object bodyObject, Class<T> responseType, Params params) {
         return send(reqApi, reqUrl, httpMethod, bodyObject, responseType, Constants.ACCEPT_TYPE_JSON, MediaType.APPLICATION_JSON_VALUE, params);
     }
@@ -549,22 +551,16 @@ public class RestTemplateService {
      * @param reqApi the reqApi
      */
     private void setApiUrlAuthorizationClusterAdmin(String reqApi, Params params) {
-
         String apiUrl = "";
         String authorization = "";
 
         // CONTAINER PLATFORM MASTER API
         if (Constants.TARGET_CP_MASTER_API.equals(reqApi)) {
-            Clusters clusters = vaultService.getClusterDetails(params.getCluster());
+            Clusters clusters = commonService.getKubernetesInfo(params);
+            Assert.notNull(clusters, "Invalid parameter");
+            LOGGER.info("clusters: " + clusters);
             apiUrl = clusters.getClusterApiUrl();
-            if(params.getIsClusterToken()) {
-                // vault cluster-token 값 조회
-                authorization = "Bearer " + clusters.getClusterToken();
-            }
-            else {
-                // vault user-sa-token 값 조회 -추후 수정
-                authorization = "Bearer " + clusters.getClusterToken();
-            }
+            authorization = "Bearer " + clusters.getClusterToken();
 
         }
         // COMMON API

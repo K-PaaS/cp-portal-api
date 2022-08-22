@@ -105,6 +105,7 @@ public class CloudAccountsService {
         }
 
         params.setProviderType(Constants.ProviderType.valueOf(cloudAccounts.getProvider()));
+        LOGGER.info("providerType : " + cloudAccounts.getProvider());
         cloudAccounts.setProviderInfo(getProviderInfoFromVault(params)); //FIXME 예외처리
 
         return (CloudAccounts) commonService.setResultModel(cloudAccounts, Constants.RESULT_STATUS_SUCCESS);
@@ -188,7 +189,7 @@ public class CloudAccountsService {
         String path = propertyService.getCpVaultPathProviderCredential()
                 .replace("{iaas}", params.getProviderType().name()).replace("{id}", params.getResourceUid());
         try {
-            ret = vaultService.read(path, ((Map) getProviderInfo(params)).get(params.getProviderType().name()).getClass());
+            ret = vaultService.read(path, ((Map)(getProviderInfoList(params))).get(params.getProviderType().name()).getClass());
         } catch (Exception e) {
             LOGGER.info("Error from getProviderInfoFromVault!");
             return null;

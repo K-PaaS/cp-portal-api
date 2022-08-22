@@ -286,6 +286,19 @@ public class UsersService {
 
 
     /**
+     * User 과 맵핑된 클러스터 & 네임스페이스 목록 조회
+     *
+     * @param params the params
+     * @return the UsersList
+     */
+    public UsersList getMappingClustersAndNamespacesListByUser(Params params) {
+        UsersList usersList = restTemplateService.send(TARGET_COMMON_API, Constants.URI_COMMON_API_CLUSTER_AND_NAMESPACE_LIST_BY_USER
+                        .replace("{userAuthId:.+}", params.getUserAuthId()).replace("{userType:.+}", params.getUserType()),
+                HttpMethod.GET, null, UsersList.class, params);
+        return (UsersList) commonService.setResultModel(usersList, Constants.RESULT_STATUS_SUCCESS);
+    }
+
+    /**
      * User 과 맵핑된 네임스페이스 목록 조회
      *
      * @param params the params

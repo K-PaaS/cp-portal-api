@@ -88,60 +88,58 @@ public class GlobalOverviewService {
 
 
     public GlobalOverview getGlobalOverview(Params params) {
-        // List<PodsMetricsItems> podsMetricsAllCluster = new ArrayList<>();
         List<NodesListItem> nodesListAllCluster = new ArrayList<>();
-        params.setIsGlobal(true);
-        params.setNamespace(Constants.ALL_NAMESPACES);
-
-        UsersList mappingClusters = usersService.getMappingClustersListByUser(params);
+        List<GlobalOverviewItems> items = new ArrayList<>();
+        GlobalOverviewItems globalOverviewItems;
         Integer clusterCnt = 0;
         Integer namespaceCnt = 0;
         Integer pvcCnt = 0;
         Integer pvCnt = 0;
         Integer podCnt = 0;
 
-        List<GlobalOverviewItems> items = new ArrayList<>();
+        params.setIsGlobal(true);
+        params.setNamespace(Constants.ALL_NAMESPACES);
+        UsersList mappingClusters = usersService.getMappingClustersListByUser(params);
+
         for (Users users : mappingClusters.getItems()) {
-            // set cluster id
-            params.setCluster(users.getClusterId());
-            params.setClusterName(users.getClusterName());
+            NodesList nodesList;
+            NodesMetricsList nodesMetricsList;
+            PodsList podsList;
+            try {
+                // set cluster id
+                params.setCluster(users.getClusterId());
+                params.setClusterName(users.getClusterName());
 
-            // get node data
-            NodesList nodesList = nodesService.getNodesList(params);
-            // get node metrics data
-            NodesMetricsList nodesMetricsList = metricsService.getNodesMetricsList(params);
-            setNodesMetrics(params, nodesList, nodesMetricsList);
-            nodesListAllCluster.addAll(nodesList.getItems());
+                // get nodes list data
+                nodesList = nodesService.getNodesList(params);
+                // get nodes list metrics data
+                nodesMetricsList = metricsService.getNodesMetricsList(params);
+                setNodesMetrics(params, nodesList, nodesMetricsList);
+                // get pods list
+                podsList = podsService.getPodsList(params);
 
-            // pod data
-            PodsList podsList = podsService.getPodsList(params);
-            // pod metrics data
-            // PodsMetricsList podsMetricsList = metricsService.getPodsMetricsList(params);
-            // setPodsMetrics(params, podsMetricsList);
-            // podsMetricsAllCluster.addAll(podsMetricsList.getItems());
+                globalOverviewItems = new GlobalOverviewItems(Constants.RESULT_STATUS_SUCCESS, users.getClusterId(), users.getClusterName(), users.getClusterProviderType(),
+                        getKubeletVersion(nodesList), getNodeCount(nodesList), getNamespaceCount(params), getPodCount(podsList),
+                        getPvCount(params), getPvcCount(params), getClusterUsage(nodesList, nodesMetricsList));
 
+            } catch (Exception e) {
+                LOGGER.info("GLOBAL OVERVIEW Exception: "+ e.getLocalizedMessage());
+                globalOverviewItems = new GlobalOverviewItems(Constants.RESULT_STATUS_FAIL, users.getClusterId(), users.getClusterName(), users.getClusterProviderType());
+                nodesList = new NodesList();
+            }
 
-            GlobalOverviewItems goi = new GlobalOverviewItems(users.getClusterId(), users.getClusterName(), users.getClusterProviderType(),
-                    getKubeletVersion(nodesList), getNodeCount(nodesList), getNamespaceCount(params), getPodCount(podsList),
-                    getPvCount(params), getPvcCount(params), getClusterUsage(nodesList, nodesMetricsList));
-
-
+            // add node list
+            if(globalOverviewItems.getResultCode().equals(Constants.RESULT_STATUS_SUCCESS)) {
+                nodesListAllCluster.addAll(nodesList.getItems());
+            }
             // all count
             clusterCnt++;
-            namespaceCnt += goi.getNamespaceCount().getAll();
-            pvcCnt += goi.getPvcCount().getAll();
-            pvCnt += goi.getPvCount().getAll();
-            podCnt += goi.getPodCount().getAll();
-
-            items.add(goi);
+            namespaceCnt += globalOverviewItems.getNamespaceCount().getAll();
+            pvcCnt += globalOverviewItems.getPvcCount().getAll();
+            pvCnt += globalOverviewItems.getPvCount().getAll();
+            podCnt += globalOverviewItems.getPodCount().getAll();
+            items.add(globalOverviewItems);
         }
-
-
-/*
-        GlobalOverview globalOverview = new GlobalOverview(clusterCnt, namespaceCnt, pvcCnt, pvCnt, podCnt, items,
-                metricsService.topNodes(nodesListAllCluster, Constants.CPU, params.getTopN()), metricsService.topNodes(nodesListAllCluster, Constants.MEMORY, params.getTopN()),
-                metricsService.topPods(podsMetricsAllCluster, Constants.CPU, params.getTopN()), metricsService.topPods(podsMetricsAllCluster, Constants.MEMORY, params.getTopN()));
-*/
 
 
         GlobalOverview globalOverview = new GlobalOverview(clusterCnt, namespaceCnt, pvcCnt, pvCnt, podCnt, items,

@@ -113,10 +113,9 @@ public class UsersService {
                 Params p = new Params(user.getClusterId(), user.getCpNamespace(), user.getSaSecret(), true);
                 Secrets secrets = resourceYamlService.getSecret(p);
                 user.setSecretName(secrets.getMetadata().getName());
-                user.setSecretLabels(secrets.getMetadata().getLabels());
-                user.setSecretType(secrets.getType());
+                user.setSecretUid(secrets.getMetadata().getUid());
+                user.setSecretCreationTimestamp(secrets.getMetadata().getCreationTimestamp());
             }
-
 
         } catch (Exception e) {
             throw new ResultStatusException(CommonStatusCode.NOT_FOUND.getMsg());

@@ -69,6 +69,7 @@ public class LoginController {
 
             if (params.getIsSuperAdmin()) {
                 authorities.add(new SimpleGrantedAuthority(Constants.AUTH_SUPER_ADMIN));
+                params.setUserType(Constants.AUTH_SUPER_ADMIN);
             } else {
                 authorities.add(new SimpleGrantedAuthority(Constants.AUTH_USER));
             }
@@ -96,10 +97,8 @@ public class LoginController {
         try {
             // From the HttpRequest get the claims
             DefaultClaims claims = (DefaultClaims) request.getAttribute("claims");
-
             Map<String, Object> expectedMap = jwtTokenUtil.getMapFromIoJsonwebtokenClaims(claims);
             String token = jwtTokenUtil.doGenerateRefreshToken(expectedMap, expectedMap.get("sub").toString());
-
             authResponse = new AuthenticationResponse(Constants.RESULT_STATUS_SUCCESS, MessageConstant.REFRESH_TOKEN_SUCCESS.getMsg(), CommonStatusCode.OK.getCode(),
                     MessageConstant.REFRESH_TOKEN_SUCCESS.getMsg(), token);
         }

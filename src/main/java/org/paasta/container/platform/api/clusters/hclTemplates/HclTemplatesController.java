@@ -5,6 +5,7 @@ import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import org.paasta.container.platform.api.common.model.Params;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 /**
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
  */
 @RestController
 @RequestMapping("/templates")
+@PreAuthorize("@webSecurity.checkisGlobalAdmin()")
 public class HclTemplatesController {
     private final HclTemplatesService hclTemplatesService;
 
@@ -88,6 +90,7 @@ public class HclTemplatesController {
     @ApiImplicitParams({
             @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body")
     })
+    @PreAuthorize("@webSecurity.checkisSuperAdmin()")
     @PostMapping
     public Object createHclTemplates(@RequestBody  Params params) {
         return hclTemplatesService.createHclTemplates(params);
@@ -104,6 +107,7 @@ public class HclTemplatesController {
     @ApiImplicitParams({
             @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body")
     })
+    @PreAuthorize("@webSecurity.checkisSuperAdmin()")
     @PutMapping
     public Object updateHclTemplates(@RequestBody Params params) {
         return hclTemplatesService.updateHclTemplates(params);
@@ -120,6 +124,7 @@ public class HclTemplatesController {
     @ApiImplicitParams({
             @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body")
     })
+    @PreAuthorize("@webSecurity.checkisSuperAdmin()")
     @DeleteMapping(value = "/{resourceUid:.+}")
     public Object deleteHclTemplates(Params params) {
         return hclTemplatesService.deleteHclTemplates(params);

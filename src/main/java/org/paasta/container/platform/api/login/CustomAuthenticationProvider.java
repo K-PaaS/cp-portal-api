@@ -5,6 +5,7 @@ import org.paasta.container.platform.api.common.Constants;
 import org.paasta.container.platform.api.common.MessageConstant;
 import org.paasta.container.platform.api.common.model.Params;
 import org.paasta.container.platform.api.login.support.PortalGrantedAuthority;
+import org.paasta.container.platform.api.users.Users;
 import org.paasta.container.platform.api.users.UsersList;
 import org.paasta.container.platform.api.users.UsersService;
 import org.slf4j.Logger;
@@ -20,6 +21,7 @@ import org.springframework.stereotype.Component;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Custom Authentication Provider 클래스
@@ -71,16 +73,18 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
         UsersList loadedUsersList = usersService.getMappingClustersAndNamespacesListByUser(params);
 
         List<GrantedAuthority> portalGrantedAuthorityList = new ArrayList<>();
-
-        portalGrantedAuthorityList.add(list.get(0));
+        if(loadedUsersList.getItems().stream().map(Users::getUserType).collect(Collectors.toList()).contains(Constants.AUTH_CLUSTER_ADMIN))
+            portalGrantedAuthorityList.add(new SimpleGrantedAuthority(Constants.AUTH_CLUSTER_ADMIN));
+        else portalGrantedAuthorityList.add(list.get(0));
 
 
         loadedUsersList.getItems().forEach(x -> {
-            Params vaultResult = null;
+            Params vaultResult;
+            LOGGER.info("authenticate, loadedUsers: " + x);
             try {
                 vaultResult = accessTokenService.getVaultSecrets(new Params(x.getClusterId(), userAuthId, x.getUserType(), x.getCpNamespace()));
             } catch (Exception e) {
-                LOGGER.info("error from vault VaultSecrets");
+                LOGGER.info("error from vault VaultSecrets, x: " + x);
                 return;
             }
             String id = x.userType.equals(Constants.AUTH_USER) ? x.getCpNamespace() : x.getClusterId();
@@ -89,17 +93,13 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
         });
 
 
-        portalGrantedAuthorityList.forEach(x -> LOGGER.info("x: " + x));
+        portalGrantedAuthorityList.forEach(x -> LOGGER.info("##IN AUTHENTICATE:: JWT Token Set, portalGrantedAuthorityList: " + x));
 
 //        Collection<? extends GrantedAuthority> authorities = loadedUser.getAuthorities();
         Collection<? extends GrantedAuthority> authorities = portalGrantedAuthorityList;
 
         if (loadedUser == null) {
             throw new InternalAuthenticationServiceException(MessageConstant.INVALID_LOGIN_INFO.getMsg());
-        }
-
-        if(!authorities.contains(new SimpleGrantedAuthority(userType))) {
-            throw new InternalAuthenticationServiceException(MessageConstant.INVALID_AUTHORITY.getMsg());
         }
 
         if (!loadedUser.isAccountNonLocked()) {

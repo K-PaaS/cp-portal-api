@@ -6,6 +6,7 @@ import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import org.paasta.container.platform.api.common.model.Params;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 /**
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
  **/
 @Api(value = "CloudAccountsController v1")
 @RestController
+@PreAuthorize("@webSecurity.checkisGlobalAdmin()")
 @RequestMapping("/accounts")
 public class CloudAccountsController {
     private final CloudAccountsService cloudAccountsService;
@@ -86,6 +88,7 @@ public class CloudAccountsController {
      * @param params the params
      * @return the Object
      */
+    @PreAuthorize("@webSecurity.checkisSuperAdmin()")
     @ApiOperation(value = "CloudAccounts 생성(Create CloudAccounts)", nickname = "createCloudAccounts")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body")
@@ -106,6 +109,7 @@ public class CloudAccountsController {
     @ApiImplicitParams({
             @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body")
     })
+    @PreAuthorize("@webSecurity.checkisSuperAdmin()")
     @PatchMapping
     public Object updateCloudAccounts(@RequestBody Params params) {
         return cloudAccountsService.updateCloudAccounts(params);
@@ -122,6 +126,7 @@ public class CloudAccountsController {
     @ApiImplicitParams({
             @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body")
     })
+    @PreAuthorize("@webSecurity.checkisSuperAdmin()")
     @DeleteMapping(value = "/{resourceUid:.+}")
     public Object deleteCloudAccounts(Params params) {
         return cloudAccountsService.deleteCloudAccounts(params);

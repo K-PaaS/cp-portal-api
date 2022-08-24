@@ -5,6 +5,7 @@ import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import org.paasta.container.platform.api.common.model.Params;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 /**
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
  * @since 2022.06.30
  */
 @RestController
+@PreAuthorize("@webSecurity.checkisGlobalAdmin()")
 @RequestMapping("/clusters")
 public class ClustersController {
     private final ClustersService clustersService;
@@ -73,6 +75,7 @@ public class ClustersController {
     @ApiImplicitParams({
             @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body")
     })
+    @PreAuthorize("@webSecurity.checkisSuperAdmin()")
     @PostMapping
     public Object createClusters(@RequestBody Params params){
         return clustersService.createClusters(params);
@@ -89,6 +92,7 @@ public class ClustersController {
     @ApiImplicitParams({
             @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body")
     })
+    @PreAuthorize("@webSecurity.checkisSuperAdmin()")
     @PatchMapping
     public Object updateClusters(@RequestBody Params params){
         return clustersService.updateClusters(params);
@@ -105,6 +109,7 @@ public class ClustersController {
     @ApiImplicitParams({
             @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body")
     })
+    @PreAuthorize("@webSecurity.checkisSuperAdmin()")
     @DeleteMapping(value = "/{cluster:.+}")
     public Object deleteClusters(Params params){
         return clustersService.deleteClusters(params);

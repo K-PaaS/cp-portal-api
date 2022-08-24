@@ -37,25 +37,12 @@ public class VaultService {
     @TrackExecutionTime
     public <T> T read(String path,  Class<T> requestClass) {
         path = setPath(path);
-//        VaultResponse vaultResponse;
-//        try {
-//            vaultResponse = vaultTemplate.read(path);
-//        } catch (Exception e) {
-//            logger.info("vault read exception:" + e.getMessage());
-//            return null;
-//        }
-//        HashMap responseMap = (HashMap) vaultResponse.getData().get("data");
-//
-//        System.out.println("Vault read value: " + commonService.setResultObject(responseMap, requestClass));
-//        return commonService.setResultObject(responseMap, requestClass);
 
         Object response = Optional.ofNullable(vaultTemplate.read(path))
                 .map(VaultResponse::getData)
                 .filter(x -> x.keySet().contains("data"))
                 .orElseGet(HashMap::new)
                 .getOrDefault("data", null);
-
-        System.out.println("Vault read value: " + commonService.setResultObject(response, requestClass)); //FIXME! for debugging
 
         return commonService.setResultObject(response, requestClass);
     }
@@ -140,15 +127,6 @@ public class VaultService {
     }
 
     public String getAccessTokenPath(Params params){
-//        String userTokenPath = propertyService.getVaultUserTokenPath();
-//
-//        if (params.getUserType().equalsIgnoreCase(Constants.AUTH_CLUSTER_ADMIN)) {
-//            userTokenPath = userTokenPath.replace("/{namespace}", "");
-//        }
-//
-//        userTokenPath = userTokenPath.replace("{userAuthId}", params.getUserAuthId())
-//                .replace("{clusterId}", params.getCluster())
-//                .replace("{namespace}", params.getNamespace());
         String userType = params.getUserType();
         String tokenPath;
 

@@ -155,8 +155,6 @@ public class UsersService {
      * @throws Exception
      */
     public ResultStatus modifyToUser(Params params, Users users) throws Exception {
-        ResultStatus rsDb = new ResultStatus();
-
         params.setUserAuthId(users.getUserAuthId());
         UsersDetails usersDetails = getUsersDetailByCluster(params);
         List<Users> currentUserNsMappingList = usersDetails.getItems();
@@ -203,22 +201,35 @@ public class UsersService {
             throw new ResultStatusException(MessageConstant.NO_CHANGED.getMsg());
         }
 
+        try{
+            // to be delete
+            for (NamespaceRole nr : toBeDelete) {
+                Users user = findUsers(currentUserNsMappingList, nr.getNamespace());
+                resourceYamlService.deleteUserResource(user);
+            }
 
-        // to be delete
-        for (NamespaceRole nr : toBeDelete) {
-            Users user = findUsers(currentUserNsMappingList, nr.getNamespace());
-            resourceYamlService.deleteUserResource(user);
+            // to be add
+            for (NamespaceRole nr : toBeAdd) {
+                params.setNamespace(nr.getNamespace());
+                params.setRs_role(nr.getRole());
+                resourceYamlService.createUserResource(params, users);
+            }
+        }
+        catch(Exception e) {
+            throw new ResultStatusException(CommonStatusCode.INTERNAL_SERVER_ERROR.getMsg());
         }
 
+        System.out.println("-----------------------------------------------------------------------------------------------------");
+        System.out.println("params.getCluster(): " + params.getCluster());
+        System.out.println("params.getNamespace() :" + params.getNamespace());
+        System.out.println("params.getId(): " + params.getId());
+        System.out.println("params.getUserAuthId():"+ params.getUserAuthId());
+        System.out.println("params.getUserType(): "+ params.getUserType());
+        System.out.println("params.getRs_sa():" + params.getRs_sa());
+        System.out.println("params.getRs_role():" + params.getRs_role());
+        System.out.println("-----------------------------------------------------------------------------------------------------");
 
-        // to be add
-        for (NamespaceRole nr : toBeAdd) {
-            params.setNamespace(nr.getNamespace());
-            params.setRs_role(nr.getRole());
-            resourceYamlService.createUserResource(params, users);
-        }
-
-        return (ResultStatus) commonService.setResultModel(rsDb, Constants.RESULT_STATUS_SUCCESS);
+        return (ResultStatus) commonService.setResultModel(new ResultStatus(), Constants.RESULT_STATUS_SUCCESS);
     }
 
 

@@ -135,6 +135,18 @@ public class Params {
         this.isClusterToken = isClusterToken;
     }
 
+    public Params(String cluster, String namespace, String userAuthId, String userType, String sa, String role, Boolean isClusterToken) {
+        this.cluster = cluster;
+        this.namespace = namespace;
+        this.userAuthId = userAuthId;
+        this.userType = userType;
+        this.rs_sa = sa;
+        this.rs_role = role;
+        this.isClusterToken = isClusterToken;
+    }
+
+
+
     // getVaultToken 관련 생성자
     public Params(String cluster, String userAuthId, String userType, String namespace) {
         this.cluster = cluster;

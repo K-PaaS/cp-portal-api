@@ -180,7 +180,7 @@ public class UsersService {
         List<NamespaceRole> toBeAdd = newNamespaceRoleList.stream().filter(x -> !currentNamespacesList.contains(x.getNamespace())).collect(Collectors.toList());
 
 
-        System.out.println("asis:"+ asis.toString());
+        System.out.println("asis:" + asis.toString());
         System.out.println("toBeDelete:" + toBeDelete.toString());
         System.out.println("toBeAdd:" + toBeAdd.toString());
 
@@ -194,7 +194,7 @@ public class UsersService {
         }
 
         System.out.println("---------------------------------");
-        System.out.println("asis:"+ asis.toString());
+        System.out.println("asis:" + asis.toString());
         System.out.println("toBeDelete:" + toBeDelete.toString());
         System.out.println("toBeAdd:" + toBeAdd.toString());
 
@@ -628,35 +628,34 @@ public class UsersService {
         params.setUserAuthId(users.getUserAuthId());
         UsersDetails usersDetails = getUsersDetailByCluster(params);
 
+
+        // 클러스터 관리자 -> 클러스터 관리자의 경우 변경 사항 없음 메세지 반환
         if (usersDetails.getUserType().equalsIgnoreCase(AUTH_CLUSTER_ADMIN)) {
             throw new ResultStatusException(MessageConstant.NO_CHANGED.getMsg());
         }
 
         try {
-            resourceYamlService.createClusterAdminResource(params, users);
-
+            // 해당 클러스터 내 사용자가 맵핑되어있는 K8S SA, ROLEBINDING, DB 데이터 삭제 진행
+            for (Users u : usersDetails.getItems()) {
+                resourceYamlService.deleteUserResource(u);
+            }
         } catch (Exception e) {
-            LOGGER.info("EXCEPTION OCCURRED WHILE MODIFY TO CLUSTER ADMIN ...");
-            params.setNamespace(propertyService.getClusterAdminNamespace());
-            params.setRs_sa(users.getServiceAccountName());
-            resourceYamlService.deleteServiceAccount(params);
-            resourceYamlService.deleteClusterRoleBinding(params);
-
-            params.setNamespace(propertyService.getDefaultNamespace());
-            params.setUserType(AUTH_CLUSTER_ADMIN);
-            deleteUsers(params);
             throw new ResultStatusException(CommonStatusCode.INTERNAL_SERVER_ERROR.getMsg());
         }
 
 
-        // 해당 클러스터 내 맵핑되어있는 K8S SA, ROLEBINDING 삭제 진행
-        UsersList currentUserNsMappingList = getMappingNamespacesListByUser(params);
-        for (Users u : currentUserNsMappingList.getItems()) {
-             resourceYamlService.deleteUserResource(u);
+        try {
+            // 해당 클러스터 내 클러스터 관리자 관련 resource 생성
+            resourceYamlService.createClusterAdminResource(params, users);
+
+        } catch (Exception e) {
+            LOGGER.info("EXCEPTION OCCURRED WHILE MODIFY TO CLUSTER ADMIN ...");
+            users.setClusterId(params.getCluster());
+            resourceYamlService.deleteClusterAdminResource(users);
+            throw new ResultStatusException(CommonStatusCode.INTERNAL_SERVER_ERROR.getMsg());
         }
 
-        ResultStatus resultStatus = new ResultStatus();
-        return (ResultStatus) commonService.setResultModel(resultStatus, Constants.RESULT_STATUS_SUCCESS);
+        return (ResultStatus) commonService.setResultModel(new ResultStatus(), Constants.RESULT_STATUS_SUCCESS);
     }
 
 

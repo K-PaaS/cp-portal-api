@@ -168,15 +168,18 @@ public class Users {
     @Override
     public String toString() {
         return "Users{" +
-                "userId='" + userId + '\'' +
-                "userAuthId='" + userAuthId + '\'' +
-                ", cpNamespace='" + cpNamespace + '\'' +
+                "id=" + id +
+                ", clusterId='" + clusterId + '\'' +
+                ", userId='" + userId + '\'' +
+                ", userAuthId='" + userAuthId + '\'' +
+                ", serviceAccountName='" + serviceAccountName + '\'' +
                 ", roleSetCode='" + roleSetCode + '\'' +
                 ", userType='" + userType + '\'' +
+                ", created='" + created + '\'' +
                 '}';
     }
 
-    public Users(String cluterId, String namespace, String userId, String userAuthId, String userType, String roleSetCode, String serviceAccountName,  String saSecret,
+    public Users(String cluterId, String namespace, String userId, String userAuthId, String userType, String roleSetCode, String serviceAccountName, String saSecret,
                  String saToken) {
         this.clusterId = cluterId;
         this.cpNamespace = namespace;

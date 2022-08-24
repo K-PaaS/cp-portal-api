@@ -628,24 +628,18 @@ public class UsersService {
         params.setUserAuthId(users.getUserAuthId());
         UsersDetails usersDetails = getUsersDetailByCluster(params);
 
-
         // 클러스터 관리자 -> 클러스터 관리자의 경우 변경 사항 없음 메세지 반환
         if (usersDetails.getUserType().equalsIgnoreCase(AUTH_CLUSTER_ADMIN)) {
             throw new ResultStatusException(MessageConstant.NO_CHANGED.getMsg());
         }
 
         try {
-            // 해당 클러스터 내 사용자가 맵핑되어있는 K8S SA, ROLEBINDING, DB 데이터 삭제 진행
+            // 클러스터 내 사용자가 맵핑되어있는 SA, ROLE-BINDING, DB 데이터 삭제 진행
             for (Users u : usersDetails.getItems()) {
                 resourceYamlService.deleteUserResource(u);
             }
-        } catch (Exception e) {
-            throw new ResultStatusException(CommonStatusCode.INTERNAL_SERVER_ERROR.getMsg());
-        }
 
-
-        try {
-            // 해당 클러스터 내 클러스터 관리자 관련 resource 생성
+            // 클러스터 관리자 관련 resource 생성
             resourceYamlService.createClusterAdminResource(params, users);
 
         } catch (Exception e) {

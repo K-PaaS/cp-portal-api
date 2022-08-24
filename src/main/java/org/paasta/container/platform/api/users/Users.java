@@ -168,6 +168,8 @@ public class Users {
                 ", cpNamespace='" + cpNamespace + '\'' +
                 ", roleSetCode='" + roleSetCode + '\'' +
                 ", userType='" + userType + '\'' +
+                ", clusterId='" + clusterId + '\'' +
+                ", cpNamespace='" + cpNamespace + '\'' +
                 '}';
     }
 

@@ -89,43 +89,21 @@ public class JwtUtil {
         return doGenerateToken(claims, userDetails.getUsername());
     }
 
-    public String generatePortalToken(UserDetails userDetails, Params params) {
+    Map<String, Object> generateJWTToken(UserDetails userDetails, Params params) {
         Map<String, Object> claims = new HashMap<>();
-        Map<String, Object> roleInfo = new HashMap<>();
-        Collection<? extends GrantedAuthority> roles = userDetails.getAuthorities();
-
-        if (roles.contains(new SimpleGrantedAuthority(Constants.AUTH_SUPER_ADMIN))) {
-            claims.put("userType", Constants.AUTH_SUPER_ADMIN);
-            params.setIsSuperAdmin(true);
-            params.setUserType(Constants.AUTH_SUPER_ADMIN);
-            usersService.getMappingClustersAndNamespacesListByUser(params).getItems()
-                    .forEach(x -> roleInfo.put(x.getClusterId(), new JWTRoleInfoItem(x.userType)));
-        } else {
-            claims.put("userType", params.getUserType());
-            params.setIsSuperAdmin(false);
-            UsersList usersList = usersService.getMappingClustersAndNamespacesListByUser(params);
-            if(!usersList.getItems().isEmpty())
-                usersList.getItems()
-                    .forEach(x -> {
-                          try {
-                              ((JWTRoleInfoItem) roleInfo.get(x.getClusterId())).getNamespaceList().add(x.cpNamespace);
-                          }
-                          catch (NullPointerException e){
-                              if (x.userType.equals(Constants.AUTH_USER))
-                                  roleInfo.put(x.getClusterId(), new JWTRoleInfoItem(x.userType, x.cpNamespace));
-                              else
-                                  roleInfo.put(x.getClusterId(), new JWTRoleInfoItem(x.userType));
-                          }
-                });
-
-        }
-
+        Map<String, Object> roleInfo = setRolesInfo(params);
+        claims.put("userType", params.getUserType());
         claims.put("userAuthId", params.getUserAuthId());
         claims.put("IP", params.getClientIp());
         claims.put("Browser", params.getBrowser());
         claims.put("rolesInfo", roleInfo);
+        return claims;
+    }
 
-        return doGenerateToken(claims, userDetails.getUsername());
+    public String generatePortalToken(UserDetails userDetails, Params params) {
+
+
+        return doGenerateToken(generateJWTToken(userDetails, params), userDetails.getUsername());
     }
 
 
@@ -201,7 +179,7 @@ public class JwtUtil {
     public List<GrantedAuthority> getPortalRolesFromToken(String authToken) {
         List<GrantedAuthority> roles = new ArrayList<>();
         Claims claims = Jwts.parser().setSigningKey(secret).parseClaimsJws(authToken).getBody();
-
+        System.out.println("claims = " + claims);
         Map<String, Object> rolesInfo = claims.get("rolesInfo", Map.class);
         String userType = claims.get("userType", String.class);
         String userAuthId = claims.get("userAuthId", String.class);
@@ -209,6 +187,7 @@ public class JwtUtil {
 
         roles.add(new SimpleGrantedAuthority(userType)); //Default role
         rolesInfo.keySet().forEach(clusterId -> {
+            System.out.println("clusterId = " + clusterId);
             JWTRoleInfoItem item = commonService.setResultObject(rolesInfo.get(clusterId), JWTRoleInfoItem.class);
             if(item.getUserType().equals(Constants.AUTH_USER)){ //USER Type의 경우
                 roles.add(new PortalGrantedAuthority(clusterId, Constants.ContextType.CLUSTER.name(), item.getUserType()));
@@ -301,11 +280,51 @@ public class JwtUtil {
      */
     public String doGenerateRefreshToken(Map<String, Object> claims, String subject) {
 
+        Params params = new Params();
+        params.setUserAuthId((String) claims.get("userAuthId"));
+        params.setUserType((String) claims.get("userType"));
+        Map<String, Object> roleInfo = setRolesInfo(params);
+
+        claims.put("rolesInfo", roleInfo);
+        System.out.println("#######REFRESHED roleInfo = " + roleInfo);
+
         return Jwts.builder().setClaims(claims).setSubject(subject).setIssuedAt(new Date(System.currentTimeMillis()))
                 .setExpiration(new Date(System.currentTimeMillis() + refreshExpirationDateInMs))
                 .signWith(SignatureAlgorithm.HS512, secret).compact();
-
     }
+
+    public Map<String, Object> setRolesInfo(Params params) {
+        Map<String, Object> roleInfo = new HashMap<>();
+
+        switch (params.getUserType()) {
+            case Constants.AUTH_SUPER_ADMIN:
+                params.setIsSuperAdmin(true);
+                usersService.getMappingClustersAndNamespacesListByUser(params).getItems()
+                        .forEach(x -> roleInfo.put(x.getClusterId(), new JWTRoleInfoItem(x.userType)));
+                break;
+            case Constants.AUTH_CLUSTER_ADMIN:
+            case Constants.AUTH_USER:
+                params.setIsSuperAdmin(false);
+                UsersList usersList = usersService.getMappingClustersAndNamespacesListByUser(params);
+                if(!usersList.getItems().isEmpty())
+                usersList.getItems()
+                        .forEach(x -> {
+                            try {
+                                ((JWTRoleInfoItem) roleInfo.get(x.getClusterId())).getNamespaceList().add(x.cpNamespace);
+                            } catch (NullPointerException e) {
+                                if (x.userType.equals(Constants.AUTH_USER))
+                                    roleInfo.put(x.getClusterId(), new JWTRoleInfoItem(x.userType, x.cpNamespace));
+                                else
+                                    roleInfo.put(x.getClusterId(), new JWTRoleInfoItem(x.userType));
+                            }
+                        });
+                break;
+            default:
+                //ERROR
+        }
+        return roleInfo;
+    }
+
 
     /**
      * Refresh JWT 허가(Allow Refresh JWT token)

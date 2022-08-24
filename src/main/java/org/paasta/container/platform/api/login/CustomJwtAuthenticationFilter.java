@@ -55,7 +55,6 @@ public class CustomJwtAuthenticationFilter extends OncePerRequestFilter {
 			throws ServletException, IOException {
 
 		try{
-
 			RequestWrapper requestWrapper = new RequestWrapper(request);
 
 			String jwtToken = jwtTokenUtil.extractJwtFromRequest(request);
@@ -72,8 +71,6 @@ public class CustomJwtAuthenticationFilter extends OncePerRequestFilter {
 			if (StringUtils.hasText(jwtToken) && jwtTokenUtil.validateToken(jwtToken)) {
 				List<GrantedAuthority> parsedTokens = jwtTokenUtil.getPortalRolesFromToken(jwtToken);
 				UserDetails userDetails = new User(jwtTokenUtil.getUsernameFromToken(jwtToken), jwtTokenUtil.getClaimsFromToken(jwtToken,"userAuthId"), parsedTokens);
-
-				LOGGER.info("parsed Token: " + parsedTokens);
 
 				String tokenIp = jwtTokenUtil.getClientIpFromToken(jwtToken);
 

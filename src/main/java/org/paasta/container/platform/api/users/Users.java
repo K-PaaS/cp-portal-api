@@ -61,8 +61,8 @@ public class Users {
 
     ///secret info
     private String secretName;
-    private Object secretLabels;
-    private String secretType;
+    private String secretUid;
+    private String secretCreationTimestamp;
 
 
     private String oldUserType;
@@ -149,7 +149,12 @@ public class Users {
         return CommonUtils.procReplaceNullValue(userType);
     }
 
-    public Object getSecretLabels() {return CommonUtils.procReplaceNullValue(secretLabels); }
+
+    public String getSecretName() { return CommonUtils.procReplaceNullValue(secretName); }
+
+    public String getSecretUid() { return CommonUtils.procReplaceNullValue(secretUid); }
+
+    public String getSecretCreationTimestamp() { return CommonUtils.procReplaceNullValue(secretCreationTimestamp); }
 
     public List<NamespaceRole> getSelectValues() {
         return (StringUtils.isEmpty(selectValues)) ? new ArrayList<NamespaceRole>() {{
@@ -163,17 +168,18 @@ public class Users {
     @Override
     public String toString() {
         return "Users{" +
-                "userId='" + userId + '\'' +
-                "userAuthId='" + userAuthId + '\'' +
-                ", cpNamespace='" + cpNamespace + '\'' +
+                "id=" + id +
+                ", clusterId='" + clusterId + '\'' +
+                ", userId='" + userId + '\'' +
+                ", userAuthId='" + userAuthId + '\'' +
+                ", serviceAccountName='" + serviceAccountName + '\'' +
                 ", roleSetCode='" + roleSetCode + '\'' +
                 ", userType='" + userType + '\'' +
-                ", clusterId='" + clusterId + '\'' +
-                ", cpNamespace='" + cpNamespace + '\'' +
+                ", created='" + created + '\'' +
                 '}';
     }
 
-    public Users(String cluterId, String namespace, String userId, String userAuthId, String userType, String roleSetCode, String serviceAccountName,  String saSecret,
+    public Users(String cluterId, String namespace, String userId, String userAuthId, String userType, String roleSetCode, String serviceAccountName, String saSecret,
                  String saToken) {
         this.clusterId = cluterId;
         this.cpNamespace = namespace;

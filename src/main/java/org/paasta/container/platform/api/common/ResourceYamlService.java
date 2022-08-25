@@ -449,30 +449,30 @@ public class ResourceYamlService {
         Params params = new Params(users.getClusterId(), users.getCpNamespace(), users.getId(),
                 users.getServiceAccountName(), users.getRoleSetCode(), true);
 
+       // sa : replace("{namespace}", params.getNamespace()).replace("{name}", params.getRs_sa()),
+       // rb : replace("{namespace}", params.getNamespace()).replace("{name}", params.getRs_sa() + Constants.NULL_REPLACE_TEXT + params.getRs_role() + "-binding"),
         deleteSaAndRb(params);
         // vault Token 삭제
         params.setUserAuthId(users.getUserAuthId());
         params.setUserType(Constants.AUTH_USER);
         vaultService.deleteUserAccessToken(params);
-
         // DB 삭제
         deleteUsers(params);
-
-
     }
 
     //////////////////////////////////////////////
     public void deleteClusterAdminResource(Users users) {
-        Params params = new Params(users.getClusterId(), propertyService.getClusterAdminNamespace(), users.getId(),
-                users.getServiceAccountName(), users.getRoleSetCode(), true);
+        Params params = new Params(users.getClusterId(), propertyService.getClusterAdminNamespace(), users.getUserAuthId(), AUTH_CLUSTER_ADMIN,
+                users.getServiceAccountName(), DEFAULT_CLUSTER_ADMIN_ROLE, true);
         // SA and RoleBinding 삭제
+        //.replace("{namespace}", params.getNamespace()).replace("{name}", params.getRs_sa()),
         deleteServiceAccount(params);
+        //.replace("{name}", params.getRs_sa() + Constants.CLUSTER_ROLE_BINDING_NAME)
         deleteClusterRoleBinding(params);
         // vault 내 access-token 삭제
-        params.setUserAuthId(users.getUserAuthId());
-        params.setUserType(Constants.AUTH_CLUSTER_ADMIN);
         vaultService.deleteUserAccessToken(params);
         // db 삭제
+        params.setNamespace(propertyService.getDefaultNamespace());
         deleteUsers(params);
 
 
@@ -495,9 +495,24 @@ public class ResourceYamlService {
      * @param params the params
      * @return return is succeeded
      */
-    public ResultStatus deleteUsers(Params params) {
+    public ResultStatus deleteUsersById(Params params) {
         return restTemplateService.send(TARGET_COMMON_API,
                 Constants.URI_COMMON_API_USER_DELETE + params.getId(), HttpMethod.DELETE, null, ResultStatus.class, params);
+    }
+
+
+    /**
+     * Users 삭제(Delete Users)
+     *
+     * @param params the params
+     * @return return is succeeded
+     */
+    public ResultStatus deleteUsers(Params params) {
+        return restTemplateService.send(TARGET_COMMON_API, Constants.URI_COMMON_API_DELETE_USER
+                .replace("{cluster:.+}", params.getCluster())
+                .replace("{namespace:.+}", params.getNamespace())
+                .replace("{userAuthId:.+}", params.getUserAuthId())
+                .replace("{userType:.+}", params.getUserType()), HttpMethod.DELETE, null, ResultStatus.class, params);
     }
 
 

@@ -113,10 +113,9 @@ public class UsersService {
                 Params p = new Params(user.getClusterId(), user.getCpNamespace(), user.getSaSecret(), true);
                 Secrets secrets = resourceYamlService.getSecret(p);
                 user.setSecretName(secrets.getMetadata().getName());
-                user.setSecretLabels(secrets.getMetadata().getLabels());
-                user.setSecretType(secrets.getType());
+                user.setSecretUid(secrets.getMetadata().getUid());
+                user.setSecretCreationTimestamp(secrets.getMetadata().getCreationTimestamp());
             }
-
 
         } catch (Exception e) {
             throw new ResultStatusException(CommonStatusCode.NOT_FOUND.getMsg());
@@ -156,8 +155,6 @@ public class UsersService {
      * @throws Exception
      */
     public ResultStatus modifyToUser(Params params, Users users) throws Exception {
-        ResultStatus rsDb = new ResultStatus();
-
         params.setUserAuthId(users.getUserAuthId());
         UsersDetails usersDetails = getUsersDetailByCluster(params);
         List<Users> currentUserNsMappingList = usersDetails.getItems();
@@ -181,7 +178,7 @@ public class UsersService {
         List<NamespaceRole> toBeAdd = newNamespaceRoleList.stream().filter(x -> !currentNamespacesList.contains(x.getNamespace())).collect(Collectors.toList());
 
 
-        System.out.println("asis:"+ asis.toString());
+        System.out.println("asis:" + asis.toString());
         System.out.println("toBeDelete:" + toBeDelete.toString());
         System.out.println("toBeAdd:" + toBeAdd.toString());
 
@@ -195,7 +192,7 @@ public class UsersService {
         }
 
         System.out.println("---------------------------------");
-        System.out.println("asis:"+ asis.toString());
+        System.out.println("asis:" + asis.toString());
         System.out.println("toBeDelete:" + toBeDelete.toString());
         System.out.println("toBeAdd:" + toBeAdd.toString());
 
@@ -204,22 +201,35 @@ public class UsersService {
             throw new ResultStatusException(MessageConstant.NO_CHANGED.getMsg());
         }
 
+        try{
+            // to be delete
+            for (NamespaceRole nr : toBeDelete) {
+                Users user = findUsers(currentUserNsMappingList, nr.getNamespace());
+                resourceYamlService.deleteUserResource(user);
+            }
 
-        // to be delete
-        for (NamespaceRole nr : toBeDelete) {
-            Users user = findUsers(currentUserNsMappingList, nr.getNamespace());
-            resourceYamlService.deleteUserResource(user);
+            // to be add
+            for (NamespaceRole nr : toBeAdd) {
+                params.setNamespace(nr.getNamespace());
+                params.setRs_role(nr.getRole());
+                resourceYamlService.createUserResource(params, users);
+            }
+        }
+        catch(Exception e) {
+            throw new ResultStatusException(CommonStatusCode.INTERNAL_SERVER_ERROR.getMsg());
         }
 
+        System.out.println("-----------------------------------------------------------------------------------------------------");
+        System.out.println("params.getCluster(): " + params.getCluster());
+        System.out.println("params.getNamespace() :" + params.getNamespace());
+        System.out.println("params.getId(): " + params.getId());
+        System.out.println("params.getUserAuthId():"+ params.getUserAuthId());
+        System.out.println("params.getUserType(): "+ params.getUserType());
+        System.out.println("params.getRs_sa():" + params.getRs_sa());
+        System.out.println("params.getRs_role():" + params.getRs_role());
+        System.out.println("-----------------------------------------------------------------------------------------------------");
 
-        // to be add
-        for (NamespaceRole nr : toBeAdd) {
-            params.setNamespace(nr.getNamespace());
-            params.setRs_role(nr.getRole());
-            resourceYamlService.createUserResource(params, users);
-        }
-
-        return (ResultStatus) commonService.setResultModel(rsDb, Constants.RESULT_STATUS_SUCCESS);
+        return (ResultStatus) commonService.setResultModel(new ResultStatus(), Constants.RESULT_STATUS_SUCCESS);
     }
 
 
@@ -629,35 +639,28 @@ public class UsersService {
         params.setUserAuthId(users.getUserAuthId());
         UsersDetails usersDetails = getUsersDetailByCluster(params);
 
+        // 클러스터 관리자 -> 클러스터 관리자의 경우 변경 사항 없음 메세지 반환
         if (usersDetails.getUserType().equalsIgnoreCase(AUTH_CLUSTER_ADMIN)) {
             throw new ResultStatusException(MessageConstant.NO_CHANGED.getMsg());
         }
 
         try {
+            // 클러스터 내 사용자가 맵핑되어있는 SA, ROLE-BINDING, DB 데이터 삭제 진행
+            for (Users u : usersDetails.getItems()) {
+                resourceYamlService.deleteUserResource(u);
+            }
+
+            // 클러스터 관리자 관련 resource 생성
             resourceYamlService.createClusterAdminResource(params, users);
 
         } catch (Exception e) {
             LOGGER.info("EXCEPTION OCCURRED WHILE MODIFY TO CLUSTER ADMIN ...");
-            params.setNamespace(propertyService.getClusterAdminNamespace());
-            params.setRs_sa(users.getServiceAccountName());
-            resourceYamlService.deleteServiceAccount(params);
-            resourceYamlService.deleteClusterRoleBinding(params);
-
-            params.setNamespace(propertyService.getDefaultNamespace());
-            params.setUserType(AUTH_CLUSTER_ADMIN);
-            deleteUsers(params);
+            users.setClusterId(params.getCluster());
+            resourceYamlService.deleteClusterAdminResource(users);
             throw new ResultStatusException(CommonStatusCode.INTERNAL_SERVER_ERROR.getMsg());
         }
 
-
-        // 해당 클러스터 내 맵핑되어있는 K8S SA, ROLEBINDING 삭제 진행
-        UsersList currentUserNsMappingList = getMappingNamespacesListByUser(params);
-        for (Users u : currentUserNsMappingList.getItems()) {
-             resourceYamlService.deleteUserResource(u);
-        }
-
-        ResultStatus resultStatus = new ResultStatus();
-        return (ResultStatus) commonService.setResultModel(resultStatus, Constants.RESULT_STATUS_SUCCESS);
+        return (ResultStatus) commonService.setResultModel(new ResultStatus(), Constants.RESULT_STATUS_SUCCESS);
     }
 
 

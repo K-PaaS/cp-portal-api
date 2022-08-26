@@ -798,7 +798,6 @@ public class CommonService {
         clusters.setClusterApiUrl(portalGrantedAuthority.geturl());
         clusters.setClusterToken(portalGrantedAuthority.getToken());
 
-        LOGGER.info("clusters: " + clusters);
         return clusters;
     }
 

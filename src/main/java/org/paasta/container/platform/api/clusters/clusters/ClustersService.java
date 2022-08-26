@@ -6,6 +6,7 @@ import org.paasta.container.platform.api.clusters.nodes.NodesList;
 import org.paasta.container.platform.api.clusters.nodes.NodesService;
 import org.paasta.container.platform.api.common.*;
 import org.paasta.container.platform.api.common.model.Params;
+import org.paasta.container.platform.api.common.model.ResultStatus;
 import org.paasta.container.platform.api.overview.support.Count;
 import org.paasta.container.platform.api.users.Users;
 import org.paasta.container.platform.api.users.UsersList;
@@ -133,6 +134,7 @@ public class ClustersService {
         clusters.setKubernetesVersion(Constants.noName);
         if (clusters.getStatus().equals(Constants.ClusterStatus.ACTIVE.getInitial())) {
             try {
+                restTemplateService.sendPing(Constants.TARGET_CP_MASTER_API, ResultStatus.class, params); // check ping
                 clusters.setKubernetesVersion(
                         nodesService.getNodesList(new Params(clusters.getClusterId(), clusters.getName())).getItems().stream()
                         .filter(x -> x.getMetadata().getLabels().containsKey("node-role.kubernetes.io/control-plane"))
@@ -142,6 +144,7 @@ public class ClustersService {
                 clusters.setIsActive(true);
             } catch (Exception e) {
                 LOGGER.info("Cluster is not Active");
+                clusters.setIsActive(false);
             }
         }
         return (Clusters) commonService.setResultModel(clusters, Constants.RESULT_STATUS_SUCCESS);
@@ -165,13 +168,11 @@ public class ClustersService {
                 continue;
             }
             try {
-                NodesList nodesList = nodesService.getNodesList(new Params(clusters.getClusterId(), clusters.getName())); //status check
+                params.setCluster(clusters.getClusterId());
+                ResultStatus resultStatus = restTemplateService.sendPing(Constants.TARGET_CP_MASTER_API, ResultStatus.class, params);
+                LOGGER.info("resultCode: " + resultStatus.getResultCode());
+                clusters.setIsActive(true);
 
-                if (nodesList.getItems().stream().filter(x -> x.getMetadata().getLabels().containsKey("node-role.kubernetes.io/control-plane"))
-                        .filter(Objects::nonNull)
-                        .collect(Collectors.toList()).size() > 0) {
-                    clusters.setIsActive(true);
-                }
             } catch (Exception e) {
                 LOGGER.info("error from getClustersList, " + e.getMessage());
                 clusters.setIsActive(false);
@@ -254,12 +255,10 @@ public class ClustersService {
      */
     public boolean createClusterInfoToVault(Params params) {
         //Check ClusterId
-        try {
-            Clusters clusters = vaultService.getClusterDetails(params.getCluster());
-            LOGGER.info("cluster is already registered");
+        Clusters clusters = vaultService.getClusterDetails(params.getCluster());
+        if(!Objects.isNull(clusters)) {
+            LOGGER.info("cluster id is already exist.");
             return false;
-        } catch (Exception e) {
-            LOGGER.info("cluster is not registered");
         }
 
         ClusterInfo clusterInfo = new ClusterInfo();

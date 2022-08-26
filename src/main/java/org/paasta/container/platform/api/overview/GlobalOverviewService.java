@@ -8,8 +8,10 @@ import org.paasta.container.platform.api.clusters.nodes.NodesService;
 import org.paasta.container.platform.api.clusters.nodes.support.NodesListItem;
 import org.paasta.container.platform.api.common.CommonService;
 import org.paasta.container.platform.api.common.Constants;
+import org.paasta.container.platform.api.common.RestTemplateService;
 import org.paasta.container.platform.api.common.VaultService;
 import org.paasta.container.platform.api.common.model.Params;
+import org.paasta.container.platform.api.common.model.ResultStatus;
 import org.paasta.container.platform.api.metrics.*;
 import org.paasta.container.platform.api.overview.support.Count;
 import org.paasta.container.platform.api.storages.persistentVolumeClaims.PersistentVolumeClaimsList;
@@ -49,6 +51,7 @@ public class GlobalOverviewService {
     private final PersistentVolumesService persistentVolumesService;
     private final PersistentVolumeClaimsService persistentVolumeClaimsService;
     private final MetricsService metricsService;
+    private final RestTemplateService restTemplateService;
 
 
     public static final String NULL_VAL = "-";
@@ -73,7 +76,8 @@ public class GlobalOverviewService {
     public GlobalOverviewService(VaultService vaultService, CommonService commonService, UsersService usersService,
                                  NodesService nodesService, NamespacesService namespacesService,
                                  PodsService podsService, PersistentVolumesService persistentVolumesService,
-                                 PersistentVolumeClaimsService persistentVolumeClaimsService, MetricsService metricsService) {
+                                 PersistentVolumeClaimsService persistentVolumeClaimsService, MetricsService metricsService,
+                                 RestTemplateService restTemplateService) {
         this.vaultService = vaultService;
         this.commonService = commonService;
         this.usersService = usersService;
@@ -83,6 +87,7 @@ public class GlobalOverviewService {
         this.persistentVolumesService = persistentVolumesService;
         this.persistentVolumeClaimsService = persistentVolumeClaimsService;
         this.metricsService = metricsService;
+        this.restTemplateService = restTemplateService;
 
     }
 
@@ -109,6 +114,9 @@ public class GlobalOverviewService {
                 // set cluster id
                 params.setCluster(users.getClusterId());
                 params.setClusterName(users.getClusterName());
+
+                // ping check
+                ResultStatus resultStatus = restTemplateService.sendPing(Constants.TARGET_CP_MASTER_API, ResultStatus.class, params);
 
                 // get nodes list data
                 nodesList = nodesService.getNodesList(params);

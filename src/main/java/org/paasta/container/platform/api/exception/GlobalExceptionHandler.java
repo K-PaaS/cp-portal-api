@@ -19,7 +19,8 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.validation.BindException;
-
+import org.springframework.security.access.AccessDeniedException;
+import java.util.Iterator;
 import java.util.Iterator;
 
 /**
@@ -87,9 +88,16 @@ public class GlobalExceptionHandler extends RuntimeException {
             return new ErrorMessage(Constants.RESULT_STATUS_FAIL, CommonStatusCode.NOT_FOUND.getMsg(), HttpStatus.NOT_FOUND.value(), CommonStatusCode.NOT_FOUND.getMsg());
         }
 
-        LOGGER.info("Exception >>> {}", CommonUtils.loggerReplace(ex.getLocalizedMessage()));
+        LOGGER.info( ex.getClass() + "  Exception >>> {}",   CommonUtils.loggerReplace(ex.getLocalizedMessage()));
         return new ErrorMessage(Constants.RESULT_STATUS_FAIL, CommonStatusCode.INTERNAL_SERVER_ERROR.getMsg(), HttpStatus.INTERNAL_SERVER_ERROR.value(), CommonStatusCode.INTERNAL_SERVER_ERROR.getMsg());
     }
+
+    @ExceptionHandler({AccessDeniedException.class})
+    public ErrorMessage handleException(AccessDeniedException ex) {
+        LOGGER.info("AccessDeniedException >>> " + CommonUtils.loggerReplace(ex.getMessage()));
+        return new ErrorMessage(Constants.RESULT_STATUS_FAIL, CommonUtils.loggerReplace(ex.getMessage()), HttpStatus.UNAUTHORIZED.value(), CommonStatusCode.UNAUTHORIZED.getMsg());
+    }
+
 
     @ExceptionHandler({HttpMessageNotReadableException.class})
     @ResponseBody

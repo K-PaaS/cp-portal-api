@@ -56,26 +56,33 @@ public class PodsListItem {
         return CommonUtils.procReplaceNullValue(metadata.getLabels());
     }
 
-    public String getPhase() { return status.getPhase(); }
+    public String getPhase() {
+        return status.getPhase();
+    }
 
     //If a container is not in either the Running or Terminated state, it is Waiting
     public String getPodStatus() {
-       return  findPodStatus(status.getContainerStatuses());
+        return findPodStatus(status.getContainerStatuses());
     }
 
     public String findPodStatus(List<ContainerStatusesItem> containerStatuses) {
         for (ContainerStatusesItem cs : containerStatuses) {
             setContainerStatus(getPhase());
-            if (cs.getState().containsKey(Constants.CONTAINER_STATE_WAITING)) {
-                // waiting
-                if(getPhase().equalsIgnoreCase(Constants.STATUS_RUNNING)) {
-                    setContainerStatus(Constants.STATUS_FAILED);
+            try {
+                if (cs.getState().containsKey(Constants.CONTAINER_STATE_WAITING)) {
+                    // waiting
+                    if (getPhase().equalsIgnoreCase(Constants.STATUS_RUNNING)) {
+                        setContainerStatus(Constants.STATUS_FAILED);
+                    }
+                    return cs.getState().get(Constants.CONTAINER_STATE_WAITING).getReason();
                 }
-                return cs.getState().get(Constants.CONTAINER_STATE_WAITING).getReason();
-            }
-            if (cs.getState().containsKey(Constants.CONTAINER_STATE_TERMINATED)) {
-                // terminated
-                return cs.getState().get(Constants.CONTAINER_STATE_TERMINATED).getReason();
+                if (cs.getState().containsKey(Constants.CONTAINER_STATE_TERMINATED)) {
+                    // terminated
+                    return cs.getState().get(Constants.CONTAINER_STATE_TERMINATED).getReason();
+                }
+            } catch (Exception e) {
+                return (status.getReason() != null) ? status.getReason() : status.getPhase();
+
             }
         }
         // container running

@@ -22,4 +22,6 @@ public class PodsStatus {
     private String startTime;
     private List<ContainerStatusesItem> containerStatuses;
     private String qosClass;
+    private String reason;
+    private String message;
 }

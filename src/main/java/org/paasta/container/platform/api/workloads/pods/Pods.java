@@ -77,18 +77,22 @@ public class Pods {
         return metadata.getCreationTimestamp();
     }
 
-    public String getNodes() { return CommonUtils.procReplaceNullValue(spec.getNodeName()); }
+    public String getNodes() {
+        return CommonUtils.procReplaceNullValue(spec.getNodeName());
+    }
 
     public String getIp() {
-        return status.getPodIP();
+        return CommonUtils.procReplaceNullValue(status.getPodIP());
     }
 
     public String getQosClass() {
-        return status.getQosClass();
+        return CommonUtils.procReplaceNullValue(status.getQosClass());
     }
 
     public String getControllers() {
-        if(metadata.getOwnerReferences() == null) {return Constants.NULL_REPLACE_TEXT;}
+        if (metadata.getOwnerReferences() == null) {
+            return Constants.NULL_REPLACE_TEXT;
+        }
         return CommonUtils.procReplaceNullValue(metadata.getOwnerReferences().get(0).getName());
     }
 
@@ -110,12 +114,18 @@ public class Pods {
 
     public String findPodStatus(List<ContainerStatusesItem> containerStatuses) {
         for (ContainerStatusesItem cs : containerStatuses) {
+            try {
+                if (cs.getState().containsKey(Constants.CONTAINER_STATE_WAITING)) {
+                    // waiting
+                    return cs.getState().get(Constants.CONTAINER_STATE_WAITING).getReason();
+                }
+                if (cs.getState().containsKey(Constants.CONTAINER_STATE_TERMINATED)) {
+                    // terminated
+                    return cs.getState().get(Constants.CONTAINER_STATE_TERMINATED).getReason();
+                }
+            } catch (Exception e) {
+                return (status.getReason() != null) ? status.getReason() : status.getPhase();
 
-            if (cs.getState().containsKey(Constants.CONTAINER_STATE_WAITING)) {
-                return cs.getState().get(Constants.CONTAINER_STATE_WAITING).getReason();
-            }
-            if (cs.getState().containsKey(Constants.CONTAINER_STATE_TERMINATED)) {
-                return cs.getState().get(Constants.CONTAINER_STATE_TERMINATED).getReason();
             }
         }
         // container running

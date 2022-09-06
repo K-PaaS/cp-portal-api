@@ -42,8 +42,6 @@ public class CommonService {
     private final HttpServletRequest request;
     private String secret;
 
-    @Value("${cpNamespace.ignoreNamespace}")
-    List<String> ignoreNamespaceList;
 
     @Value("${jwt.secret}")
     public void setSecret(String secret) {
@@ -484,6 +482,7 @@ public class CommonService {
      * @param type the type
      * @return the string
      */
+/*
     public String generateFieldSelectorForExceptNamespace(String type) {
 
         String fieldSelector = "?fieldSelector=";
@@ -502,6 +501,7 @@ public class CommonService {
 
         return fieldSelector;
     }
+*/
 
 
     /**

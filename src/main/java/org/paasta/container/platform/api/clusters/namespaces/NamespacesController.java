@@ -117,15 +117,7 @@ public class NamespacesController {
     })
     @PostMapping
     public ResultStatus initNamespaces(Params params, @RequestBody NamespacesInitTemplate initTemplate) {
-
-        if (initTemplate.getName().equals(Constants.NULL_REPLACE_TEXT) || initTemplate.getNsAdminUserId().equals(Constants.NULL_REPLACE_TEXT)) {
-            return resultStatusService.REQUEST_VALUE_IS_MISSING();
-        }
-
-        if (initTemplate.getName().toLowerCase().equals(Constants.ALL_NAMESPACES))
-            return resultStatusService.UNABLE_TO_CREATE_RESOURCE_NAME();
-
-            return namespacesService.createInitNamespaces(params, initTemplate);
+        return namespacesService.createInitNamespaces(params, initTemplate);
 
     }
 

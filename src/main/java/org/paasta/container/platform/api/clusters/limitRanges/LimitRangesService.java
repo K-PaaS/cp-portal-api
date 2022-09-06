@@ -190,20 +190,24 @@ public class LimitRangesService {
 
 
     /**
+     * 네임스페이스 생성 시 Defult LimitRanges Template 목록 조회(Get Default LimitRanges Template list for Creating Namespace)
+     *
+     * @param params the params
+     * @return the limitRanges template list
+     */
+    public LimitRangesDefaultList getLimitRangesDefaultTemplateList(Params params) {
+        return restTemplateService.send(Constants.TARGET_COMMON_API, "/limitRanges", HttpMethod.GET, null, LimitRangesDefaultList.class, params);
+    }
+
+    /**
      * LimitRanges Template 목록 조회(Get LimitRanges Template list)
      *
      * @param params the params
      * @return the limitRanges template list
      */
     public Object getLimitRangesTemplateList(Params params) {
-        params.setOffset(0);
-        params.setLimit(0);
-        params.setOrderBy("creationTime");
-        params.setOrder("desc");
-        params.setSearchName("");
-
-        LimitRangesList limitRangesList = (LimitRangesList) getLimitRangesList(params);
-        LimitRangesDefaultList defaultList = restTemplateService.send(Constants.TARGET_COMMON_API, "/limitRanges", HttpMethod.GET, null, LimitRangesDefaultList.class);
+        LimitRangesList limitRangesList = getLimitRangesList(params);
+        LimitRangesDefaultList defaultList = getLimitRangesDefaultTemplateList(params);
 
         List<LimitRangesListItem> adminItems = limitRangesList.getItems();
         List<LimitRangesTemplateItem> serversItemList = new ArrayList();
@@ -221,7 +225,6 @@ public class LimitRangesService {
 
         }
 
-        if (adminItems.size() > 0) {
             for (LimitRangesListItem i : adminItems) {
 
                     for (LimitRangesItem item : i.getSpec().getLimits()) {
@@ -253,12 +256,6 @@ public class LimitRangesService {
 
             }
 
-            serverList.setItems(serversItemList);
-            serverList = commonService.setResultObject(serverList, LimitRangesTemplateList.class);
-            serverList = commonService.resourceListProcessing(serverList, params, LimitRangesTemplateList.class);
-
-            return commonService.setResultModel(serverList, Constants.RESULT_STATUS_SUCCESS);
-        }
 
         serverList.setItems(serversItemList);
         serverList = commonService.setResultObject(serverList, LimitRangesTemplateList.class);

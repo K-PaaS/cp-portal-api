@@ -20,7 +20,7 @@ public class NamespacesInitTemplate {
     private List<String> limitRangesList;
 
     public String getName() {
-        return  CommonUtils.procReplaceNullValue(name);
+        return  CommonUtils.procReplaceNullValue(name.trim());
     }
 
     public String getNsAdminUserId() {

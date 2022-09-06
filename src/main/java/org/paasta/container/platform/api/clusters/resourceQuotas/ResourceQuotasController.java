@@ -147,7 +147,7 @@ public class ResourceQuotasController {
     })
     @GetMapping(value = "/template")
     public Object getResourceQuotasDefaultList(Params params) throws JsonProcessingException {
-        return resourceQuotasService.getRqDefaultList(params);
+        return resourceQuotasService.getResourceQuotasTemplateList(params);
     }
 
 

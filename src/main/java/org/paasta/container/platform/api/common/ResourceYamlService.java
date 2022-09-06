@@ -157,14 +157,14 @@ public class ResourceYamlService {
      * @return the resultStatus
      */
     public ResultStatus createDefaultResourceQuota(Params params) {
-        ResourceQuotasDefaultList resourceQuotasDefaultList = restTemplateService.send(Constants.TARGET_COMMON_API, "/resourceQuotas", HttpMethod.GET, null, ResourceQuotasDefaultList.class);
+        ResourceQuotasDefaultList resourceQuotasDefaultList = restTemplateService.send(Constants.TARGET_COMMON_API, "/resourceQuotas", HttpMethod.GET, null, ResourceQuotasDefaultList.class, params);
         String limitsCpu = "";
         String limitsMemory = "";
 
         String rqName = params.getRs_rq();
 
         for (ResourceQuotasDefault d : resourceQuotasDefaultList.getItems()) {
-            if (rqName.equals("")) {
+            if (rqName.equals(Constants.EMPTY_STRING)) {
                 rqName = propertyService.getLowResourceQuotas();
             }
 
@@ -197,14 +197,14 @@ public class ResourceYamlService {
      * @return the resultStatus
      */
     public ResultStatus createDefaultLimitRanges(Params params) {
-        LimitRangesDefaultList limitRangesDefaultList = restTemplateService.send(Constants.TARGET_COMMON_API, "/limitRanges", HttpMethod.GET, null, LimitRangesDefaultList.class);
+        LimitRangesDefaultList limitRangesDefaultList = restTemplateService.send(Constants.TARGET_COMMON_API, "/limitRanges", HttpMethod.GET, null, LimitRangesDefaultList.class, params);
         String limitsCpu = "";
         String limitsMemory = "";
 
         String lrName = params.getRs_lr();
 
         for (LimitRangesDefault limitRanges : limitRangesDefaultList.getItems()) {
-            if (lrName.equals("")) {
+            if (lrName.equals(Constants.EMPTY_STRING)) {
                 lrName = propertyService.getLowLimitRanges();
             }
 

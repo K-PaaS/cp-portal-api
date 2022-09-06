@@ -11,6 +11,7 @@ import org.paasta.container.platform.api.common.*;
 import org.paasta.container.platform.api.common.model.CommonResourcesYaml;
 import org.paasta.container.platform.api.common.model.Params;
 import org.paasta.container.platform.api.common.model.ResultStatus;
+import org.paasta.container.platform.api.exception.ResultStatusException;
 import org.paasta.container.platform.api.users.Users;
 import org.paasta.container.platform.api.users.UsersList;
 import org.paasta.container.platform.api.users.UsersService;
@@ -149,20 +150,16 @@ public class NamespacesService {
      * @return the resultStatus
      */
     public ResultStatus createInitNamespaces(Params params, NamespacesInitTemplate initTemplate) {
-        String namespace = initTemplate.getName();
-        String userId = initTemplate.getNsAdminUserId();
 
-        Users newNsUser = null;
-        try {
-            newNsUser = usersService.getUsers(params.getCluster(), propertyService.getDefaultNamespace(), userId);
-        } catch (Exception e) {
-            return resultStatusService.UNAPPROACHABLE_USERS();
+        if(initTemplate.getName().equalsIgnoreCase(NULL_REPLACE_TEXT)) {
+            throw new ResultStatusException(MessageConstant.REQUEST_VALUE_IS_MISSING.getMsg());
         }
 
-        String nsAdminUserSA = newNsUser.getServiceAccountName();
-        params.setRs_sa(nsAdminUserSA);
-        params.setRs_role(propertyService.getAdminRole());
-        params.setNamespace(namespace);
+        if(propertyService.getExceptNamespaceList().contains(initTemplate.getName())) {
+            throw new ResultStatusException(MessageConstant.NOT_ALLOWED_RESOURCE_NAME.getMsg());
+        }
+
+        params.setNamespace(initTemplate.getName());
 
         // 1. namespace 생성
         resourceYamlService.createNamespace(params);
@@ -171,54 +168,27 @@ public class NamespacesService {
         resourceYamlService.createInitRole(params);
         resourceYamlService.createAdminRole(params);
 
-        // 3. namespace 관리자 sa 생성
-        ResultStatus createSAresult = resourceYamlService.createServiceAccount(params);
-        if (createSAresult.getResultCode().equalsIgnoreCase(RESULT_STATUS_FAIL)) {
-            resourceYamlService.deleteNamespaceYaml(params);
-            return createSAresult;
-        }
-
-        // 4. namespace 관리자 rb 생성
-        ResultStatus createRBresult = resourceYamlService.createRoleBinding(params);
-        if (createRBresult.getResultCode().equalsIgnoreCase(RESULT_STATUS_FAIL)) {
-            resourceYamlService.deleteNamespaceYaml(params);
-            return createRBresult;
-        }
-
-        // 5. namespace 관리자 DB user 생성
-        String saSecretName = resourceYamlService.getSecretName(params);
-
-        newNsUser.setId(0);
-        newNsUser.setCpNamespace(namespace);
-        newNsUser.setRoleSetCode(propertyService.getAdminRole());
-        newNsUser.setSaSecret(saSecretName);
-        newNsUser.setSaToken(accessTokenService.getSecrets(namespace, saSecretName).getUserAccessToken());
-        newNsUser.setUserType(AUTH_NAMESPACE_ADMIN);
-        newNsUser.setIsActive(CHECK_Y);
-
-        ResultStatus createCpUserResult = usersService.createUsers(newNsUser);
-
-        if (createCpUserResult.getResultCode().equalsIgnoreCase(RESULT_STATUS_FAIL)) {
-            resourceYamlService.deleteNamespaceYaml(params);
-            return createCpUserResult;
-        }
+        List<String> resourceQuotasList = initTemplate.getResourceQuotasList().stream().distinct().collect(Collectors.toList());
+        List<String> limitRangesList = initTemplate.getLimitRangesList().stream().distinct().collect(Collectors.toList());
 
 
-        for (String rq : initTemplate.getResourceQuotasList()) {
+        // 3. resourceQuotas 생성
+        for (String rq : resourceQuotasList) {
             if (propertyService.getResourceQuotasList().contains(rq)) {
                 params.setRs_rq(rq);
                 resourceYamlService.createDefaultResourceQuota(params);
             }
         }
 
-        for (String lr : initTemplate.getLimitRangesList()) {
+        // 4. limitRanges 생성
+        for (String lr : limitRangesList) {
             if (propertyService.getLimitRangesList().contains(lr)) {
                 params.setRs_lr(lr);
                 resourceYamlService.createDefaultLimitRanges(params);
             }
         }
 
-        return (ResultStatus) commonService.setResultModelWithNextUrl(commonService.setResultObject(createCpUserResult, ResultStatus.class), Constants.RESULT_STATUS_SUCCESS, "YOUR_NAMESPACES_LIST_PAGE");
+        return (ResultStatus) commonService.setResultModel(new ResultStatus(), Constants.RESULT_STATUS_SUCCESS);
     }
 
 

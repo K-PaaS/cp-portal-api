@@ -56,8 +56,8 @@ cp:
   provide-as-standalone: cp-portal-standalone
 
 cpNamespace:
-  ignoreNamespace: ${IGNORE_NAMESPACES}
   defaultNamespace: cp-portal-temp-namespace
+  exceptNamespace: ${cpNamespace.defaultNamespace}, all
   clusterAdminNamespace: kube-system
   role:
     list: cp-init-role, cp-admin-role

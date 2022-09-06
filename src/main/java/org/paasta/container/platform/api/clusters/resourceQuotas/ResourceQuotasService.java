@@ -51,6 +51,7 @@ public class ResourceQuotasService {
 
     /**
      * ResourceQuotas 목록 조회(Get ResourceQuotas list)
+     *
      * @param params the params
      * @return the resourceQuotas list
      */
@@ -62,16 +63,15 @@ public class ResourceQuotasService {
         resourceQuotasList = commonService.resourceListProcessing(resourceQuotasList, params, ResourceQuotasList.class);
 
         //convert Status
-        for(ResourceQuotasListItem rq : resourceQuotasList.getItems()) {
+        for (ResourceQuotasListItem rq : resourceQuotasList.getItems()) {
 
             Map<String, String> hards = rq.getStatus().getHard();
             Map<String, String> useds = rq.getStatus().getUsed();
 
-            if(hards == null || useds == null) {
+            if (hards == null || useds == null) {
                 Map<String, Object> convertStatusMap = new HashMap<>();
                 rq.setConvertStatus(convertStatusMap);
-            }
-            else {
+            } else {
                 HashMap<String, Object> convertStatus = new HashMap<>();
 
                 for (String key : hards.keySet()) {
@@ -94,6 +94,7 @@ public class ResourceQuotasService {
 
     /**
      * ResourceQuotas 상세 조회(Get ResourceQuotas detail)
+     *
      * @param params the params
      * @return the resourceQuotas
      */
@@ -110,13 +111,12 @@ public class ResourceQuotasService {
         List<ResourceQuotasStatusItem> items = new ArrayList<>();
 
         //if status (hard, used) is null
-        if(hards == null || useds == null) {
+        if (hards == null || useds == null) {
             ResourceQuotasStatusItem resourceQuotasStatusItem = new ResourceQuotasStatusItem(Constants.NULL_REPLACE_TEXT, Constants.NULL_REPLACE_TEXT, Constants.NULL_REPLACE_TEXT);
             items.add(resourceQuotasStatusItem);
-        }
-        else {
+        } else {
             for (String key : hards.keySet()) {
-                ResourceQuotasStatusItem resourceQuotasStatusItem = new ResourceQuotasStatusItem(key,hards.get(key), useds.get(key));
+                ResourceQuotasStatusItem resourceQuotasStatusItem = new ResourceQuotasStatusItem(key, hards.get(key), useds.get(key));
                 items.add(resourceQuotasStatusItem);
             }
 
@@ -129,6 +129,7 @@ public class ResourceQuotasService {
 
     /**
      * ResourceQuotas YAML 조회(Get ResourceQuotas yaml)
+     *
      * @param params the params
      * @return the resourceQuotas yaml
      */
@@ -141,6 +142,7 @@ public class ResourceQuotasService {
 
     /**
      * ResourceQuotas 생성(Create ResourceQuotas)
+     *
      * @param params the params
      * @return return is succeeded
      */
@@ -153,6 +155,7 @@ public class ResourceQuotasService {
 
     /**
      * ResourceQuotas 삭제(Delete ResourceQuotas)
+     *
      * @param params the params
      * @return the return is succeeded
      */
@@ -165,6 +168,7 @@ public class ResourceQuotasService {
 
     /**
      * ResourceQuotas 수정(Update ResourceQuotas)
+     *
      * @param params the params
      * @return return is succeeded
      */
@@ -177,13 +181,14 @@ public class ResourceQuotasService {
 
     /**
      * ResourceQuotas Default Template 목록 조회(Get ResourceQuotas Default Template list)
+     *
      * @param params the params
      * @return the resourceQuotas list
      * @throws JsonProcessingException
      */
-    public Object getRqDefaultList(Params params) throws JsonProcessingException {
+    public Object getResourceQuotasTemplateList(Params params) throws JsonProcessingException {
         ResourceQuotasList resourceQuotasList = getResourceQuotasList(params);
-        ResourceQuotasDefaultList resourceQuotasDefaultList = restTemplateService.send(Constants.TARGET_COMMON_API, "/resourceQuotas", HttpMethod.GET, null, ResourceQuotasDefaultList.class);
+        ResourceQuotasDefaultList resourceQuotasDefaultList = getResourceQuotasDefaultTemplateList(params);
 
         ResourceQuotasDefaultList defaultList = new ResourceQuotasDefaultList();
         ResourceQuotasDefault quotasDefault;
@@ -222,4 +227,19 @@ public class ResourceQuotasService {
 
         return commonService.setResultModel(defaultList, Constants.RESULT_STATUS_SUCCESS);
     }
+
+
+
+    /**
+     * 네임스페이스 생성 시 ResourceQuotas Default Template 목록 조회(Get ResourceQuotas Default Template list for Creating Namespace)
+     *
+     * @param params the params
+     * @return the resourceQuotas list
+     * @throws JsonProcessingException
+     */
+    public ResourceQuotasDefaultList getResourceQuotasDefaultTemplateList(Params params) {
+        return restTemplateService.send(Constants.TARGET_COMMON_API, "/resourceQuotas", HttpMethod.GET, null, ResourceQuotasDefaultList.class, params);
+    }
+
+
 }

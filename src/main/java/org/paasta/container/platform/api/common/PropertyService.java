@@ -26,8 +26,8 @@ public class PropertyService {
     @Value("${cpTerraman.api.url}")
     private String terramanApiUrl;
 
-    @Value("${cpNamespace.ignoreNamespace}")
-    List<String> ignoreNamespaceList;
+    @Value("${cpNamespace.exceptNamespace}")
+    List<String> exceptNamespaceList;
 
     @Value("${cpResource.clusterResource}")
     private String adminResource;

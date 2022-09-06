@@ -51,7 +51,10 @@ public class popUpController {
     })
     @GetMapping(value = "/resourceQuotas/template")
     public Object getResourceQuotasDefaultList(Params params) throws JsonProcessingException {
-        return resourceQuotasService.getRqDefaultList(params);
+        if(params.getNamespace().equalsIgnoreCase(Constants.ALL_NAMESPACES)) {
+            return resourceQuotasService.getResourceQuotasDefaultTemplateList(params);
+        }
+        return resourceQuotasService.getResourceQuotasTemplateList(params);
     }
 
 
@@ -67,6 +70,9 @@ public class popUpController {
     })
     @GetMapping(value = "/limitRanges/template")
     public Object getLimitRangesTemplateList(Params params) {
+        if(params.getNamespace().equalsIgnoreCase(Constants.ALL_NAMESPACES)) {
+            return limitRangesService.getLimitRangesDefaultTemplateList(params);
+        }
         return limitRangesService.getLimitRangesTemplateList(params);
     }
 

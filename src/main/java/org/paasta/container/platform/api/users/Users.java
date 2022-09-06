@@ -6,6 +6,7 @@ import java.util.List;
 import lombok.Data;
 
 import org.paasta.container.platform.api.users.support.NamespaceRole;
+import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
 import org.paasta.container.platform.api.common.CommonUtils;
@@ -157,7 +158,7 @@ public class Users {
     public String getSecretCreationTimestamp() { return CommonUtils.procReplaceNullValue(secretCreationTimestamp); }
 
     public List<NamespaceRole> getSelectValues() {
-        return (StringUtils.isEmpty(selectValues)) ? new ArrayList<NamespaceRole>() {{
+        return (ObjectUtils.isEmpty(selectValues)) ? new ArrayList<NamespaceRole>() {{
             add(new NamespaceRole() {{
                 setNamespace(Constants.NULL_REPLACE_TEXT);
                 setRole(Constants.NULL_REPLACE_TEXT);

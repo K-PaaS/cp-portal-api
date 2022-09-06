@@ -1,6 +1,6 @@
 buildscript {
 	ext {
-		springBootVersion = '2.3.10.RELEASE'
+		springBootVersion = '2.7.3'
 		springBootManagementPlugin = '1.0.11.RELEASE'
 	}
 	repositories {
@@ -45,11 +45,12 @@ ext {
 	swaggerVersion = '2.9.2'
 	jjwtVersion = '0.9.1'
 	jsonpathVersion = '2.4.0'
-	springCloudVersion = 'Hoxton.SR10'
+	springCloudVersion = '2021.0.3'
 }
 
 jar {
 	archivesBaseName = 'paas-ta-container-platform-api'
+    enabled = false
 }
 
 dependencies {

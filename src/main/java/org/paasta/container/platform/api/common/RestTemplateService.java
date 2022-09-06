@@ -11,7 +11,6 @@ import org.paasta.container.platform.api.common.model.Params;
 import org.paasta.container.platform.api.common.model.ResultStatus;
 import org.paasta.container.platform.api.exception.CommonStatusCodeException;
 import org.paasta.container.platform.api.exception.CpCommonAPIException;
-import org.paasta.container.platform.api.login.JwtUtil;
 import org.paasta.container.platform.api.users.Users;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,8 +55,6 @@ public class RestTemplateService {
     private String base64Authorization;
     private String baseUrl;
 
-    @Autowired
-    private JwtUtil jwtUtil;
 
     /**
      * Instantiates a new Rest template service
@@ -424,8 +421,8 @@ public class RestTemplateService {
         // CONTAINER PLATFORM MASTER API
         if (Constants.TARGET_CP_MASTER_API.equals(reqApi)) {
             namespace = getNs(requestUri);
-            saUserToken = jwtUtil.extractJwtFromRequest(request);
-            userName = jwtUtil.getUsernameFromToken(saUserToken);
+            saUserToken = commonService.extractJwtFromRequest(request);
+            userName = commonService.getUsernameFromToken(saUserToken);
             apiUrl = propertyService.getCpMasterApiUrl();
             if(namespace.equals(Constants.NULL_REPLACE_TEXT))
                 authorization = "Bearer " + this.getAdminToken().getTokenValue();

@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Data;
 import org.paasta.container.platform.api.common.model.CommonItemMetaData;
 
+import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
 import org.paasta.container.platform.api.common.CommonUtils;
@@ -61,7 +62,7 @@ public class UsersAdmin {
         }
 
         public Secrets getSecrets() {
-            return (StringUtils.isEmpty(secrets)) ? new UsersAdmin.Secrets(Constants.NULL_REPLACE_TEXT, Constants.NULL_REPLACE_TEXT, Constants.NULL_REPLACE_TEXT) {{
+            return (ObjectUtils.isEmpty(secrets)) ? new UsersAdmin.Secrets(Constants.NULL_REPLACE_TEXT, Constants.NULL_REPLACE_TEXT, Constants.NULL_REPLACE_TEXT) {{
                 setSaSecret(Constants.NULL_REPLACE_TEXT);
             }} : secrets;
         }

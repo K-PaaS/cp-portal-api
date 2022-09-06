@@ -4,7 +4,7 @@ variables:
 gradle build: # Job name
   stage: build # Stage name
   image:
-    name: docker.io/gradle:6.5.1-jdk8 # kaniko image 사용
+    name: docker.io/gradle:6.9.2-jdk8 # kaniko image 사용
     entrypoint: [""]
   script:
     - export

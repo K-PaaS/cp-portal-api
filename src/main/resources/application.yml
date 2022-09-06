@@ -3,6 +3,28 @@ spring:
     name: cp-portal-api
   freemarker:
     template-loader-path: classpath:/templates/
+  mvc:
+    pathmatch:
+      matching-strategy: ant_path_matcher
+  cloud:
+    vault:
+      scheme: http
+      host: ${VAULT_IP}
+      port: ${VAULT_PORT}
+      authentication: APPROLE
+      kv:
+        enabled: true
+        backend: secret
+      app-role:
+        role-id: ${VAULT_ROLE_ID}
+        secret-id: ${VAULT_SECRET_ID}
+        role: ${VAULT_ROLE_NAME}
+        app-role-path: approle
+      config:
+        lifecycle:
+          enabled: true
+          min-renewal: 10s
+          expiry-threshold: 1m
 
 aspect:
   enabled: false # for checking Elapsed time
@@ -195,8 +217,10 @@ cpTerraman:
 
 ---
 spring:
-  profiles: local    
- 
+  config:
+    activate:
+      on-profile: local
+
 logging:
   level:
     ROOT: INFO
@@ -221,8 +245,9 @@ cpTerraman:
 
 ---
 spring:
-  profiles:     
-    active: prod
+  config:
+    activate:
+      on-profile: prod
  
 logging:
   level:
@@ -243,4 +268,4 @@ commonApi:
 
 cpTerraman:
   template:
-    path: "/tmp/{id}/{id}.tf"
+    path: "/tmp/terraform/{id}/{id}.tf"

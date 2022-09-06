@@ -5,7 +5,7 @@ import lombok.Data;
 import org.paasta.container.platform.api.clusters.resourceQuotas.support.ResourceQuotasStatus;
 import org.paasta.container.platform.api.common.Constants;
 import org.paasta.container.platform.api.common.model.CommonMetaData;
-import org.springframework.util.StringUtils;
+import org.springframework.util.ObjectUtils;
 
 import java.util.Map;
 
@@ -43,7 +43,7 @@ public class ResourceQuotasListItem {
     }
 
     public CommonMetaData getMetadata() {
-        return (StringUtils.isEmpty(metadata)) ? new CommonMetaData() {{
+        return (ObjectUtils.isEmpty(metadata)) ? new CommonMetaData() {{
             setName(Constants.NULL_REPLACE_TEXT);
         }} : metadata;
     }

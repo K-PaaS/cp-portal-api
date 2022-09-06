@@ -6,7 +6,7 @@ import java.util.HashMap;
 
 import lombok.Data;
 
-import org.springframework.util.StringUtils;
+import org.springframework.util.ObjectUtils;
 
 import org.paasta.container.platform.api.common.CommonUtils;
 import org.paasta.container.platform.api.common.Constants;
@@ -30,11 +30,11 @@ public class LimitRangesItem {
     private Object defaultLimit;
 
     public Object getDefaultLimit() {
-        return (StringUtils.isEmpty(defaultLimit)) ? Constants.NULL_REPLACE_TEXT : defaultLimit;
+        return (ObjectUtils.isEmpty(defaultLimit)) ? Constants.NULL_REPLACE_TEXT : defaultLimit;
     }
 
     public Object getDefaultRequest() {
-        return (StringUtils.isEmpty(defaultRequest)) ? Constants.NULL_REPLACE_TEXT : defaultRequest;
+        return (ObjectUtils.isEmpty(defaultRequest)) ? Constants.NULL_REPLACE_TEXT : defaultRequest;
     }
 
     public Object getMin() {

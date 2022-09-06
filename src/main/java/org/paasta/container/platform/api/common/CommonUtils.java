@@ -12,6 +12,7 @@ import java.util.Map;
 import java.util.TimeZone;
 import java.util.regex.Pattern;
 
+import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
 import org.paasta.container.platform.api.common.model.CommonOwnerReferences;
@@ -270,7 +271,7 @@ public class CommonUtils {
      * @return object
      */
     public static Object procReplaceNullValue(Object requestObject) {
-        return (StringUtils.isEmpty(requestObject)) ? Constants.NULL_REPLACE_TEXT : requestObject;
+        return (ObjectUtils.isEmpty(requestObject)) ? Constants.NULL_REPLACE_TEXT : requestObject;
     }
 
     /**
@@ -280,7 +281,7 @@ public class CommonUtils {
      * @return the string
      */
     public static String procReplaceNullValue(String requestString) {
-        return (StringUtils.isEmpty(requestString)) ? Constants.NULL_REPLACE_TEXT : requestString;
+        return (ObjectUtils.isEmpty(requestString)) ? Constants.NULL_REPLACE_TEXT : requestString;
     }
 
     /**
@@ -290,7 +291,7 @@ public class CommonUtils {
      * @return the object reference
      */
     public static ObjectReference procReplaceNullValue(ObjectReference requestObjectReference) {
-        return (StringUtils.isEmpty(requestObjectReference)) ? new ObjectReference() {
+        return (ObjectUtils.isEmpty(requestObjectReference)) ? new ObjectReference() {
             {
                 setName(Constants.NULL_REPLACE_TEXT);
                 setNamespace(Constants.NULL_REPLACE_TEXT);
@@ -305,7 +306,7 @@ public class CommonUtils {
      * @return the map
      */
     public static Map<String, Object> procReplaceNullValue(Map<String, Object> requestMap) {
-        return (StringUtils.isEmpty(requestMap)) ? new HashMap<String, Object>() {{
+        return (ObjectUtils.isEmpty(requestMap)) ? new HashMap<String, Object>() {{
             put(Constants.SUPPORTED_RESOURCE_STORAGE, Constants.NULL_REPLACE_TEXT);
         }} : requestMap;
     }
@@ -322,13 +323,13 @@ public class CommonUtils {
 
         switch (requestListObjectType) {
             case LIMIT_RANGES_ITEM:
-                resultList = (StringUtils.isEmpty(requestList)) ? new ArrayList<String>() {{
+                resultList = (ObjectUtils.isEmpty(requestList)) ? new ArrayList<String>() {{
                     add(Constants.NULL_REPLACE_TEXT);
                 }} : requestList;
                 break;
 
             case COMMON_OWNER_REFERENCES:
-                resultList = (StringUtils.isEmpty(requestList)) ? new ArrayList<CommonOwnerReferences>() {
+                resultList = (ObjectUtils.isEmpty(requestList)) ? new ArrayList<CommonOwnerReferences>() {
                     {
                         add(new CommonOwnerReferences() {{
                             setName(Constants.NULL_REPLACE_TEXT);
@@ -338,7 +339,7 @@ public class CommonUtils {
                 break;
 
             default:
-                resultList = (StringUtils.isEmpty(requestList)) ? new ArrayList<String>() {{
+                resultList = (ObjectUtils.isEmpty(requestList)) ? new ArrayList<String>() {{
                     add(Constants.NULL_REPLACE_TEXT);
                 }} : requestList;
         }

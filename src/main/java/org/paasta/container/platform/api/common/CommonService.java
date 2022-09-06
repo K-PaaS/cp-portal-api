@@ -2,10 +2,11 @@ package org.paasta.container.platform.api.common;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwts;
 import lombok.SneakyThrows;
 import org.paasta.container.platform.api.clusters.clusters.Clusters;
 import org.paasta.container.platform.api.common.model.*;
-import org.paasta.container.platform.api.login.JwtUtil;
 import org.paasta.container.platform.api.login.support.PortalGrantedAuthority;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,6 +16,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
+import org.springframework.util.StringUtils;
 
 import javax.servlet.http.HttpServletRequest;
 import java.lang.reflect.Field;
@@ -38,11 +40,15 @@ public class CommonService {
     private final Gson gson;
     private final PropertyService propertyService;
     private final HttpServletRequest request;
-    private final JwtUtil jwtUtil;
+    private String secret;
 
     @Value("${cpNamespace.ignoreNamespace}")
     List<String> ignoreNamespaceList;
 
+    @Value("${jwt.secret}")
+    public void setSecret(String secret) {
+        this.secret = secret;
+    }
 
     /**
      * Instantiates a new Common service
@@ -50,11 +56,10 @@ public class CommonService {
      * @param gson the gson
      */
     @Autowired
-    public CommonService(Gson gson, PropertyService propertyService, HttpServletRequest request, JwtUtil jwtUtil) {
+    public CommonService(Gson gson, PropertyService propertyService, HttpServletRequest request) {
         this.gson = gson;
         this.propertyService = propertyService;
         this.request = request;
-        this.jwtUtil = jwtUtil;
     }
 
 
@@ -801,4 +806,31 @@ public class CommonService {
         return clusters;
     }
 
+    /**
+     * API 요청으로부터 JWT 토큰 추출(Extract JWT token from API Request)
+     *
+     * @param request the request
+     * @return the string
+     */
+    public String extractJwtFromRequest(HttpServletRequest request) {
+        RequestWrapper requestWrapper = new RequestWrapper(request);
+
+        String bearerToken = requestWrapper.getHeader("Authorization");
+        if (StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer ")) {
+            return bearerToken.substring(7, bearerToken.length());
+        }
+        return null;
+    }
+
+    /**
+     * 토큰을 통한 사용자 이름 조회(Get User name from token)
+     *
+     * @param token the token
+     * @return the string
+     */
+    public String getUsernameFromToken(String token) {
+        Claims claims = Jwts.parser().setSigningKey(secret).parseClaimsJws(token).getBody();
+
+        return claims.getSubject();
+    }
 }

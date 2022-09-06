@@ -34,7 +34,7 @@ import java.util.Collections;
 @Configuration
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(securedEnabled = true, prePostEnabled = true)
-public class SecurityConfig extends WebSecurityConfigurerAdapter{
+public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Autowired
     private CustomJwtAuthenticationFilter customJwtAuthenticationFilter;
@@ -51,14 +51,47 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter{
         return new BCryptPasswordEncoder();
     }
 
+//
+//    @Bean
+//    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+//        http
+//                .csrf().disable()
+//                .authorizeRequests()
+//                .antMatchers(Constants.PERMIT_PATH_LIST).permitAll().anyRequest().authenticated()
+//                .and().exceptionHandling().authenticationEntryPoint(jwtAuthenticationEntryPoint)
+//                .and().sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+//                .and().cors().configurationSource(corsConfiguration())
+//                .and().addFilterBefore(customJwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+//        return http.build();
+//    }
+//
+//    @Bean
+//    public AuthenticationProvider authenticationProvider() {
+//        return customAuthenticationProvider;
+//    }
+//
+//    @Bean
+//    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
+//
+//        return authenticationConfiguration.getAuthenticationManager();
+//    }
+//
+//    @Bean
+//    public WebSecurityCustomizer webSecurityCustomizer() {
+//        return (web) -> web.ignoring().antMatchers(
+//                "/v2/api-docs",
+//                "/configuration/ui",
+//                "/swagger-resources/**",
+//                "/configuration/security",
+//                "/swagger-ui.html",
+//                "/webjars/**");
+//    }
 
     @Bean
-    @Override
     public AuthenticationManager authenticationManagerBean() throws Exception
     {
         return super.authenticationManagerBean();
     }
-
 
     @Override
     public void configure(HttpSecurity http) throws Exception {
@@ -72,12 +105,12 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter{
                 .and().addFilterBefore(customJwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
     }
 
-
-
     @Override
     public void configure(AuthenticationManagerBuilder authenticationManagerBuilder)  throws Exception {
         authenticationManagerBuilder.authenticationProvider(customAuthenticationProvider);
     }
+
+
 
     @Override
     public void configure(WebSecurity web) {
@@ -90,6 +123,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter{
                 "/webjars/**");
     }
 
+
+
     private CorsConfigurationSource corsConfiguration(){
         return new CorsConfigurationSource() {
             @Override
@@ -97,7 +132,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter{
                 CorsConfiguration config = new CorsConfiguration();
                 config.setAllowedHeaders(Collections.singletonList("*"));
                 config.setAllowedMethods(Collections.singletonList("*"));
-                config.addAllowedOrigin("*");
+                config.addAllowedOriginPattern("*");
                 config.setAllowCredentials(true);
                 return config;
             }

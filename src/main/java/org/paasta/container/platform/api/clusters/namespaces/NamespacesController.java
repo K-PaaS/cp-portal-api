@@ -4,7 +4,6 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
-import org.paasta.container.platform.api.common.Constants;
 import org.paasta.container.platform.api.common.ResultStatusService;
 import org.paasta.container.platform.api.common.model.Params;
 import org.paasta.container.platform.api.common.model.ResultStatus;
@@ -136,12 +135,7 @@ public class NamespacesController {
     })
     @PutMapping(value = "/{namespace:.+}")
     public ResultStatus modifyInitNamespaces(Params params, @RequestBody NamespacesInitTemplate initTemplate) {
-
-        if (initTemplate.getName().equals(Constants.NULL_REPLACE_TEXT) || initTemplate.getNsAdminUserId().equals(Constants.NULL_REPLACE_TEXT)) {
-            return resultStatusService.REQUEST_VALUE_IS_MISSING();
-        }
-
-      return namespacesService.modifyInitNamespaces(params, initTemplate);
+        return namespacesService.modifyInitNamespaces(params, initTemplate);
     }
 
 

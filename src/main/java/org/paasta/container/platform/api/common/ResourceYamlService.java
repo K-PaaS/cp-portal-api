@@ -252,18 +252,6 @@ public class ResourceYamlService {
     }
 
 
-    /**
-     * Namespace 삭제 (Delete Namespace)
-     *
-     * @param params the params
-     * @return the resultStatus
-     */
-    public ResultStatus deleteNamespaceYaml(Params params) {
-        ResultStatus resultStatus = restTemplateService.send(Constants.TARGET_CP_MASTER_API,
-                propertyService.getCpMasterApiListNamespacesDeleteUrl().replace("{name}", params.getNamespace()), HttpMethod.DELETE, null, ResultStatus.class, params);
-        return (ResultStatus) commonService.setResultModel(resultStatus, Constants.RESULT_STATUS_SUCCESS);
-    }
-
 
     /**
      * service account 의 secret 이름을 조회(Get Secret of Service Account)

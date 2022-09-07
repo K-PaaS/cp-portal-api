@@ -167,8 +167,8 @@ cpMaster:
         list: "/api/v1/namespaces"
         get: "/api/v1/namespaces/{namespace}"
         create: "/api/v1/namespaces"
-        delete: "/api/v1/namespaces/{name}"
-        update: "/api/v1/namespaces/{name}"
+        delete: "/api/v1/namespaces/{namespace}"
+        update: "/api/v1/namespaces/{namespace}"
       resourceQuotas:
         list: "/api/v1/namespaces/{namespace}/resourcequotas"
         get: "/api/v1/namespaces/{namespace}/resourcequotas/{name}"

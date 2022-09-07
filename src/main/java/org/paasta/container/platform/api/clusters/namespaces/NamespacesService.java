@@ -9,6 +9,7 @@ import org.paasta.container.platform.api.clusters.resourceQuotas.ResourceQuotasL
 import org.paasta.container.platform.api.clusters.resourceQuotas.ResourceQuotasService;
 import org.paasta.container.platform.api.common.*;
 import org.paasta.container.platform.api.common.model.CommonResourcesYaml;
+import org.paasta.container.platform.api.common.model.CommonStatusCode;
 import org.paasta.container.platform.api.common.model.Params;
 import org.paasta.container.platform.api.common.model.ResultStatus;
 import org.paasta.container.platform.api.exception.ResultStatusException;
@@ -132,15 +133,13 @@ public class NamespacesService {
      */
     public ResultStatus deleteNamespaces(Params params) {
         ResultStatus resultStatus = restTemplateService.send(Constants.TARGET_CP_MASTER_API,
-                propertyService.getCpMasterApiListNamespacesDeleteUrl(), HttpMethod.DELETE, null, ResultStatus.class, params);
+                propertyService.getCpMasterApiListNamespacesDeleteUrl().replace("{name:.+}", params.getNamespace()),
+                HttpMethod.DELETE, null, ResultStatus.class, params);
 
-        List<String> userNamesList = usersService.getUsersNameListByNamespace(params.getCluster(), params.getNamespace()).get(USERS);
-        for (String userId : userNamesList) {
-         //   usersService.deleteUsers(usersService.getUsers(params.getCluster(), params.getNamespace(), userId));
-        }
+        usersService.deleteNamespaceAllUsers(params);
+
         return (ResultStatus) commonService.setResultModel(resultStatus, Constants.RESULT_STATUS_SUCCESS);
     }
-
 
     /**
      * Namespaces 생성(Create Namespaces)
@@ -151,11 +150,11 @@ public class NamespacesService {
      */
     public ResultStatus createInitNamespaces(Params params, NamespacesInitTemplate initTemplate) {
 
-        if(initTemplate.getName().equalsIgnoreCase(NULL_REPLACE_TEXT)) {
+        if (initTemplate.getName().equalsIgnoreCase(NULL_REPLACE_TEXT)) {
             throw new ResultStatusException(MessageConstant.REQUEST_VALUE_IS_MISSING.getMsg());
         }
 
-        if(propertyService.getExceptNamespaceList().contains(initTemplate.getName())) {
+        if (propertyService.getExceptNamespaceList().contains(initTemplate.getName())) {
             throw new ResultStatusException(MessageConstant.NOT_ALLOWED_RESOURCE_NAME.getMsg());
         }
 
@@ -201,143 +200,70 @@ public class NamespacesService {
      */
     public ResultStatus modifyInitNamespaces(Params params, NamespacesInitTemplate initTemplate) {
 
-        String cluster = params.getCluster();
-        String namespace = params.getNamespace();
-
-
-        // 1. namespace 일치 여부 확인
-        if (!namespace.equals(initTemplate.getName())) {
-            return resultStatusService.NOT_MATCH_NAMESPACES();
+        if (initTemplate.getName().equalsIgnoreCase(NULL_REPLACE_TEXT)) {
+            throw new ResultStatusException(MessageConstant.REQUEST_VALUE_IS_MISSING.getMsg());
         }
 
-        // 2. namespace 관리자 지정 여부 확인
-        String updateNsAdminUserId = initTemplate.getNsAdminUserId();
-        if (updateNsAdminUserId.trim().isEmpty() || updateNsAdminUserId == null) {
-            return resultStatusService.REQUIRES_NAMESPACE_ADMINISTRATOR_ASSIGNMENT();
+        if (!initTemplate.getName().equals(params.getNamespace())) {
+            throw new ResultStatusException(MessageConstant.NOT_MATCH_NAMESPACES.getMsg());
         }
 
-
-        // 3. namespace 관리자 cp-temp-namespace 컬럼 존재 여부 확인
-        Users newNsUser = null;
         try {
-            newNsUser = usersService.getUsers(cluster, propertyService.getDefaultNamespace(), updateNsAdminUserId);
-        } catch (NullPointerException e) {
-            LOGGER.info("THERE ARE NO USERS IN THE TEMP NAMESPACE.....");
-            return resultStatusService.UNAPPROACHABLE_USERS();
-
-        }
-
-
-        // 4. namespace 관리자 여부 확인
-        Users nsAdminUser = null;
-        try {
-            nsAdminUser = usersService.getUsersByNamespaceAndNsAdmin(cluster, namespace);
-        } catch (NullPointerException e) {
-            LOGGER.info("NAMESPACE ADMINISTRATOR DOES NOT EXIST...");
-        }
-
-
-        String updateNsAdminUserSA = newNsUser.getServiceAccountName();
-
-        // 5. 현재 namespace 관리자가 존재하지만, 다른 사용자를 관리자로 변경할 경우
-        // 현재 namespace 관리자는 'USER' 권한으로 USER-TYPE 변경
-        if (nsAdminUser != null && !nsAdminUser.getUserId().equals(initTemplate.getNsAdminUserId())) {
-            LOGGER.info("THE CURRENT NAMESPACE ADMINISTRATOR EXISTS AND CHANGES TO A NEW NAMESPACE ADMINISTRATOR....");
-            //Changes the current namespace admin user-type to 'USER'
-            nsAdminUser.setUserType(AUTH_USER);
-            usersService.updateUsers(nsAdminUser);
-        }
-
-        // 6. 현재 namespace 관리자 존재하지 않으며, 다른 사용자를 관리자로 변경할 경우
-        if (nsAdminUser == null || !nsAdminUser.getUserId().equals(initTemplate.getNsAdminUserId())) {
-
-            LOGGER.info("WHEN THE CURRENT NAMESPACE ADMINISTRATOR DOES NOT EXIST OR CHANGES TO A NEW NAMESPACE ADMINISTRATOR.....");
-
-            // Delete the existing user account
-            Users newNamespaceAdmin = null;
-            try {
-                // Verify that the new namespace admin is the current namespace member
-                newNamespaceAdmin = usersService.getUsers(cluster, namespace, updateNsAdminUserId);
-            } catch (NullPointerException e) {
-                LOGGER.info("THE NEW NAMESPACE ADMINISTRATOR IS NOT A CURRENT NAMESPACE MEMBER.....");
-            }
-
-            if (newNamespaceAdmin != null) {
-                // If the new namespace admin is current a namespace member, it deletes the user.
-         //       usersService.deleteUsers(newNamespaceAdmin);
-
-            }
-
-            // create admin and init role
-            resourceYamlService.createInitRole(params);
             resourceYamlService.createAdminRole(params);
-
-            params.setRs_sa(updateNsAdminUserSA);
-            params.setRs_role(propertyService.getAdminRole());
-
-            // 7. Service Account 생성
-            ResultStatus createSAresult = resourceYamlService.createServiceAccount(params);
-            if (createSAresult.getResultCode().equalsIgnoreCase(RESULT_STATUS_FAIL)) {
-                return createSAresult;
-            }
-
-            // 8. Role-Binding 생성
-            ResultStatus createRBresult = resourceYamlService.createRoleBinding(params);
-
-            if (createRBresult.getResultCode().equalsIgnoreCase(RESULT_STATUS_FAIL)) {
-                LOGGER.info("ROLE BINDING EXECUTE IS FAILED. K8S SA AND RB WILL BE REMOVED...");
-                //   resourceYamlService.deleteServiceAccountAndRolebinding(namespace, updateNsAdminUserSA, propertyService.getAdminRole());
-                return createRBresult;
-            }
-
-            String saSecretName = resourceYamlService.getSecretName(params);
-
-            newNsUser.setId(0);
-            newNsUser.setCpNamespace(namespace);
-            newNsUser.setRoleSetCode(propertyService.getAdminRole());
-            newNsUser.setSaSecret(saSecretName);
-            newNsUser.setSaToken(accessTokenService.getSecrets(namespace, saSecretName).getUserAccessToken());
-            newNsUser.setUserType(AUTH_NAMESPACE_ADMIN);
-            newNsUser.setIsActive(CHECK_Y);
-            usersService.createUsers(newNsUser);
-
+        } catch (Exception e) {
+            LOGGER.info("EXCEPTION OCCURRED WHILE CREATE DEFAULT ADMIN ROLE...");
         }
+
+
+        try {
+            resourceYamlService.createInitRole(params);
+        } catch (Exception e) {
+            LOGGER.info("EXCEPTION OCCURRED WHILE CREATE DEFAULT INIT ROLE...");
+        }
+
 
         // Modify ResourceQuotas , LimitRanges
-        // modifyResourceQuotas(namespace, initTemplate.getResourceQuotasList());
-        // modifyLimitRanges(namespace, initTemplate.getLimitRangesList());
+        try {
+            List<String> resourceQuotasList = initTemplate.getResourceQuotasList().stream().distinct().collect(Collectors.toList());
+            List<String> limitRangesList = initTemplate.getLimitRangesList().stream().distinct().collect(Collectors.toList());
+            modifyResourceQuotas(params, resourceQuotasList);
+            modifyLimitRanges(params, limitRangesList);
+
+        } catch (Exception e) {
+            throw new ResultStatusException(CommonStatusCode.INTERNAL_SERVER_ERROR.getMsg());
+        }
 
 
-        return (ResultStatus) commonService.setResultModelWithNextUrl(resultStatusService.SUCCESS_RESULT_STATUS(), Constants.RESULT_STATUS_SUCCESS, "YOUR_NAMESPACES_DETAIL_PAGE");
+        return (ResultStatus) commonService.setResultModel(new ResultStatus(), Constants.RESULT_STATUS_SUCCESS);
     }
 
 
     /**
      * ResourceQuotas 변경(Modify ResourceQuotas)
      *
-     * @param namespace            the namespace
+     * @param params               the params
      * @param requestUpdatedRqList the request update resourceQuotas list
      */
-    private void modifyResourceQuotas(String namespace, List<String> requestUpdatedRqList) {
-        ResourceQuotasList resourceQuotasList = restTemplateService.sendAdmin(Constants.TARGET_CP_MASTER_API,
-                propertyService.getCpMasterApiListResourceQuotasListUrl()
-                        .replace("{namespace}", namespace), HttpMethod.GET, null, ResourceQuotasList.class);
+    private void modifyResourceQuotas(Params params, List<String> requestUpdatedRqList) {
+        ResourceQuotasList resourceQuotasList = resourceQuotasService.getResourceQuotasList(params);
+        List<String> k8sResourceQuotasNameList = resourceQuotasList.getItems().stream().map(a -> a.getMetadata().getName()).collect(Collectors.toList());
+        ArrayList<String> toBeDelete = commonService.compareArrayList(k8sResourceQuotasNameList, requestUpdatedRqList);
+        ArrayList<String> toBeAdd = commonService.compareArrayList(requestUpdatedRqList, k8sResourceQuotasNameList);
 
-        List<String> k8sResourceQuotasList = resourceQuotasList.getItems().stream().map(a -> a.getMetadata().getName()).collect(Collectors.toList());
-
-        ArrayList<String> toBeDelete = commonService.compareArrayList(k8sResourceQuotasList, requestUpdatedRqList);
-        ArrayList<String> toBeAdd = commonService.compareArrayList(requestUpdatedRqList, k8sResourceQuotasList);
+        System.out.println("modifyResourceQuotas-----------------------------------------------------------------------------------------");
+        System.out.println("toBeDelete: " + toBeDelete.toString());
+        System.out.println("toBeAdd: " + toBeAdd.toString());
 
         // delete
-        for (String deleteRqName : toBeDelete) {
-            Params params = new Params();
-            params.setNamespace(namespace);
-            params.setResourceName(deleteRqName);
+        for (String deleteRq : toBeDelete) {
+            params.setResourceName(deleteRq);
             resourceQuotasService.deleteResourceQuotas(params);
         }
+
         // add
-        for (String rqName : toBeAdd) {
-            // resourceYamlService.createDefaultResourceQuota(namespace, rqName);
+        for (String createRq : toBeAdd) {
+            params.setRs_rq(createRq);
+            resourceYamlService.createDefaultResourceQuota(params);
         }
     }
 
@@ -345,25 +271,31 @@ public class NamespacesService {
     /**
      * LimitRanges 변경(Modify LimitRanges)
      *
-     * @param namespace            the namespace
+     * @param params               the params
      * @param requestUpdatedLrList the request update limitRanges list
      */
-    private void modifyLimitRanges(String namespace, List<String> requestUpdatedLrList) {
-        LimitRangesList limitRangesList = restTemplateService.sendAdmin(Constants.TARGET_CP_MASTER_API,
-                propertyService.getCpMasterApiListLimitRangesListUrl().replace("{namespace}", namespace),
-                HttpMethod.GET, null, LimitRangesList.class);
+    private void modifyLimitRanges(Params params, List<String> requestUpdatedLrList) {
+        LimitRangesList limitRangesList = limitRangesService.getLimitRangesList(params);
+        List<String> k8sLimitRangesNameList = limitRangesList.getItems().stream().map(a -> a.getMetadata().getName()).collect(Collectors.toList());
 
-        List<String> k8sLimitRangesList = limitRangesList.getItem().stream().map(lr -> lr.getMetadata().getName()).collect(Collectors.toList());
+        ArrayList<String> toBeDelete = commonService.compareArrayList(k8sLimitRangesNameList, requestUpdatedLrList);
+        ArrayList<String> toBeAdd = commonService.compareArrayList(requestUpdatedLrList, k8sLimitRangesNameList);
 
-        ArrayList<String> toBeDelete = commonService.compareArrayList(k8sLimitRangesList, requestUpdatedLrList);
-        ArrayList<String> toBeAdd = commonService.compareArrayList(requestUpdatedLrList, k8sLimitRangesList);
 
-        for (String lrName : toBeAdd) {
-            //  resourceYamlService.createDefaultLimitRanges(namespace, lrName);
+        System.out.println("modifyLimitRanges-----------------------------------------------------------------------------------------");
+        System.out.println("toBeDelete: " + toBeDelete.toString());
+        System.out.println("toBeAdd: " + toBeAdd.toString());
+
+        // delete
+        for (String deleteLr : toBeDelete) {
+            params.setResourceName(deleteLr);
+            limitRangesService.deleteLimitRanges(params);
         }
 
-        for (String deleteLrName : toBeDelete) {
-            //  limitRangesService.deleteLimitRanges(namespace, deleteLrName);
+        // add
+        for (String createLr : toBeAdd) {
+            params.setRs_lr(createLr);
+            resourceYamlService.createDefaultLimitRanges(params);
         }
     }
 
@@ -395,7 +327,6 @@ public class NamespacesService {
 
         return commonService.setResultModel(namespacesListSupport, Constants.RESULT_STATUS_SUCCESS);
     }
-
 
 
     public UsersList getMappingNamespacesListByAdmin(Params params) {

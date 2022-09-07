@@ -13,7 +13,6 @@ import org.paasta.container.platform.api.common.model.Params;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
-import springfox.documentation.annotations.ApiIgnore;
 
 
 /**
@@ -130,38 +129,6 @@ public class UsersController {
     }
 
 
-    /**
-     * Namespace Users 목록 조회(Get Users List By Namespaces)
-     *
-     * @param params the params
-     * @return the users list
-     */
-    @ApiOperation(value = "Namespace Users 목록 조회(Get Users List By Namespaces)", nickname = "getUsersListInNamespace")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body")
-    })
-    @GetMapping(value = "/clusters/{cluster:.+}/namespaces/{namespace:.+}/users/namespace")
-    public Object getUsersListInNamespace(Params params) {
-        return usersService.getUsersListInNamespaceAdmin(params);
-        // return usersService.getUsersListByNamespace(cluster, namespace);
-    }
-
-
-    /**
-     * 특정 Namespace 관리자 판별이 포함된 Users Name 목록 조회(Get Users Name List containing Namespace Admin)
-     *
-     * @param params the params
-     * @return the UsersInNamespace
-     */
-    @ApiOperation(value = "특정 Namespace 관리자 판별이 포함된 Users Name 목록 조회(Get Users Name List containing Namespace Admin)", nickname = "getUsersNameListByNamespaceAdmin")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body")
-    })
-    @GetMapping(value = "/clusters/{cluster:.+}/namespaces/{namespace:.+}/users/adminCheck")
-    public UsersInNamespace getUsersNameListByNamespaceAdmin(Params params) {
-        return usersService.getUsersNameListByNamespaceAdmin(params);
-    }
-
 
     /**
      * Users 와 맵핑된 Clusters 목록 조회(Get Clusters List Used By User)
@@ -196,85 +163,6 @@ public class UsersController {
     }
 
 
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//사용자 포탈 기능, 운영자 포탈에 적용될 수 있으므로 보류
 
-
-    /**
-     * 각 Namespace 별 Users 목록 조회(Get Users namespace list)
-     *
-     * @param cluster   the cluster
-     * @param namespace the namespace
-     * @param isAdmin   the isAdmin
-     * @return the users list
-     */
-    @ApiOperation(value = "각 Namespace 별 Users 목록 조회(Get Users namespace list)", nickname = "getUsersListByNamespace")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "cluster", value = "클러스터 명", required = true, dataType = "string", paramType = "path"),
-            @ApiImplicitParam(name = "namespace", value = "네임스페이스 명", required = true, dataType = "string", paramType = "path")
-    })
-    @GetMapping(value = "/clusters/{cluster:.+}/namespaces/{namespace:.+}/users")
-    public Object getUsersListByNamespace(@PathVariable(value = "cluster") String cluster,
-                                          @PathVariable(value = "namespace") String namespace,
-                                          @ApiIgnore @RequestParam(required = false, name = "isAdmin") boolean isAdmin) {
-
-        if (isAdmin) {
-            return usersService.getUsersListByNamespaceAdmin(cluster, namespace);
-        }
-        return usersService.getUsersListByNamespace(cluster, namespace);
-    }
-
-
-    /**
-     * Users 상세 조회(Get Users detail)
-     *
-     * @param cluster   the cluster
-     * @param namespace the namespace
-     * @param userId    the userId
-     * @return the users list
-     */
-    @ApiOperation(value = "각 Namespace 별 Users 상세 조회(Get Users namespace detail)", nickname = "getUsersByNamespace")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "cluster", value = "클러스터 명", required = true, dataType = "string", paramType = "path"),
-            @ApiImplicitParam(name = "namespace", value = "네임스페이스 명", required = true, dataType = "string", paramType = "path"),
-            @ApiImplicitParam(name = "userId", value = "유저 Id", required = true, dataType = "string", paramType = "path")
-    })
-    @GetMapping(value = "/clusters/{cluster:.+}/namespaces/{namespace:.+}/users/{userId:.+}")
-    public Object getUsersByNamespace(@PathVariable(value = "cluster") String cluster,
-                                      @PathVariable(value = "namespace") String namespace,
-                                      @PathVariable(value = "userId") String userId) {
-        if (namespace.toLowerCase().equals(Constants.ALL_NAMESPACES)) {
-            return usersService.getClusterAdminUsers(cluster, userId);
-        }
-
-        return usersService.getUsers(cluster, namespace, userId);
-    }
-
-
-
-
-/**
- * Users 권한 설정(Set Users authority)
- *
- * @param cluster   the cluster
- * @param namespace the namespace
- * @param users     the users
- * @return return is succeeded
- *//*
-
-    @ApiOperation(value = "Users 권한 설정(Set Users authority)", nickname = "modifyUsersConfig")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "cluster", value = "클러스터 명", required = true, dataType = "string", paramType = "path"),
-            @ApiImplicitParam(name = "namespace", value = "네임스페이스 명", required = true, dataType = "string", paramType = "path"),
-            @ApiImplicitParam(name = "users", value = "유저 목록", required = true, dataType = "List<Users>", paramType = "body")
-    })
-    @PutMapping(value = "/clusters/{cluster:.+}/namespaces/{namespace:.+}/users")
-    public ResultStatus modifyUsersConfig(@PathVariable(value = "cluster") String cluster,
-                                          @PathVariable(value = "namespace") String namespace,
-                                          @RequestBody List<Users> users) {
-        return usersService.modifyUsersConfig(cluster, namespace, users);
-    }
-
-*/
 
 }

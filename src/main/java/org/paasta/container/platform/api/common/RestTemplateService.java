@@ -143,6 +143,21 @@ public class RestTemplateService {
 
     }
 
+
+    /**
+     * 리소스 생성 및 수정에 대한 DryRun 체크 메소드
+     *
+     * @param reqApi       the req api
+     * @param reqUrl       the req url
+     * @param httpMethod   the http method
+     * @param responseType the response type
+     * @return the t
+     */
+    public <T> T sendDryRun(String reqApi, String reqUrl, HttpMethod httpMethod, String yaml, Class<T> responseType, Params params) {
+        return sendAdmin(reqApi, reqUrl + "?dryRun=All", httpMethod,yaml, responseType, Constants.ACCEPT_TYPE_JSON, "application/yaml", params);
+
+    }
+
     public String setRequestParameter(String reqApi, String reqUrl, HttpMethod httpMethod, Params params) {
 
         if (reqApi.equals(Constants.TARGET_CP_MASTER_API)) {
@@ -607,9 +622,8 @@ public class RestTemplateService {
 
         // CONTAINER PLATFORM MASTER API
         if (Constants.TARGET_CP_MASTER_API.equals(reqApi)) {
-            Clusters clusters = commonService.getKubernetesInfo(params);
+            Clusters clusters = (params.getIsClusterToken()) ? vaultService.getClusterDetails(params.getCluster()) : commonService.getKubernetesInfo(params);
             Assert.notNull(clusters, "Invalid parameter");
-            LOGGER.info("clusters: " + clusters);
             apiUrl = clusters.getClusterApiUrl();
             authorization = "Bearer " + clusters.getClusterToken();
 

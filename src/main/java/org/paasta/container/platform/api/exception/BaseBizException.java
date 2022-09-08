@@ -21,7 +21,7 @@ public class BaseBizException extends RuntimeException {
         this.errorMessage = errorMessage;
     }
 
-    public BaseBizException(String errorMessage, String errorCode) {
+    public BaseBizException(String errorCode, String errorMessage) {
         super(errorMessage);
         this.errorMessage = errorMessage;
         this.errorCode = errorCode;

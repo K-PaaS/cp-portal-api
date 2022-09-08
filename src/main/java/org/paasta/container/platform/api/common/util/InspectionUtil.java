@@ -1,10 +1,10 @@
 package org.paasta.container.platform.api.common.util;
 
-import org.apache.commons.lang3.StringUtils;
 import org.paasta.container.platform.api.common.CommonUtils;
 import org.paasta.container.platform.api.common.Constants;
 import org.paasta.container.platform.api.common.PropertyService;
 import org.paasta.container.platform.api.common.RestTemplateService;
+import org.paasta.container.platform.api.common.model.Params;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
@@ -124,23 +124,10 @@ public class InspectionUtil {
      * @throws InvocationTargetException
      * @throws IllegalAccessException
      */
-    public static Object resourceDryRunCheck(String methodType, String namespace, String kind, String yaml, String resourceName) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+    public static Object resourceDryRunCheck(String methodType, HttpMethod httpMethod, String namespace, String kind, String yaml, String resourceName, Params params)
+            throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
         RestTemplateService restTemplateService = (RestTemplateService) getBean("restTemplateService");
-        String finalUrl = verifyMethodCall(methodType, kind);
-
-        if (StringUtils.isNotEmpty(namespace)) {
-            if (StringUtils.isEmpty(resourceName)) {
-                return restTemplateService.sendYaml(Constants.TARGET_CP_MASTER_API,  finalUrl.replace("{namespace}", namespace) + "?dryRun=All", HttpMethod.POST, yaml, Map.class, true);
-            } else {
-                return restTemplateService.sendYaml(Constants.TARGET_CP_MASTER_API,  finalUrl.replace("{namespace}", namespace).replace("{name}", resourceName) + "?dryRun=All", HttpMethod.PUT, yaml, Map.class, true);
-            }
-        } else {
-            if (StringUtils.isEmpty(resourceName)) {
-                return restTemplateService.sendYaml(Constants.TARGET_CP_MASTER_API,  finalUrl + "?dryRun=All", HttpMethod.POST, yaml, Map.class, true);
-            } else {
-                return restTemplateService.sendYaml(Constants.TARGET_CP_MASTER_API,  finalUrl.replace("{name}", resourceName) + "?dryRun=All", HttpMethod.PUT, yaml, Map.class, true);
-            }
-        }
-
+        String finalUrl = verifyMethodCall(methodType, kind).replace("{namespace}", namespace).replace("{name}", resourceName);
+        return restTemplateService.sendDryRun(Constants.TARGET_CP_MASTER_API,  finalUrl, httpMethod, yaml, Map.class, params);
     }
 }

@@ -14,6 +14,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.annotation.Order;
+import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Component;
 import javax.servlet.http.HttpServletRequest;
 import java.util.Arrays;
@@ -194,7 +195,7 @@ public class MethodHandler {
                 }
             }
 
-            Object dryRunResult = InspectionUtil.resourceDryRunCheck("CreateUrl", namespace, resourceKind, temp, null);
+            Object dryRunResult = InspectionUtil.resourceDryRunCheck("CreateUrl", HttpMethod.POST, namespace, resourceKind, temp, Constants.NULL_REPLACE_TEXT, params);
             ObjectMapper oMapper = new ObjectMapper();
             ResultStatus createdRs = oMapper.convertValue(dryRunResult, ResultStatus.class);
 
@@ -336,7 +337,7 @@ public class MethodHandler {
         resourceKind = YamlUtil.parsingYaml(yaml, KIND_KEY);
 
         if (StringUtils.isNotEmpty(resourceKind) && StringUtils.isNotEmpty(yaml)) {
-            Object dryRunResult = InspectionUtil.resourceDryRunCheck("UpdateUrl", namespace, resourceKind, yaml, resourceName);
+            Object dryRunResult = InspectionUtil.resourceDryRunCheck("UpdateUrl", HttpMethod.PUT, namespace, resourceKind, yaml, resourceName, params);
             ObjectMapper oMapper = new ObjectMapper();
             ResultStatus updatedRs = oMapper.convertValue(dryRunResult, ResultStatus.class);
             if (Constants.RESULT_STATUS_FAIL.equals(updatedRs.getResultCode())) {

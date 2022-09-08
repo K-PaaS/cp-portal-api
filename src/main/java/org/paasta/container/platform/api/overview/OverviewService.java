@@ -90,6 +90,7 @@ public class OverviewService {
      */
     public Overview getOverviewAll(Params params) {
         NamespacesList namespacesList = new NamespacesList();
+        params.setIsClusterToken(true);
 
         // get deployments data
         DeploymentsList deploymentsList = getDeploymentsList(params);
@@ -267,12 +268,8 @@ public class OverviewService {
      * @return the users list
      */
     public Integer getUsersListByNamespaceByOverview(Params params) {
-        UsersList usersList = restTemplateService.send(Constants.TARGET_COMMON_API, Constants.URI_COMMON_API_USERS_LIST_BY_NAMESPACE
-                .replace("{cluster:.+}", params.getCluster())
-                .replace("{namespace:.+}", params.getNamespace()), HttpMethod.GET, null, UsersList.class, params);
-
-        List<String> overviewUserList = usersList.getItems().stream().map(Users::getUserId).collect(Collectors.toList());
-        overviewUserList = overviewUserList.stream().distinct().collect(Collectors.toList());
+        UsersList usersList = usersService.getAllUsersListByClusterAndNamespaces(params);
+        List<String> overviewUserList = usersList.getItems().stream().map(Users::getUserAuthId).distinct().collect(Collectors.toList());
         return overviewUserList.size();
     }
 

@@ -18,7 +18,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 import static org.paasta.container.platform.api.common.Constants.*;
@@ -375,21 +374,30 @@ public class UsersService {
 
 
 
-    public void deleteNamespaceAllUsers(Params params){
-        // 클러스터 내 특정 네임스페이스 사용자 db 데이터 삭제
-         Map usersLIst = restTemplateService.send(TARGET_COMMON_API, Constants.URI_COMMON_API_USERS_LIST_BY_NAMESPACE
+    public ResultStatus deleteNamespaceAllUsers(Params params){
+        // 클러스터 내 특정 네임스페이스 사용자 db 데이터 조회
+        UsersList usersList = getAllUsersListByClusterAndNamespaces(params);
+
+        // vault user token 삭제
+        for(Users users : usersList.getItems()) {
+            Params deleteUser = new Params(users.getClusterId(), users.getUserAuthId(), users.getUserType(), users.getCpNamespace());
+            vaultService.deleteUserAccessToken(deleteUser);
+        }
+
+        // db 데이터 삭제
+        ResultStatus resultStatus = restTemplateService.send(TARGET_COMMON_API, Constants.URI_COMMON_API_USERS_LIST_BY_NAMESPACE
                 .replace("{cluster:.+}", params.getCluster())
-                .replace("{namespace:.+}", params.getNamespace()), HttpMethod.DELETE, null, Map.class, params);
+                .replace("{namespace:.+}", params.getNamespace()), HttpMethod.DELETE, null, ResultStatus.class, params);
 
-        System.out.println("usersLIst.toString():" + usersLIst.toString());
-      /*
-
-         // vault user token 삭제
-        for(Users users : usersLIst.getItems()) {
-             Params deleteUser = new Params(users.getClusterId(), users.getUserAuthId(), users.getUserType(), users.getCpNamespace());
-             vaultService.deleteUserAccessToken(deleteUser);
-         }*/
-
-
+        return resultStatus;
     }
+
+
+
+    public UsersList getAllUsersListByClusterAndNamespaces(Params params) {
+        return restTemplateService.send(TARGET_COMMON_API, Constants.URI_COMMON_API_USERS_LIST_BY_NAMESPACE
+                .replace("{cluster:.+}", params.getCluster())
+                .replace("{namespace:.+}", params.getNamespace()), HttpMethod.GET, null, UsersList.class, params);
+    }
+
 }

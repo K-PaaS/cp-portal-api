@@ -215,7 +215,6 @@ public class LimitRangesService {
         LimitRangesTemplateList serverList = new LimitRangesTemplateList();
 
         List<String> k8sLrNameList = limitRangesList.getItems().stream().map(LimitRangesListItem::getName).collect(Collectors.toList());
-        List<String> dbLrNameList = defaultList.getItems().stream().map(LimitRangesDefault::getName).collect(Collectors.toList());
 
         for (LimitRangesDefault limitRangesDefault : defaultList.getItems()) {
 

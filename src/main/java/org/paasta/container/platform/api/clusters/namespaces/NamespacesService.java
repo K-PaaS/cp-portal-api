@@ -149,13 +149,13 @@ public class NamespacesService {
      * @return the resultStatus
      */
     public ResultStatus createInitNamespaces(Params params, NamespacesInitTemplate initTemplate) {
-
         if (initTemplate.getName().equalsIgnoreCase(NULL_REPLACE_TEXT)) {
             throw new ResultStatusException(MessageConstant.REQUEST_VALUE_IS_MISSING.getMsg());
         }
 
-        if (propertyService.getExceptNamespaceList().contains(initTemplate.getName())) {
-            throw new ResultStatusException(MessageConstant.NOT_ALLOWED_RESOURCE_NAME.getMsg());
+        for(String namespace : propertyService.getExceptNamespaceList()) {
+            if(namespace.equalsIgnoreCase(initTemplate.getName())) {
+                throw new ResultStatusException(MessageConstant.NOT_ALLOWED_RESOURCE_NAME.getMsg()); }
         }
 
         params.setNamespace(initTemplate.getName());
@@ -169,7 +169,6 @@ public class NamespacesService {
 
         List<String> resourceQuotasList = initTemplate.getResourceQuotasList().stream().distinct().collect(Collectors.toList());
         List<String> limitRangesList = initTemplate.getLimitRangesList().stream().distinct().collect(Collectors.toList());
-
 
         // 3. resourceQuotas 생성
         for (String rq : resourceQuotasList) {

@@ -37,7 +37,6 @@ public class Params {
     public String saSecret =  Constants.EMPTY_STRING;
 
     // request parameter setting
-    public String addParam = Constants.EMPTY_STRING;
     public String selectorType = Constants.EMPTY_STRING;
 
     //resource yaml
@@ -105,7 +104,6 @@ public class Params {
         this.isActive = "true";
         this.nodeName = Constants.EMPTY_STRING;
         this.resourceUid = Constants.EMPTY_STRING;
-        this.addParam = Constants.EMPTY_STRING;
         this.selectorType = Constants.RESOURCE_NAMESPACE;
         this.rs_sa = Constants.EMPTY_STRING;
         this.rs_role = Constants.EMPTY_STRING;

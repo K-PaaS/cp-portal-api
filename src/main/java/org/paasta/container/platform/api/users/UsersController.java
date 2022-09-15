@@ -156,7 +156,8 @@ public class UsersController {
     })
     @GetMapping(value = "/clusters/{cluster:.+}/users/namespacesList")
     public UsersList getNamespacesListByUserOwns(Params params) {
-        if (Constants.AUTH_ADMIN_LIST.contains(params.getUserType())) {
+        String userAuthority = commonService.getClusterAuthorityFromContext(params.getCluster());
+        if (Constants.AUTH_ADMIN_LIST.contains(userAuthority)) {
             return namespacesService.getMappingNamespacesListByAdmin(params);
         }
         return usersService.getMappingNamespacesListByUser(params);

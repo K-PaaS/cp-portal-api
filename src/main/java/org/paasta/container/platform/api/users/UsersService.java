@@ -125,23 +125,28 @@ public class UsersService {
 
 
     public Object getUsersAccessInfo(Params params) throws Exception {
-        UsersAdmin usersAdmin = new UsersAdmin();
+        Users users = new Users();
 
-        usersAdmin = restTemplateService.send(TARGET_COMMON_API, Constants.URI_COMMON_API_CLUSTER_INFO_USER_DETAILS
+        params.setUserType(commonService.getClusterAuthorityFromContext(params.getCluster()));
+
+        users = restTemplateService.send(TARGET_COMMON_API, Constants.URI_COMMON_API_CLUSTER_INFO_USER_DETAILS
                 .replace("{userAuthId:.+}", params.getUserAuthId())
                 .replace("{cluster:.+}", params.getCluster())
-                .replace("{namespace:.+}", params.getNamespace()), HttpMethod.GET, null, UsersAdmin.class, params);
+                .replace("{namespace:.+}", params.getNamespace()), HttpMethod.GET, null, Users.class, params);
 
-        params.setUserType(usersAdmin.getItems().get(0).getUserType());
+        commonService.getKubernetesInfo(params);
+        users.setCpNamespace(params.getNamespace());
+        users.setClusterName(params.getCluster());
 
         accessTokenService.getVaultSecrets(params);
+        users.setClusterApiUrl(params.getClusterApiUrl());
 
-        usersAdmin.setClusterApiUrl(params.getClusterApiUrl());
-        usersAdmin.setClusterName(params.getCluster());
-        usersAdmin.setClusterToken(params.getClusterToken());
+        vaultService.getAccessTokenPath(params);
+        users.setClusterToken(params.getClusterToken());
 
-        usersAdmin = commonService.userListProcessing(usersAdmin, params, UsersAdmin.class);
-        return commonService.setResultModel(usersAdmin, Constants.RESULT_STATUS_SUCCESS);
+        users.setUserType(params.getUserType());
+
+        return commonService.setResultModel(users, Constants.RESULT_STATUS_SUCCESS);
 
     }
 

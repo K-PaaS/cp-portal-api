@@ -97,13 +97,6 @@ public class UsersController {
     })
     @GetMapping(value = "/clusters/{cluster:.+}/namespaces/{namespace:.+}/accessesInfo")
     public Object getUsersAccessInfo(Params params) throws Exception {
-        if (params.getUserType().equalsIgnoreCase(Constants.SELECTED_ADMINISTRATOR)) {
-            params.setUserType(Constants.AUTH_CLUSTER_ADMIN);
-        } else {
-            //사용자인 경우
-            params.setUserType(Constants.AUTH_USER);
-        }
-
         return usersService.getUsersAccessInfo(params);
     }
 

@@ -5,7 +5,7 @@ import org.paasta.container.platform.api.common.Constants;
 
 @Data
 public class TerramanParams {
-    String cluster_id = Constants.EMPTY_STRING;
+    String clusterId = Constants.EMPTY_STRING;
     String provider = Constants.EMPTY_STRING;
-    int seq;
+    String seq = Constants.EMPTY_STRING;
 }

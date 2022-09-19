@@ -1,5 +1,6 @@
 package org.paasta.container.platform.api.clusters.clusters;
 
+import org.apache.commons.lang3.StringUtils;
 import org.paasta.container.platform.api.clusters.clusters.support.ClusterInfo;
 import org.paasta.container.platform.api.clusters.clusters.support.TerramanParams;
 import org.paasta.container.platform.api.clusters.nodes.NodesList;
@@ -20,8 +21,12 @@ import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
 
 import java.io.BufferedOutputStream;
+import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -74,6 +79,7 @@ public class ClustersService {
      */
     public Clusters createClusters(Params params) {
         Clusters clusters = setClusters(params);
+        Clusters ret;
         if (params.getIsClusterRegister() && !createClusterInfoToVault(params)) {
             clusters.setResultMessage("createClusterInfoToVault Failed");
             clusters.setResultCode(Constants.RESULT_STATUS_FAIL);
@@ -84,6 +90,9 @@ public class ClustersService {
             //Create Files
             try {
                 String path = propertyService.getCpTerramanTemplatePath().replace("{id}", params.getCluster());
+                Path filePath = Paths.get(path);
+                Files.createDirectories(filePath.getParent());
+
                 LOGGER.info("File write Start : " + path);
                 OutputStream outputStream = new FileOutputStream(path);
                 BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(outputStream);
@@ -94,23 +103,30 @@ public class ClustersService {
 
             } catch (Exception e) {
                 LOGGER.info("Template file write Error");
+                LOGGER.info("Error Message: " + e.getMessage());
+                e.printStackTrace();
                 clusters.setResultMessage("Template file write Error");
                 clusters.setResultCode(Constants.RESULT_STATUS_FAIL);
                 return clusters;
             }
+            //DB Write
+            ret = restTemplateService.sendGlobal(Constants.TARGET_COMMON_API, "/clusters", HttpMethod.POST, clusters, Clusters.class, params);
+
             //Setting arguments
             TerramanParams terramanParams = new TerramanParams();
-            terramanParams.setCluster_id(params.getCluster());
+            terramanParams.setClusterId(params.getCluster());
             terramanParams.setProvider(params.getProviderType().name());
-            terramanParams.setSeq(Integer.parseInt(params.getCloudAccountId()));
+            terramanParams.setSeq(params.getCloudAccountId());
             LOGGER.info("Terraman API call Start : " + terramanParams);
-            restTemplateService.sendGlobal(Constants.TARGET_TERRAMAN_API, "/clusters/create", HttpMethod.POST, terramanParams, TerramanParams.class, params);
+            restTemplateService.sendGlobal(Constants.TARGET_TERRAMAN_API, "/clusters/create/daemon", HttpMethod.POST, terramanParams, TerramanParams.class, params);
             LOGGER.info("Terraman API call end");
         }
         else {
             clusters.setStatus(Constants.ClusterStatus.ACTIVE.getInitial());
+            return (Clusters) commonService.setResultModel(restTemplateService.sendGlobal(Constants.TARGET_COMMON_API, "/clusters", HttpMethod.POST, clusters, Clusters.class, params), Constants.RESULT_STATUS_SUCCESS);
         }
-        return (Clusters) commonService.setResultModel(restTemplateService.sendGlobal(Constants.TARGET_COMMON_API, "/clusters", HttpMethod.POST, clusters, Clusters.class, params), Constants.RESULT_STATUS_SUCCESS);
+
+        return ret;
     }
 
 

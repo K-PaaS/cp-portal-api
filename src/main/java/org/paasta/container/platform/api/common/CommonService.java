@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
@@ -832,5 +833,16 @@ public class CommonService {
         Claims claims = Jwts.parser().setSigningKey(secret).parseClaimsJws(token).getBody();
 
         return claims.getSubject();
+    }
+
+    /**
+     *  사용자 이름 조회(Get User name from context)
+     *
+     * @return the string
+     */
+    public String getUserNameFromContext() {
+        User user = (User)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        return user.getUsername();
     }
 }

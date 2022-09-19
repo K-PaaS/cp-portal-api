@@ -127,24 +127,25 @@ public class UsersService {
     public Object getUsersAccessInfo(Params params) throws Exception {
         Users users = new Users();
 
-        params.setUserType(commonService.getClusterAuthorityFromContext(params.getCluster()));
-
-        users = restTemplateService.send(TARGET_COMMON_API, Constants.URI_COMMON_API_CLUSTER_INFO_USER_DETAILS
+        users = restTemplateService.send(TARGET_COMMON_API, Constants.URI_COMMON_API_CLUSTER_INFO_USER_DETAILS//roleSetCode
                 .replace("{userAuthId:.+}", params.getUserAuthId())
                 .replace("{cluster:.+}", params.getCluster())
                 .replace("{namespace:.+}", params.getNamespace()), HttpMethod.GET, null, Users.class, params);
 
-        commonService.getKubernetesInfo(params);
+        params.setUserType(commonService.getClusterAuthorityFromContext(params.getCluster()));//userType
+        users.setUserType(params.getUserType());
+
+        commonService.getKubernetesInfo(params);//clusterName, cpNamespace
         users.setCpNamespace(params.getNamespace());
         users.setClusterName(params.getCluster());
 
-        accessTokenService.getVaultSecrets(params);
+        accessTokenService.getVaultSecrets(params);//clusterApiUrl
         users.setClusterApiUrl(params.getClusterApiUrl());
 
-        vaultService.getAccessTokenPath(params);
+        vaultService.getAccessTokenPath(params);//clusterToken
         users.setClusterToken(params.getClusterToken());
 
-        users.setUserType(params.getUserType());
+        users.setUserId(commonService.getUserNameFromContext());//userId
 
         return commonService.setResultModel(users, Constants.RESULT_STATUS_SUCCESS);
 

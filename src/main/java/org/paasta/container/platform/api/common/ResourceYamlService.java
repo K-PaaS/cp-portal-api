@@ -14,6 +14,7 @@ import org.paasta.container.platform.api.common.model.Params;
 import org.paasta.container.platform.api.common.model.ResultStatus;
 import org.paasta.container.platform.api.secret.Secrets;
 import org.paasta.container.platform.api.users.Users;
+import org.paasta.container.platform.api.users.UsersList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -333,7 +334,6 @@ public class ResourceYamlService {
         map.put("spaceName", params.getNamespace());
         params.setYaml(templateService.convert("create_clusterRoleBinding.ftl", map));
 
-        System.out.println("cluster admin yaml:" + params.getYaml());
         ResultStatus resultStatus = restTemplateService.sendYaml(Constants.TARGET_CP_MASTER_API,
                 propertyService.getCpMasterApiListClusterRoleBindingsCreateUrl(), HttpMethod.POST, ResultStatus.class, params);
         return (ResultStatus) commonService.setResultModel(resultStatus, Constants.RESULT_STATUS_SUCCESS);
@@ -434,15 +434,12 @@ public class ResourceYamlService {
 
     public void deleteUserResource(Users users) {
         // SA and RoleBinding 삭제
-        Params params = new Params(users.getClusterId(), users.getCpNamespace(), users.getId(),
+        Params params = new Params(users.getClusterId(), users.getCpNamespace(), users.getUserAuthId(), AUTH_USER,
                 users.getServiceAccountName(), users.getRoleSetCode(), true);
-
-       // sa : replace("{namespace}", params.getNamespace()).replace("{name}", params.getRs_sa()),
+        // sa : replace("{namespace}", params.getNamespace()).replace("{name}", params.getRs_sa()),
        // rb : replace("{namespace}", params.getNamespace()).replace("{name}", params.getRs_sa() + Constants.NULL_REPLACE_TEXT + params.getRs_role() + "-binding"),
         deleteSaAndRb(params);
         // vault Token 삭제
-        params.setUserAuthId(users.getUserAuthId());
-        params.setUserType(Constants.AUTH_USER);
         vaultService.deleteUserAccessToken(params);
         // DB 삭제
         deleteUsers(params);
@@ -462,10 +459,34 @@ public class ResourceYamlService {
         // db 삭제
         params.setNamespace(propertyService.getDefaultNamespace());
         deleteUsers(params);
-
-
     }
 
+
+    public void deleteUserResourceForNonExistentUser(UsersList usersList) {
+        for(Users users : usersList.getItems()) {
+            Params params  = new Params(users.getClusterId(), users.getCpNamespace(), users.getUserAuthId(), users.getUserType(),
+            users.getServiceAccountName(), users.getRoleSetCode(), true);
+            try{
+                // delete sa and rb
+                if(users.getUserType().equalsIgnoreCase(AUTH_CLUSTER_ADMIN)) {
+                    params.setNamespace(propertyService.getClusterAdminNamespace());
+                    deleteServiceAccount(params);
+                    deleteClusterRoleBinding(params);
+                }
+                else {
+                    deleteSaAndRb(params);
+                }
+
+                // delete cluster token in vault
+                vaultService.deleteUserAccessToken(params);
+            }
+            catch (Exception e ){
+                LOGGER.info("***** EXCEPTION OCCURRED WHILE DELETE RESOURCES FROM NON-EXISTENT USER...");
+            }
+
+        }
+
+    }
 
     /**
      * 사용자 DB 저장(Save Users DB)

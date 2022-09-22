@@ -103,8 +103,6 @@ public class UsersService {
                     .replace("{cluster:.+}", params.getCluster())
                     .replace("{userAuthId:.+}", params.getUserAuthId()), HttpMethod.GET, null, UsersDetails.class, params);
 
-            System.out.println(usersDetails);
-
             for (Users user : usersDetails.getItems()) {
                 if (user.getUserType().equalsIgnoreCase(AUTH_CLUSTER_ADMIN)) {
                     user.setCpNamespace(propertyService.getClusterAdminNamespace());
@@ -183,11 +181,6 @@ public class UsersService {
         List<NamespaceRole> toBeAdd = newNamespaceRoleList.stream().filter(x -> !currentNamespacesList.contains(x.getNamespace())).collect(Collectors.toList());
 
 
-        System.out.println("asis:" + asis.toString());
-        System.out.println("toBeDelete:" + toBeDelete.toString());
-        System.out.println("toBeAdd:" + toBeAdd.toString());
-
-
         for (NamespaceRole newNr : asis) {
             NamespaceRole currentNr = currentNamespaceRoleList.stream().filter(x -> x.getNamespace().equals(newNr.getNamespace())).collect(Collectors.toList()).get(0);
             if (!currentNr.getRole().equals(newNr.getRole())) {
@@ -195,11 +188,6 @@ public class UsersService {
                 toBeAdd.add(newNr);
             }
         }
-
-        System.out.println("---------------------------------");
-        System.out.println("asis:" + asis.toString());
-        System.out.println("toBeDelete:" + toBeDelete.toString());
-        System.out.println("toBeAdd:" + toBeAdd.toString());
 
 
         if (usersDetails.getUserType().equalsIgnoreCase(AUTH_USER) && toBeDelete.size() < 1 && toBeAdd.size() < 1) {
@@ -224,15 +212,6 @@ public class UsersService {
             throw new ResultStatusException(CommonStatusCode.INTERNAL_SERVER_ERROR.getMsg());
         }
 
-        System.out.println("-----------------------------------------------------------------------------------------------------");
-        System.out.println("params.getCluster(): " + params.getCluster());
-        System.out.println("params.getNamespace() :" + params.getNamespace());
-        System.out.println("params.getId(): " + params.getId());
-        System.out.println("params.getUserAuthId():"+ params.getUserAuthId());
-        System.out.println("params.getUserType(): "+ params.getUserType());
-        System.out.println("params.getRs_sa():" + params.getRs_sa());
-        System.out.println("params.getRs_role():" + params.getRs_role());
-        System.out.println("-----------------------------------------------------------------------------------------------------");
 
         return (ResultStatus) commonService.setResultModel(new ResultStatus(), Constants.RESULT_STATUS_SUCCESS);
     }
@@ -366,7 +345,6 @@ public class UsersService {
 
     public ResultStatus deleteUsers(List<Long> ids) {
         String sendParams = StringUtils.join(ids, ",");
-        System.out.println("sendParams:" + sendParams);
         return restTemplateService.send(TARGET_COMMON_API, Constants.URI_COMMON_API_DELETE_USER_BY_IDS + sendParams,
                 HttpMethod.DELETE, null, ResultStatus.class, new Params());
 

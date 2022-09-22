@@ -399,9 +399,6 @@ public class PropertyService {
     @Value("${vault.path.super-admin-token}")
     private String vaultSuperAdminTokenPath;
 
-    @Value("${vault.path.cluster-admin-token}")
-    private String vaultClusterAdminTokenPath;
-
     @Value("${vault.path.user-token}")
     private String vaultUserTokenPath;
 

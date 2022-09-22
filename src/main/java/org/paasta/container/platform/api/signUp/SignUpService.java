@@ -17,9 +17,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
 import java.util.Map;
 
-
-import static org.paasta.container.platform.api.common.Constants.NULL_REPLACE_TEXT;
-import static org.paasta.container.platform.api.common.Constants.TARGET_COMMON_API;
+import static org.paasta.container.platform.api.common.Constants.*;
 
 /**
  * Sign Up Service 클래스
@@ -81,14 +79,10 @@ public class SignUpService {
         // 1-2. TYPE : SUPER-ADMIN, SUPER-ADMIN 권한이 이미 등록된 경우
         // 1-3. TYPE: USER, 해당 USER가 이미 등록된 경우
         // 메세지 리턴 처리
-
         UsersList usersList = checkUserSignUp(params);
 
         // 2. KEYCLOAK 내 삭제된 동일한 이전 USER-ID의 K8S SA, ROLEBINDING 삭제 진행
-        for(Users u: usersList.getItems()) {
-          Params p = new Params(u.getClusterId(), u.getCpNamespace(), u.getServiceAccountName(), u.getRoleSetCode(), true);
-          resourceYamlService.deleteSaAndRb(p);
-        }
+        resourceYamlService.deleteUserResourceForNonExistentUser(usersList);
 
         // 3. CP-USER 계정 생성
         Users newUser = new Users(NULL_REPLACE_TEXT, propertyService.getDefaultNamespace(), params.getUserId(), params.getUserAuthId(),
@@ -139,18 +133,5 @@ public class SignUpService {
     public ResultStatus sendSignUpUser(Users users) {
         return restTemplateService.send(TARGET_COMMON_API, Constants.URI_COMMON_API_USER_SIGNUP, HttpMethod.POST, users, ResultStatus.class, new Params());
     }
-
-
-    /**
-     * 아이디로 존재하는 USER 계정 조회(Get users by user id)
-     *
-     * @param userId the userId
-     * @return the users detail
-     */
-    public UsersList getUsersListByUserId(String userId) {
-        return restTemplateService.send(TARGET_COMMON_API, Constants.URI_COMMON_API_USERS_DETAIL.replace("{userId:.+}", userId).replace("{userAuthId:.+}", NULL_REPLACE_TEXT),
-                HttpMethod.GET, null, UsersList.class, new Params());
-    }
-
 
 }

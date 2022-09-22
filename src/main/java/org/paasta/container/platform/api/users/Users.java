@@ -64,9 +64,6 @@ public class Users {
     private String secretCreationTimestamp;
 
 
-    private String oldUserType;
-
-
 
     public String getUserId() {
         return CommonUtils.procReplaceNullValue(userId);
@@ -166,9 +163,10 @@ public class Users {
                 ", clusterId='" + clusterId + '\'' +
                 ", userId='" + userId + '\'' +
                 ", userAuthId='" + userAuthId + '\'' +
+                ", namespace='" + cpNamespace + '\'' +
+                ", userType='" + userType + '\'' +
                 ", serviceAccountName='" + serviceAccountName + '\'' +
                 ", roleSetCode='" + roleSetCode + '\'' +
-                ", userType='" + userType + '\'' +
                 ", created='" + created + '\'' +
                 '}';
     }

@@ -249,10 +249,6 @@ public class NamespacesService {
         ArrayList<String> toBeDelete = commonService.compareArrayList(k8sResourceQuotasNameList, requestUpdatedRqList);
         ArrayList<String> toBeAdd = commonService.compareArrayList(requestUpdatedRqList, k8sResourceQuotasNameList);
 
-        System.out.println("modifyResourceQuotas-----------------------------------------------------------------------------------------");
-        System.out.println("toBeDelete: " + toBeDelete.toString());
-        System.out.println("toBeAdd: " + toBeAdd.toString());
-
         // delete
         for (String deleteRq : toBeDelete) {
             params.setResourceName(deleteRq);
@@ -279,11 +275,6 @@ public class NamespacesService {
 
         ArrayList<String> toBeDelete = commonService.compareArrayList(k8sLimitRangesNameList, requestUpdatedLrList);
         ArrayList<String> toBeAdd = commonService.compareArrayList(requestUpdatedLrList, k8sLimitRangesNameList);
-
-
-        System.out.println("modifyLimitRanges-----------------------------------------------------------------------------------------");
-        System.out.println("toBeDelete: " + toBeDelete.toString());
-        System.out.println("toBeAdd: " + toBeAdd.toString());
 
         // delete
         for (String deleteLr : toBeDelete) {

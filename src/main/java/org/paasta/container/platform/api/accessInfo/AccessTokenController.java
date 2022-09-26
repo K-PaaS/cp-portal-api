@@ -32,13 +32,13 @@ public class AccessTokenController {
         this.accessTokenService = accessTokenService;
     }
 
-    /**
+ /*   *//**
      * Secrets 상세 조회(Get Secrets detail)
      *
      * @param namespace the namespace
      * @param accessTokenName the accessTokenName
      * @return the AccessToken detail
-     */
+     *//*
     @ApiOperation(value = "Secrets 상세 조회(Get Secrets detail)", nickname = "getSecret")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "namespace", value = "네임스페이스 명", required = true, dataType = "string", paramType = "path"),
@@ -48,6 +48,6 @@ public class AccessTokenController {
     public AccessToken getSecret(@PathVariable("namespace") String namespace,
                                  @PathVariable("accessTokenName") String accessTokenName) {
         return accessTokenService.getSecrets(namespace, accessTokenName);
-    }
+    }*/
 
 }

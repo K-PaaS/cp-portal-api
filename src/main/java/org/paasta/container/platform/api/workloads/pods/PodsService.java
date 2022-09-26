@@ -52,23 +52,6 @@ public class PodsService {
     }
 
 
-    /**
-     * Pods Metric 정보 조회(Get Pods Metric List)
-     *
-     * @param namespace the namespace
-     * @param podsList  the podsList
-     * @return the pods list
-     */
-    public PodsList getPodsMetricList(String namespace, PodsList podsList) {
-        HashMap responseMap = (HashMap) restTemplateService.sendAdmin(Constants.TARGET_CP_MASTER_API,
-                Constants.URI_METRIC_API_BASIC.replace("{namespace}", namespace)
-                , HttpMethod.GET, null, Map.class);
-        PodsMetric podsMetrics = commonService.setResultObject(responseMap, PodsMetric.class);
-
-      //  getMergeMetric(podsList, podsMetrics);
-
-        return podsList;
-    }
 
 /*    *//**
      * Pods Metric 정보 병합(Merge Pods Metric List)

@@ -1,6 +1,6 @@
 package org.paasta.container.platform.api.overview;
 import lombok.Data;
-import org.paasta.container.platform.api.common.model.CommonItemMetaData;
+import lombok.NoArgsConstructor;
 import org.paasta.container.platform.api.metrics.TopNodes;
 
 import java.util.List;
@@ -13,13 +13,12 @@ import java.util.List;
  * @since 2022.06.29
  **/
 @Data
+@NoArgsConstructor
 public class GlobalOverview {
     private String resultCode;
     private String resultMessage;
     private Integer httpStatusCode;
     private String detailMessage;
-
-    private CommonItemMetaData itemMetaData;
 
     // count
     private Integer clusterStatus;
@@ -30,22 +29,19 @@ public class GlobalOverview {
 
     private List<GlobalOverviewItems> items;
 
-    private List<TopNodes> topNodesCPU;
-    private List<TopNodes> topNodesMEM;
+    private List<TopNodes> topNodeCPU;
+    private List<TopNodes> topNodeMem;
 
-    public GlobalOverview(){
-
-    }
 
     public GlobalOverview(Integer clusterStatus, Integer namespaceStatus, Integer pvcStatus, Integer pvStatus, Integer podStatus,
-                          List<GlobalOverviewItems> items, List<TopNodes> topNodesCPU, List<TopNodes> topNodesMEM) {
+                          List<GlobalOverviewItems> items, List<TopNodes> topNodeCPU, List<TopNodes> topNodeMEM) {
         this.clusterStatus = clusterStatus;
         this.namespaceStatus = namespaceStatus;
         this.pvcStatus = pvcStatus;
         this.pvStatus = pvStatus;
         this.podStatus = podStatus;
         this.items = items;
-        this.topNodesCPU = topNodesCPU;
-        this.topNodesMEM = topNodesMEM;
+        this.topNodeCPU = topNodeCPU;
+        this.topNodeMem = topNodeMEM;
     }
 }

@@ -1,9 +1,12 @@
 package org.paasta.container.platform.api.metrics;
 
 import lombok.Data;
+import lombok.NoArgsConstructor;
+
 import java.util.Map;
 
 @Data
+@NoArgsConstructor
 public class TopNodes {
     private String clusterName;
     private String clusterId;

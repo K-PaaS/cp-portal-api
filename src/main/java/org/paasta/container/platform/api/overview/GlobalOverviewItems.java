@@ -1,6 +1,7 @@
 package org.paasta.container.platform.api.overview;
 
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.paasta.container.platform.api.common.Constants;
 import org.paasta.container.platform.api.overview.support.Count;
 
@@ -15,9 +16,10 @@ import java.util.Map;
  * @since 2022.06.29
  **/
 @Data
+@NoArgsConstructor
 public class GlobalOverviewItems {
 
-    private String resultCode;
+    private String resultCode = Constants.RESULT_STATUS_SUCCESS;
     private String clusterId;
     private String clusterName;
     private String clusterProviderType;
@@ -29,10 +31,6 @@ public class GlobalOverviewItems {
     private Count pvcCount;
     private Map<String, Object> usage;
 
-
-    public GlobalOverviewItems() {
-
-    }
 
     public GlobalOverviewItems(String resultCode, String clusterId, String clusterName, String clusterProviderType, String version,
                                Count nodeCount, Count namespaceCount, Count podCount, Count pvCount, Count pvcCount, Map<String, Object> usage) {

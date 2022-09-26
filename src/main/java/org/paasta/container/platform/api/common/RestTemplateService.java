@@ -20,8 +20,7 @@ import org.springframework.web.client.RestTemplate;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 
-import static org.paasta.container.platform.api.common.Constants.TARGET_COMMON_API;
-import static org.paasta.container.platform.api.common.Constants.TARGET_TERRAMAN_API;
+import static org.paasta.container.platform.api.common.Constants.*;
 
 /**
  * Rest Template Service 클래스
@@ -37,6 +36,7 @@ public class RestTemplateService {
     private static final String AUTHORIZATION_HEADER_KEY = "Authorization";
     private static final String CONTENT_TYPE = "Content-Type";
     private final String commonApiBase64Authorization;
+    private final String metricCollectorApiBase64Authorization;
     private final RestTemplate restTemplate;
     private final RestTemplate shortRestTemplate;
     private final PropertyService propertyService;
@@ -50,18 +50,18 @@ public class RestTemplateService {
      * Instantiates a new Rest template service
      *
      * @param restTemplate                   the rest template
-     * @param commonApiAuthorizationId       the common api authorization id
-     * @param commonApiAuthorizationPassword the common api authorization password
      * @param propertyService                the property service
      */
     @Autowired
     public RestTemplateService(RestTemplate restTemplate,
                                @Qualifier("shortTimeoutRestTemplate") RestTemplate shortRestTemplate,
-                               @Value("${commonApi.authorization.id}") String commonApiAuthorizationId,
-                               @Value("${commonApi.authorization.password}") String commonApiAuthorizationPassword,
                                PropertyService propertyService,
                                CommonService commonService,
-                               VaultService vaultService) {
+                               VaultService vaultService,
+                               @Value("${commonApi.authorization.id}") String commonApiAuthorizationId,
+                               @Value("${commonApi.authorization.password}") String commonApiAuthorizationPassword,
+                               @Value("${cpMetricCollector.api.authorization.id}") String metricCollectorApiAuthorizationId,
+                               @Value("${cpMetricCollector.api.authorization.password}") String metricCollectorApiAuthorizationPassword) {
         this.restTemplate = restTemplate;
         this.shortRestTemplate = shortRestTemplate;
         this.propertyService = propertyService;
@@ -70,6 +70,9 @@ public class RestTemplateService {
         this.commonApiBase64Authorization = "Basic "
                 + Base64Utils.encodeToString(
                 (commonApiAuthorizationId + ":" + commonApiAuthorizationPassword).getBytes(StandardCharsets.UTF_8));
+        this.metricCollectorApiBase64Authorization =  "Basic "
+                + Base64Utils.encodeToString(
+                (metricCollectorApiAuthorizationId + ":" + metricCollectorApiAuthorizationPassword).getBytes(StandardCharsets.UTF_8));
     }
 
 
@@ -323,7 +326,7 @@ public class RestTemplateService {
         String apiUrl = "";
         String authorization = "";
 
-        // CONTAINER PLATFORM MASTER API
+        // K8S MASTER API
         if (Constants.TARGET_CP_MASTER_API.equals(reqApi)) {
             Clusters clusters = (params.getIsClusterToken()) ? vaultService.getClusterDetails(params.getCluster()) : commonService.getKubernetesInfo(params);
             Assert.notNull(clusters, "Invalid parameter");
@@ -341,6 +344,13 @@ public class RestTemplateService {
         if (TARGET_TERRAMAN_API.equals(reqApi)) {
             apiUrl = propertyService.getTerramanApiUrl();
         }
+
+        // METRIC COLLECTOR API
+        if(TARGET_METRIC_COLLECTOR_API.equals(reqApi)) {
+            apiUrl = propertyService.getCpMetricCollectorApiUrl();
+            authorization = metricCollectorApiBase64Authorization;
+        }
+
 
         this.base64Authorization = authorization;
         this.baseUrl = apiUrl;

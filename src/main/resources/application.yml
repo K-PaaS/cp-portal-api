@@ -219,7 +219,7 @@ cpMetricCollector:
     authorization:
       id: paasta
       password: password
-    url: ${CP_METRIC_COLLECTOR_API_URI}
+    url: ${CP_PORTAL_METRIC_COLLECTOR_API_URI}
     clusters:
       get: "/getDashboardData"
       key: "cluster_id"

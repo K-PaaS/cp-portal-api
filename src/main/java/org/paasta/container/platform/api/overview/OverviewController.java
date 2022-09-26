@@ -20,7 +20,7 @@ import org.springframework.web.bind.annotation.*;
 public class OverviewController {
 
     private final OverviewService overviewService;
-    private final GlobalOverviewService globalOverviewService;
+    private final GlobalOverviewNewService globalOverviewService;
 
     /**
      * Instantiates a new Overview controller
@@ -28,7 +28,7 @@ public class OverviewController {
      * @param overviewService the overview service
      */
     @Autowired
-    public OverviewController(OverviewService overviewService, GlobalOverviewService globalOverviewService) {
+    public OverviewController(OverviewService overviewService, GlobalOverviewNewService globalOverviewService) {
         this.overviewService = overviewService;
         this.globalOverviewService = globalOverviewService;
     }
@@ -67,19 +67,4 @@ public class OverviewController {
     }
 
 
-    /**
-     * Global Overview 조회(Get Global Overview)
-     *
-     * @param params the params
-     * @return the global overview
-     */
-    @ApiOperation(value = "Global Overview 조회(Get Global Overview)", nickname = "getGlobalOverview")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body")
-    })
-    @GetMapping("/test")
-    public Object getTest(Params params) {
-
-        return null;//return globalOverviewService.topPods(params);
-    }
 }

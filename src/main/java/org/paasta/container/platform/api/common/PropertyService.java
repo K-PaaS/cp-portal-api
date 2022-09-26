@@ -421,4 +421,15 @@ public class PropertyService {
 
     @Value("${cpMaster.api.metrics.pod.get}")
     private String cpMasterApiMetricsPodsGetUrl;
+
+
+    // cp metric collector
+    @Value("${cpMetricCollector.api.url}")
+    private String cpMetricCollectorApiUrl;
+
+    @Value("${cpMetricCollector.api.clusters.get}")
+    private String cpMetricCollectorApiClustersGetUrl;
+
+    @Value("${cpMetricCollector.api.clusters.key}")
+    private String cpMetricCollectorApiClustersKey;
 }

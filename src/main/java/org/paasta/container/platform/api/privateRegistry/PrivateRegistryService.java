@@ -1,6 +1,7 @@
 package org.paasta.container.platform.api.privateRegistry;
 
 import org.paasta.container.platform.api.common.*;
+import org.paasta.container.platform.api.common.model.Params;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
@@ -37,13 +38,8 @@ public class PrivateRegistryService {
      * @return the private registry
      */
     public Object getPrivateRegistry(String imageName) {
-
-        Object response = restTemplateService.sendAdmin(Constants.TARGET_COMMON_API, Constants.URI_COMMON_API_PRIVATE_REGISTRY
-                .replace("{imageName:.+}", imageName), HttpMethod.GET, null, PrivateRegistry.class);
-
-        if (CommonUtils.isResultStatusInstanceCheck(response)) {
-            return response;
-        }
+        Object response = restTemplateService.send(Constants.TARGET_COMMON_API, Constants.URI_COMMON_API_PRIVATE_REGISTRY
+                .replace("{imageName:.+}", imageName), HttpMethod.GET, null, PrivateRegistry.class, new Params());
         return commonService.setResultModel(commonService.setResultObject(response, PrivateRegistry.class), Constants.RESULT_STATUS_SUCCESS);
     }
 

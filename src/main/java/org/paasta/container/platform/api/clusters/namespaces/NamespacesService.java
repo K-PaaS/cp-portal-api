@@ -132,6 +132,15 @@ public class NamespacesService {
      * @return the resultStatus
      */
     public ResultStatus deleteNamespaces(Params params) {
+        if (params.getNamespace().equalsIgnoreCase(NULL_REPLACE_TEXT)) {
+            throw new ResultStatusException(MessageConstant.REQUEST_VALUE_IS_MISSING.getMsg());
+        }
+
+        for(String namespace : propertyService.getExceptNamespaceList()) {
+            if(namespace.equalsIgnoreCase(params.getNamespace())) {
+                throw new ResultStatusException(MessageConstant.NOT_ALLOWED_RESOURCE_NAME.getMsg()); }
+        }
+
         ResultStatus resultStatus = restTemplateService.send(Constants.TARGET_CP_MASTER_API,
                 propertyService.getCpMasterApiListNamespacesDeleteUrl().replace("{name:.+}", params.getNamespace()),
                 HttpMethod.DELETE, null, ResultStatus.class, params);

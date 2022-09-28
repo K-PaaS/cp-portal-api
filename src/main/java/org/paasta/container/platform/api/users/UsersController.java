@@ -62,8 +62,6 @@ public class UsersController {
             return usersService.getClusterAdminListByCluster(params);
         }
         return usersService.getUsersAllByCluster(params);
-
-        // return usersService.getUsersAll(cluster,namespace,userId);
     }
 
 
@@ -113,7 +111,7 @@ public class UsersController {
     @ApiImplicitParams({
             @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body")
     })
-    @PutMapping(value = "/clusters/{cluster:.+}/users/{userId:.+}")
+    @PutMapping(value = "/clusters/{cluster:.+}/users/{userAuthId:.+}")
     public Object modifyUsers(Params params, @RequestBody Users users) throws Exception {
         if(users.getUserType().equalsIgnoreCase(Constants.AUTH_CLUSTER_ADMIN)) {
             return usersService.modifyToClusterAdmin(params, users);

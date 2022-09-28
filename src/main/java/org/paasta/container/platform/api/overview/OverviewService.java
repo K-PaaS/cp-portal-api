@@ -23,7 +23,6 @@ import org.paasta.container.platform.api.workloads.pods.PodsService;
 import org.paasta.container.platform.api.workloads.replicaSets.ReplicaSetsList;
 import org.paasta.container.platform.api.workloads.replicaSets.ReplicaSetsService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -105,7 +104,6 @@ public class OverviewService {
         if (params.getNamespace().equalsIgnoreCase(Constants.ALL_NAMESPACES)) {
             // get namespaces data
             namespacesList = namespacesService.getNamespacesList(params);
-            params.setNamespace(propertyService.getDefaultNamespace());
         }
 
         // get users count

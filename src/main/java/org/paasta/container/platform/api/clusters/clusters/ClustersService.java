@@ -219,8 +219,8 @@ public class ClustersService {
                                 podsService.getPodsList(new Params(e.getClusterId(), e.getName())).getItems().size())));
  */
 
-        clustersList.getItems().stream().forEach(x -> LOGGER.info("getAuthorityFromContext Test :: Cluster: " + x.getClusterId() +
-                " Authority : " + commonService.getClusterAuthorityFromContext(x.getClusterId())));
+//        clustersList.getItems().stream().forEach(x -> LOGGER.info("getAuthorityFromContext Test :: Cluster: " + x.getClusterId() +
+//                " Authority : " + commonService.getClusterAuthorityFromContext(x.getClusterId())));
 
         clustersList = commonService.globalListProcessing(clustersList, params, ClustersList.class);
         return (ClustersList) commonService.setResultModel(clustersList, Constants.RESULT_STATUS_SUCCESS);
@@ -285,6 +285,7 @@ public class ClustersService {
         try {
             vaultService.write(propertyService.getVaultClusterTokenPath().replace("{id}", params.getCluster()), clusterInfo);
         } catch (Exception e) {
+            e.printStackTrace();
             LOGGER.info("Vault Write failed in createClusterInfoToVault");
             return false;
         }

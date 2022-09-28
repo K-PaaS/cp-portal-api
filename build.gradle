@@ -10,6 +10,7 @@ buildscript {
 	dependencies {
 		classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
 		classpath "io.spring.gradle:dependency-management-plugin:${springBootManagementPlugin}"
+		classpath "org.sonarsource.scanner.gradle:sonarqube-gradle-plugin:2.7"
 	}
 }
 
@@ -20,7 +21,7 @@ apply plugin: 'eclipse'
 apply plugin: 'jacoco'
 apply plugin: 'org.springframework.boot'
 apply plugin: 'io.spring.dependency-management'
-
+apply plugin: "org.sonarqube"
 
 group = 'org.paasta.container.platform.api'
 sourceCompatibility = '1.8'
@@ -29,6 +30,13 @@ sourceCompatibility = '1.8'
 configurations {
 	compileOnly {
 		extendsFrom annotationProcessor
+	}
+}
+
+sonarqube {
+	properties {
+		property "sonar.sourceEncoding", "UTF-8"
+		property "sonar.coverage.jacoco.xmlReportPaths", "build/reports/jacoco.xml"
 	}
 }
 
@@ -77,6 +85,7 @@ dependencies {
 	compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.0'
 
 	testCompile "org.springframework.boot:spring-boot-starter-test"
+	testImplementation('junit:junit:4.13')
 
 	implementation 'org.springframework.retry:spring-retry'
 	implementation group: 'ch.qos.logback', name: 'logback-core', version: '1.2.9'
@@ -111,5 +120,6 @@ test {
 jacocoTestReport {
 	reports {
 		xml.enabled true
+		xml.destination file("build/reports/jacoco.xml")
 	}
 }

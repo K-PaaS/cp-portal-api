@@ -164,8 +164,9 @@ public class CloudAccountsService {
      * @param params the params
      * @return the Object
      */
-    public Object getProviderInfoList(Params params){
+    public ProviderInfoList getProviderInfoList(Params params){
         final String providerInfoPath = "org.paasta.container.platform.api.clusters.clusters.support";
+        ProviderInfoList providerInfoList = new ProviderInfoList();
         Map<String, Object> ret = new HashMap<>();
         for (Constants.ProviderType p : Constants.ProviderType.values()) {
             try {
@@ -175,7 +176,11 @@ public class CloudAccountsService {
                 LOGGER.info("Invalid ClassName: " + e.getMessage());
             }
         }
-        return ret;
+
+        providerInfoList.setItems(ret);
+        providerInfoList.setResultCode(Constants.RESULT_STATUS_SUCCESS);
+
+        return providerInfoList;
     }
 
     /**

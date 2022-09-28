@@ -1,16 +1,15 @@
-package org.paasta.container.platform.api.clusters.clusters.clusterlogs;
+package org.paasta.container.platform.api.clusters.cloudAccounts;
 
 import lombok.Data;
 import org.paasta.container.platform.api.common.Constants;
 
+import java.util.Map;
+
 @Data
-public class ClusterLogs {
+public class ProviderInfoList {
     private String resultCode = Constants.RESULT_STATUS_FAIL;
     private String resultMessage;
     private Integer httpStatusCode;
     private String detailMessage;
-    private String clusterId;
-    private int processNo;
-    private String logMessage;
-    private String regTimestamp;
+    private Map<String,Object> items;
 }

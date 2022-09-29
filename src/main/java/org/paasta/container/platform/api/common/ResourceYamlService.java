@@ -10,8 +10,10 @@ import org.paasta.container.platform.api.clusters.limitRanges.LimitRangesDefault
 import org.paasta.container.platform.api.clusters.resourceQuotas.ResourceQuotasDefault;
 import org.paasta.container.platform.api.clusters.resourceQuotas.ResourceQuotasDefaultList;
 import org.paasta.container.platform.api.clusters.resourceQuotas.ResourceQuotasService;
+import org.paasta.container.platform.api.common.model.CommonStatusCode;
 import org.paasta.container.platform.api.common.model.Params;
 import org.paasta.container.platform.api.common.model.ResultStatus;
+import org.paasta.container.platform.api.exception.ResultStatusException;
 import org.paasta.container.platform.api.secret.Secrets;
 import org.paasta.container.platform.api.users.Users;
 import org.paasta.container.platform.api.users.UsersList;
@@ -384,11 +386,36 @@ public class ResourceYamlService {
 
     public void createUserResource(Params params, Users users) {
         params.setIsClusterToken(true);
-        // service-account  생성
         params.setRs_sa(users.getServiceAccountName());
-        createServiceAccount(params);
-        // role-binding 생성
-        createRoleBinding(params);
+
+        try{
+            // service-account  생성
+            createServiceAccount(params);
+        }
+        catch (Exception e) {
+            if(Integer.valueOf(e.getMessage()) == CommonStatusCode.CONFLICT.getCode()) {
+                LOGGER.info("*** CREATE_USER_RESOURCE: SERVICE ACCOUNT ALREADY EXISTS WITH THAT NAME...");
+            }
+            else {
+                throw new ResultStatusException(CommonStatusCode.INTERNAL_SERVER_ERROR.getMsg());
+            }
+        }
+
+        try{
+            // role-binding 생성
+            createRoleBinding(params);
+        }
+        catch (Exception e) {
+            if(Integer.valueOf(e.getMessage()) == CommonStatusCode.CONFLICT.getCode()) {
+                LOGGER.info("*** CREATE_USER_RESOURCE: ROLE BINDING ALREADY EXISTS WITH THAT NAME...");
+            }
+            else {
+                throw new ResultStatusException(CommonStatusCode.INTERNAL_SERVER_ERROR.getMsg());
+            }
+        }
+
+
+        // secret 및 token 값 조회
         getSecretName(params);
         getSecrets(params);
 
@@ -399,6 +426,7 @@ public class ResourceYamlService {
         Users newUser = new Users(params.getCluster(), params.getNamespace(), users.getUserId(), users.getUserAuthId(),
                 AUTH_USER, params.getRs_role(), users.getServiceAccountName(), params.getSaSecret());
 
+        // db 사용자 정보 등록
         createUsers(newUser);
     }
 
@@ -407,20 +435,46 @@ public class ResourceYamlService {
         params.setIsClusterToken(true);
         params.setRs_sa(users.getServiceAccountName());
         params.setNamespace(propertyService.getClusterAdminNamespace());
-        // service-account 생성
-        createServiceAccount(params);
-        // cluster-role-binding 생성
-        createClusterRoleBinding(params);
+
+        try{
+            // service-account 생성
+            createServiceAccount(params);
+        }
+        catch (Exception e) {
+            if(Integer.valueOf(e.getMessage()) == CommonStatusCode.CONFLICT.getCode()) {
+                LOGGER.info("*** CREATE_CLUSTER_ADMIN_RESOURCE: SERVICE ACCOUNT ALREADY EXISTS WITH THAT NAME...");
+            }
+            else {
+                throw new ResultStatusException(CommonStatusCode.INTERNAL_SERVER_ERROR.getMsg());
+            }
+        }
+
+        try{
+            // cluster-role-binding 생성
+            createClusterRoleBinding(params);
+        }
+        catch (Exception e) {
+            if(Integer.valueOf(e.getMessage()) == CommonStatusCode.CONFLICT.getCode()) {
+                LOGGER.info("*** CREATE_CLUSTER_ADMIN_RESOURCE: CLUSTER ROLE BINDING ALREADY EXISTS WITH THAT NAME...");
+            }
+            else {
+                throw new ResultStatusException(CommonStatusCode.INTERNAL_SERVER_ERROR.getMsg());
+            }
+        }
+
+
+        // secret 및 token 값 조회
         getSecretName(params);
         getSecrets(params);
 
-        // vault user path에 token 저장
+        // vault-user-token 등록
         params.setUserType(AUTH_CLUSTER_ADMIN);
         vaultService.saveUserAccessToken(params);
 
         Users newClusterAdmin = new Users(params.getCluster(), propertyService.getDefaultNamespace(), users.getUserId(), users.getUserAuthId(),
                 AUTH_CLUSTER_ADMIN, DEFAULT_CLUSTER_ADMIN_ROLE, users.getServiceAccountName(), params.getSaSecret());
 
+        // db 사용자 정보 등록
         createUsers(newClusterAdmin);
     }
 

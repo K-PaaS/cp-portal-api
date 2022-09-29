@@ -155,7 +155,7 @@ public class Constants {
 
     public static final String URI_COMMON_API_CLUSTER_ADMIN_LIST = "/cluster/{cluster:.+}/admin?searchName={searchName:.+}";
     public static final String URI_COMMON_API_CLUSTER_USER_DETAILS = "/clusters/{cluster:.+}/users/{userAuthId:.+}/details";
-    public static final String URI_COMMON_API_CLUSTER_INFO_USER_DETAILS = "/cluster/info/all/user/details?userAuthId={userAuthId:.+}&cluster={cluster:.+}&namespace={namespace:.+}";
+    public static final String URI_COMMON_API_CLUSTER_INFO_USER_DETAILS = "/cluster/info/all/user/details?userAuthId={userAuthId:.+}&cluster={cluster:.+}&userType={userType:.+}&namespace={namespace:.+}";
     public static final String URI_COMMON_API_NAMESPACE_OR_NOT_CHECK = "/clusters/all/namespaces/{namespace:.+}/adminCheck";
     public static final String URI_COMMON_API_DELETE_USER_BY_ID_AND_AUTHID = "/cluster/all/user/delete?userId={userId:.+}&userAuthId={userAuthId:.+}&namespace={namespace:.+}";
     public static final String URI_COMMON_API_CLUSTER_LIST_BY_USER = "/users/{userAuthId:.+}/clustersList?userType={userType:.+}";

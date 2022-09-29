@@ -125,17 +125,17 @@ public class UsersService {
     public Object getUsersAccessInfo(Params params) throws Exception {
         Users users = new Users();
 
-        users = restTemplateService.send(TARGET_COMMON_API, Constants.URI_COMMON_API_CLUSTER_INFO_USER_DETAILS//roleSetCode
+        users = restTemplateService.send(TARGET_COMMON_API, Constants.URI_COMMON_API_CLUSTER_INFO_USER_DETAILS//roleSetCode, clusterName
                 .replace("{userAuthId:.+}", params.getUserAuthId())
                 .replace("{cluster:.+}", params.getCluster())
+                .replace("{userType:.+}", params.getUserType())
                 .replace("{namespace:.+}", params.getNamespace()), HttpMethod.GET, null, Users.class, params);
 
         params.setUserType(commonService.getClusterAuthorityFromContext(params.getCluster()));//userType
         users.setUserType(params.getUserType());
 
-        commonService.getKubernetesInfo(params);//clusterName, cpNamespace
+        commonService.getKubernetesInfo(params);//cpNamespace
         users.setCpNamespace(params.getNamespace());
-        users.setClusterName(params.getCluster());
 
         accessTokenService.getVaultSecrets(params);//clusterApiUrl
         users.setClusterApiUrl(params.getClusterApiUrl());

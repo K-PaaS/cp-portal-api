@@ -68,6 +68,7 @@ public enum MessageConstant {
     SUPER_ADMINISTRATOR_IS_ALREADY_REGISTERED_MESSAGE("SUPER_ADMIN_ALREADY_REGISTERED","SUPER_ADMIN_ALREADY_REGISTERED"),
     USER_ALREADY_REGISTERED_MESSAGE("USER_ALREADY_REGISTERED","USER_ALREADY_REGISTERED"),
     INVALID_PORT_INFO("포트 정보가 올바르지 않습니다.","The port information is incorrect."),
+    UNABLE_TO_COMMUNICATE_K8S_API_SERVER("해당 쿠버네티스 클러스터 API 서버와 통신할 수 없습니다.","Unable to communicate with your Kubernetes cluster API server."),
     NO_CHANGED("변경된 사항이 없습니다.","There's no change.");
 
     private String ko_msg;

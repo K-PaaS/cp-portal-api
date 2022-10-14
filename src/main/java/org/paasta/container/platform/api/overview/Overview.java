@@ -57,4 +57,8 @@ public class Overview {
         this.topPodsCPU = topPodsCPU;
         this.topPodsMEM = topPodsMEM;
     }
+
+    public Overview() {
+
+    }
 }

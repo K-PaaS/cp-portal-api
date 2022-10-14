@@ -252,7 +252,7 @@ public class NamespacesService {
      * @param params               the params
      * @param requestUpdatedRqList the request update resourceQuotas list
      */
-    private void modifyResourceQuotas(Params params, List<String> requestUpdatedRqList) {
+    public void modifyResourceQuotas(Params params, List<String> requestUpdatedRqList) {
         ResourceQuotasList resourceQuotasList = resourceQuotasService.getResourceQuotasList(params);
         List<String> k8sResourceQuotasNameList = resourceQuotasList.getItems().stream().map(a -> a.getMetadata().getName()).collect(Collectors.toList());
         ArrayList<String> toBeDelete = commonService.compareArrayList(k8sResourceQuotasNameList, requestUpdatedRqList);
@@ -278,7 +278,7 @@ public class NamespacesService {
      * @param params               the params
      * @param requestUpdatedLrList the request update limitRanges list
      */
-    private void modifyLimitRanges(Params params, List<String> requestUpdatedLrList) {
+    public void modifyLimitRanges(Params params, List<String> requestUpdatedLrList) {
         LimitRangesList limitRangesList = limitRangesService.getLimitRangesList(params);
         List<String> k8sLimitRangesNameList = limitRangesList.getItems().stream().map(a -> a.getMetadata().getName()).collect(Collectors.toList());
 

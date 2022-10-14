@@ -301,7 +301,7 @@ public class LimitRangesService {
      * @param object            the object
      @return the limitRangesTemplateItem
      */
-    private Object getLimitRangesTemplateItem(String name, String creationTimestamp, String type, String resourceType, LimitRangesItem item, Object object) {
+    public Object getLimitRangesTemplateItem(String name, String creationTimestamp, String type, String resourceType, LimitRangesItem item, Object object) {
         LinkedTreeMap<String, String> defaultLimit = null;
         LinkedTreeMap<String, String> defaultRequest = null;
         LinkedTreeMap<String, String> max = null;
@@ -361,7 +361,7 @@ public class LimitRangesService {
      * @param item              the item
      * @return the object
      */
-    private Object commonSetResourceValue(String resourceType, LinkedTreeMap<String, String> defaultLimit, LinkedTreeMap<String, String> defaultRequest, LinkedTreeMap<String, String> max, LinkedTreeMap<String, String> min, Object item) {
+    public Object commonSetResourceValue(String resourceType, LinkedTreeMap<String, String> defaultLimit, LinkedTreeMap<String, String> defaultRequest, LinkedTreeMap<String, String> max, LinkedTreeMap<String, String> min, Object item) {
         if(item instanceof LimitRangesTemplateItem) {
             LimitRangesTemplateItem serversItem = (LimitRangesTemplateItem) item;
 

@@ -145,6 +145,7 @@ public class UsersController {
     @GetMapping(value = "/clusters/{cluster:.+}/users/namespacesList")
     public UsersList getNamespacesListByUserOwns(Params params) {
         try{
+            params.setIsClusterToken(true);
             restTemplateService.sendPing(Constants.TARGET_CP_MASTER_API, ResultStatus.class, params); // check ping
         }catch (Exception e) {
             throw new ResultStatusException(MessageConstant.UNABLE_TO_COMMUNICATE_K8S_API_SERVER.getMsg());

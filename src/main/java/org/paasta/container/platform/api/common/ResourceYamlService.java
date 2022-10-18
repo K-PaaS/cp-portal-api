@@ -255,7 +255,6 @@ public class ResourceYamlService {
     }
 
 
-
     /**
      * service account 의 secret 이름을 조회(Get Secret of Service Account)
      *
@@ -263,9 +262,15 @@ public class ResourceYamlService {
      * @return the resultStatus
      */
     public String getSecretName(Params params) {
-        String jsonObj = restTemplateService.send(Constants.TARGET_CP_MASTER_API,
-                propertyService.getCpMasterApiListUsersGetUrl().replace("{namespace}", params.getNamespace())
-                        .replace("{name}", params.getRs_sa()), HttpMethod.GET, null, String.class, params);
+        String jsonObj = "";
+        try {
+            jsonObj = restTemplateService.send(Constants.TARGET_CP_MASTER_API,
+                    propertyService.getCpMasterApiListUsersGetUrl().replace("{namespace}", params.getNamespace())
+                            .replace("{name}", params.getRs_sa()), HttpMethod.GET, null, String.class, params);
+
+        } catch (Exception e) {
+            LOGGER.info("EXCEPTION OCCURRED WHILE GET SECRET NAME ...");
+        }
 
         JsonObject jsonObject = JsonParser.parseString(jsonObj).getAsJsonObject();
         JsonElement element = jsonObject.getAsJsonObject().get("secrets");
@@ -296,12 +301,15 @@ public class ResourceYamlService {
     public AccessToken getSecrets(Params params) {
         String caCertToken;
         String userToken;
-
-        HashMap responseMap = (HashMap) restTemplateService.send(Constants.TARGET_CP_MASTER_API,
-                propertyService.getCpMasterApiListSecretsGetUrl()
-                        .replace("{namespace}", params.getNamespace())
-                        .replace("{name}", params.getSaSecret()), HttpMethod.GET, null, Map.class, params);
-
+        HashMap responseMap = null;
+        try {
+            responseMap = (HashMap) restTemplateService.send(Constants.TARGET_CP_MASTER_API,
+                    propertyService.getCpMasterApiListSecretsGetUrl()
+                            .replace("{namespace}", params.getNamespace())
+                            .replace("{name}", params.getSaSecret()), HttpMethod.GET, null, Map.class, params);
+        } catch (Exception e) {
+            LOGGER.info("EXCEPTION OCCURRED WHILE GET SECRET ...");
+        }
         Map map = (Map) responseMap.get("data");
 
         caCertToken = map.get("ca.crt").toString();
@@ -355,8 +363,6 @@ public class ResourceYamlService {
     }
 
 
-
-
     /**
      * Service Account 삭제(Delete Service Account)
      *
@@ -388,28 +394,24 @@ public class ResourceYamlService {
         params.setIsClusterToken(true);
         params.setRs_sa(users.getServiceAccountName());
 
-        try{
+        try {
             // service-account  생성
             createServiceAccount(params);
-        }
-        catch (Exception e) {
-            if(Integer.valueOf(e.getMessage()) == CommonStatusCode.CONFLICT.getCode()) {
+        } catch (Exception e) {
+            if (Integer.valueOf(e.getMessage()) == CommonStatusCode.CONFLICT.getCode()) {
                 LOGGER.info("*** CREATE_USER_RESOURCE: SERVICE ACCOUNT ALREADY EXISTS WITH THAT NAME...");
-            }
-            else {
+            } else {
                 throw new ResultStatusException(CommonStatusCode.INTERNAL_SERVER_ERROR.getMsg());
             }
         }
 
-        try{
+        try {
             // role-binding 생성
             createRoleBinding(params);
-        }
-        catch (Exception e) {
-            if(Integer.valueOf(e.getMessage()) == CommonStatusCode.CONFLICT.getCode()) {
+        } catch (Exception e) {
+            if (Integer.valueOf(e.getMessage()) == CommonStatusCode.CONFLICT.getCode()) {
                 LOGGER.info("*** CREATE_USER_RESOURCE: ROLE BINDING ALREADY EXISTS WITH THAT NAME...");
-            }
-            else {
+            } else {
                 throw new ResultStatusException(CommonStatusCode.INTERNAL_SERVER_ERROR.getMsg());
             }
         }
@@ -436,28 +438,24 @@ public class ResourceYamlService {
         params.setRs_sa(users.getServiceAccountName());
         params.setNamespace(propertyService.getClusterAdminNamespace());
 
-        try{
+        try {
             // service-account 생성
             createServiceAccount(params);
-        }
-        catch (Exception e) {
-            if(Integer.valueOf(e.getMessage()) == CommonStatusCode.CONFLICT.getCode()) {
+        } catch (Exception e) {
+            if (Integer.valueOf(e.getMessage()) == CommonStatusCode.CONFLICT.getCode()) {
                 LOGGER.info("*** CREATE_CLUSTER_ADMIN_RESOURCE: SERVICE ACCOUNT ALREADY EXISTS WITH THAT NAME...");
-            }
-            else {
+            } else {
                 throw new ResultStatusException(CommonStatusCode.INTERNAL_SERVER_ERROR.getMsg());
             }
         }
 
-        try{
+        try {
             // cluster-role-binding 생성
             createClusterRoleBinding(params);
-        }
-        catch (Exception e) {
-            if(Integer.valueOf(e.getMessage()) == CommonStatusCode.CONFLICT.getCode()) {
+        } catch (Exception e) {
+            if (Integer.valueOf(e.getMessage()) == CommonStatusCode.CONFLICT.getCode()) {
                 LOGGER.info("*** CREATE_CLUSTER_ADMIN_RESOURCE: CLUSTER ROLE BINDING ALREADY EXISTS WITH THAT NAME...");
-            }
-            else {
+            } else {
                 throw new ResultStatusException(CommonStatusCode.INTERNAL_SERVER_ERROR.getMsg());
             }
         }
@@ -491,7 +489,7 @@ public class ResourceYamlService {
         Params params = new Params(users.getClusterId(), users.getCpNamespace(), users.getUserAuthId(), AUTH_USER,
                 users.getServiceAccountName(), users.getRoleSetCode(), true);
         // sa : replace("{namespace}", params.getNamespace()).replace("{name}", params.getRs_sa()),
-       // rb : replace("{namespace}", params.getNamespace()).replace("{name}", params.getRs_sa() + Constants.NULL_REPLACE_TEXT + params.getRs_role() + "-binding"),
+        // rb : replace("{namespace}", params.getNamespace()).replace("{name}", params.getRs_sa() + Constants.NULL_REPLACE_TEXT + params.getRs_role() + "-binding"),
         deleteSaAndRb(params);
         // vault Token 삭제
         vaultService.deleteUserAccessToken(params);
@@ -517,24 +515,22 @@ public class ResourceYamlService {
 
 
     public void deleteUserResourceForNonExistentUser(UsersList usersList) {
-        for(Users users : usersList.getItems()) {
-            Params params  = new Params(users.getClusterId(), users.getCpNamespace(), users.getUserAuthId(), users.getUserType(),
-            users.getServiceAccountName(), users.getRoleSetCode(), true);
-            try{
+        for (Users users : usersList.getItems()) {
+            Params params = new Params(users.getClusterId(), users.getCpNamespace(), users.getUserAuthId(), users.getUserType(),
+                    users.getServiceAccountName(), users.getRoleSetCode(), true);
+            try {
                 // delete sa and rb
-                if(users.getUserType().equalsIgnoreCase(AUTH_CLUSTER_ADMIN)) {
+                if (users.getUserType().equalsIgnoreCase(AUTH_CLUSTER_ADMIN)) {
                     params.setNamespace(propertyService.getClusterAdminNamespace());
                     deleteServiceAccount(params);
                     deleteClusterRoleBinding(params);
-                }
-                else {
+                } else {
                     deleteSaAndRb(params);
                 }
 
                 // delete cluster token in vault
                 vaultService.deleteUserAccessToken(params);
-            }
-            catch (Exception e ){
+            } catch (Exception e) {
                 LOGGER.info("***** EXCEPTION OCCURRED WHILE DELETE RESOURCES FROM NON-EXISTENT USER...");
             }
 

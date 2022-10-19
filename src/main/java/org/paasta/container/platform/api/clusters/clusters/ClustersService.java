@@ -88,23 +88,23 @@ public class ClustersService {
 
         if (!params.getIsClusterRegister()) {
             //Create Files
-            try {
                 String path = propertyService.getCpTerramanTemplatePath().replace("{id}", params.getCluster());
                 Path filePath = Paths.get(path);
+            try {
                 Files.createDirectories(filePath.getParent());
+            } catch (Exception e) {
+                LOGGER.info("Template directory create Error : " + e.getMessage());
+                return clusters;
+            }
 
+            try(BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(new FileOutputStream(path)) ) {
                 LOGGER.info("File write Start : " + path);
-                OutputStream outputStream = new FileOutputStream(path);
-                BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(outputStream);
                 bufferedOutputStream.write(params.getHclScript().getBytes());
-                bufferedOutputStream.close();
-                outputStream.close();
                 LOGGER.info("File write End");
 
             } catch (Exception e) {
                 LOGGER.info("Template file write Error");
                 LOGGER.info("Error Message: " + e.getMessage());
-                e.printStackTrace();
                 clusters.setResultMessage("Template file write Error");
                 clusters.setResultCode(Constants.RESULT_STATUS_FAIL);
                 return clusters;
@@ -285,7 +285,6 @@ public class ClustersService {
         try {
             vaultService.write(propertyService.getVaultClusterTokenPath().replace("{id}", params.getCluster()), clusterInfo);
         } catch (Exception e) {
-            e.printStackTrace();
             LOGGER.info("Vault Write failed in createClusterInfoToVault");
             return false;
         }

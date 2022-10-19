@@ -319,6 +319,55 @@ public class LimitRangesServiceTest {
     }
 
     @Test
+    public void getLimitRanges_items() {
+        when(restTemplateService.send(Constants.TARGET_CP_MASTER_API,
+                propertyService.getCpMasterApiListLimitRangesGetUrl(), HttpMethod.GET, null, Map.class, gParams)).thenReturn(gResultMap);
+
+        CommonSpec commonSpec = new CommonSpec();
+        CommonMetaData commonMetaData = new CommonMetaData();
+        commonMetaData.setName("test");
+        List<LimitRangesItem> limits = new ArrayList<>();
+        LimitRangesItem limit = new LimitRangesItem();
+        limit.setType(Constants.LIMIT_RANGE_TYPE_CONTAINER);
+        limits.add(limit);
+        commonSpec.setLimits(limits);
+        gResultModel.setSpec(commonSpec);
+        gResultModel.setMetadata(commonMetaData);
+
+        when(commonService.setResultObject(gResultMap, LimitRanges.class)).thenReturn(gResultModel);
+        when(commonService.setResultModel(commonService.setResultObject(gResultModel, LimitRanges.class), Constants.RESULT_STATUS_SUCCESS)).thenReturn(gFinalResultModel);
+
+        LimitRanges result = limitRangesService.getLimitRanges(gParams);
+
+        assertEquals(result.getResultCode(), Constants.RESULT_STATUS_SUCCESS);
+    }
+
+    @Test
+    public void getLimitRanges_items2() {
+        when(restTemplateService.send(Constants.TARGET_CP_MASTER_API,
+                propertyService.getCpMasterApiListLimitRangesGetUrl(), HttpMethod.GET, null, Map.class, gParams)).thenReturn(gResultMap);
+
+        CommonSpec commonSpec = new CommonSpec();
+        CommonMetaData commonMetaData = new CommonMetaData();
+        commonMetaData.setName("test");
+        List<LimitRangesItem> limits = new ArrayList<>();
+        LimitRangesItem limit = new LimitRangesItem();
+        limit.setType("te");
+        limits.add(limit);
+        commonSpec.setLimits(limits);
+        gResultModel.setSpec(commonSpec);
+        gResultModel.setMetadata(commonMetaData);
+
+        when(commonService.setResultObject(gResultMap, LimitRanges.class)).thenReturn(gResultModel);
+        when(commonService.setResultModel(commonService.setResultObject(gResultModel, LimitRanges.class), Constants.RESULT_STATUS_SUCCESS)).thenReturn(gFinalResultModel);
+
+        LimitRanges result = limitRangesService.getLimitRanges(gParams);
+
+        assertEquals(result.getResultCode(), Constants.RESULT_STATUS_SUCCESS);
+    }
+
+
+    @Test
     public void getLimitRangesYaml() {
         when(restTemplateService.send(Constants.TARGET_CP_MASTER_API,
                 propertyService.getCpMasterApiListLimitRangesGetUrl(), HttpMethod.GET, null, String.class, Constants.ACCEPT_TYPE_YAML, gParams)).thenReturn(YAML_STRING);
@@ -377,6 +426,28 @@ public class LimitRangesServiceTest {
     @Test
     public void getLimitRangesTemplateList() {
 
+        List<LimitRangesListItem> list = new ArrayList<>();
+        LimitRangesListItem item = new LimitRangesListItem();
+        CommonMetaData metaData = new CommonMetaData();
+        metaData.setName("test");
+        item.setMetadata(metaData);
+        CommonSpec commonSpec = new CommonSpec();
+        CommonMetaData commonMetaData = new CommonMetaData();
+        commonMetaData.setName("test");
+        List<LimitRangesItem> limits = new ArrayList<>();
+        LimitRangesItem limit = new LimitRangesItem();
+        limit.setType(Constants.LIMIT_RANGE_TYPE_CONTAINER);
+        limits.add(limit);
+        commonSpec.setLimits(limits);
+        item.setSpec(commonSpec);
+        list.add(item);
+        gResultListModel.setItems(list);
+        gFinalResultListModel.setItems(list);
+
+
+
+
+
         LimitRangesDefaultList gFinalDefaultList = new LimitRangesDefaultList();
         gFinalDefaultList.setResultCode(Constants.RESULT_STATUS_SUCCESS);
         gFinalDefaultList.setItems(new ArrayList<>());
@@ -391,57 +462,6 @@ public class LimitRangesServiceTest {
         when(commonService.resourceListProcessing(gResultTemplateList, gParams, LimitRangesTemplateList.class)).thenReturn(gResultTemplateList);
 
         when(commonService.setResultModel(gResultTemplateList, Constants.RESULT_STATUS_SUCCESS)).thenReturn(gFinalResultTemplateList);
-
-        LimitRangesList limitRangesList = gFinalResultListModel;
-        LimitRangesDefaultList defaultList = gFinalDefaultList;
-
-        List<LimitRangesListItem> adminItems = limitRangesList.getItems();
-        List<LimitRangesTemplateItem> serversItemList = new ArrayList();
-
-        LimitRangesTemplateList serverList = new LimitRangesTemplateList();
-
-        List<String> k8sLrNameList = limitRangesList.getItems().stream().map(LimitRangesListItem::getName).collect(Collectors.toList());
-
-        for (LimitRangesDefault limitRangesDefault : defaultList.getItems()) {
-
-            if (!k8sLrNameList.contains(limitRangesDefault.getName())) {
-//                serversItemList.add(getLimitRangesDb(limitRangesDefault, CHECK_N));
-            }
-
-        }
-
-        for (LimitRangesListItem i : adminItems) {
-
-            for (LimitRangesItem item : i.getSpec().getLimits()) {
-                List<String> typeList = Constants.LIMIT_RANGE_TYPE_LIST;
-
-                for (String type : typeList) {
-                    if(type.equals(item.getType())) {
-                        if(Constants.LIMIT_RANGE_TYPE_CONTAINER.equals(type) || Constants.LIMIT_RANGE_TYPE_POD.equals(type)) {
-                            for (String resourceType : Constants.SUPPORTED_RESOURCE_LIST) {
-                                LimitRangesTemplateItem serversItem = new LimitRangesTemplateItem();
-//                                serversItem = (LimitRangesTemplateItem) getLimitRangesTemplateItem(i.getName(), i.getCreationTimestamp(), type, resourceType, item, serversItem);
-
-                                if(!serversItem.getDefaultLimit().equals(Constants.NULL_REPLACE_TEXT) || !serversItem.getDefaultRequest().equals(Constants.NULL_REPLACE_TEXT) || !serversItem.getMax().equals(Constants.NULL_REPLACE_TEXT) || !serversItem.getMin().equals(Constants.NULL_REPLACE_TEXT)) {
-                                    serversItemList.add(serversItem);
-                                }
-                            }
-                        } else {
-                            String resourceType = Constants.SUPPORTED_RESOURCE_STORAGE;
-                            LimitRangesTemplateItem serversItem = new LimitRangesTemplateItem();
-//                            serversItem = (LimitRangesTemplateItem) getLimitRangesTemplateItem(i.getName(), i.getCreationTimestamp(), type, resourceType, item, serversItem);
-
-                            if(!serversItem.getDefaultLimit().equals(Constants.NULL_REPLACE_TEXT) || !serversItem.getDefaultRequest().equals(Constants.NULL_REPLACE_TEXT) || !serversItem.getMax().equals(Constants.NULL_REPLACE_TEXT) || !serversItem.getMin().equals(Constants.NULL_REPLACE_TEXT)) {
-                                serversItemList.add(serversItem);
-                            }
-                        }
-                    }
-                }
-            }
-
-        }
-        serverList.setItems(serversItemList);
-
 
         Object result = limitRangesService.getLimitRangesTemplateList(gParams);
         assertNull(result);
@@ -485,12 +505,34 @@ public class LimitRangesServiceTest {
 
     @Test
     public void commonSetResourceValue() {
-        String resourceType = "";
+        String resourceType = "key";
         LinkedTreeMap<String, String> defaultLimit = new LinkedTreeMap<>();
+        defaultLimit.put("key", "test");
         LinkedTreeMap<String, String> defaultRequest = new LinkedTreeMap<>();
+        defaultRequest.put("key", "test");
         LinkedTreeMap<String, String> max = new LinkedTreeMap<>();
+        max.put("key", "test");
         LinkedTreeMap<String, String> min = new LinkedTreeMap<>();
+        min.put("key", "test");
         Object item = new LimitRangesTemplateItem();
+
+        Object result = limitRangesService.commonSetResourceValue(resourceType, defaultLimit, defaultRequest, max, min, item);
+
+        assertNotNull(result);
+    }
+
+    @Test
+    public void commonSetResourceValue_2() {
+        String resourceType = "key";
+        LinkedTreeMap<String, String> defaultLimit = new LinkedTreeMap<>();
+        defaultLimit.put("key", "test");
+        LinkedTreeMap<String, String> defaultRequest = new LinkedTreeMap<>();
+        defaultRequest.put("key", "test");
+        LinkedTreeMap<String, String> max = new LinkedTreeMap<>();
+        max.put("key", "test");
+        LinkedTreeMap<String, String> min = new LinkedTreeMap<>();
+        min.put("key", "test");
+        Object item = new LimitRangesItem();
 
         Object result = limitRangesService.commonSetResourceValue(resourceType, defaultLimit, defaultRequest, max, min, item);
 

@@ -18,7 +18,7 @@ check coverage: # Job name
         gradle wrapper
       fi
     - chmod +x gradlew
-    - ./gradlew sonarqube -Dsonar.qualitygate.wait=true -Dsonar.projectKey=$APP_NAME -Dsonar.host.url=$SONAR_HOST_URL -Dsonar.login=$SONAR_TOKEN -Dsonar.sources=src/main/java -Dsonar.test=src/test/java -Dsonar.java.binaries=build/classes -Dsonar.inclusions=**/*Service.java
+    - ./gradlew sonarqube -Dsonar.qualitygate.wait=true -Dsonar.projectKey=$APP_NAME -Dsonar.host.url=$SONAR_HOST_URL -Dsonar.login=$SONAR_TOKEN -Dsonar.sources=src/main/java -Dsonar.test=src/test/java -Dsonar.java.binaries=build/classes -Dsonar.inclusions=**/*Service.java -Dsonar.exclusions=src/main/java/org/paasta/container/platform/api/common/*,src/main/java/org/paasta/container/platform/api/customServices/ingresses/support/IngressesService.java,src/main/java/org/paasta/container/platform/api/overview/GlobalOverviewService.java --stacktrace
   allow_failure: true
   cache: # Artifact tag 사용 가능
     key: "$CI_COMMIT_REF_NAME"

@@ -8,18 +8,23 @@ import org.mockito.Mock;
 import org.paasta.container.platform.api.clusters.clusters.support.ClusterInfo;
 import org.paasta.container.platform.api.clusters.nodes.NodesList;
 import org.paasta.container.platform.api.clusters.nodes.NodesService;
+import org.paasta.container.platform.api.clusters.nodes.support.NodesListItem;
 import org.paasta.container.platform.api.common.*;
-import org.paasta.container.platform.api.common.model.Params;
-import org.paasta.container.platform.api.common.model.ResultStatus;
+import org.paasta.container.platform.api.common.model.*;
 import org.springframework.http.HttpMethod;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.vault.support.VaultResponse;
 
+import java.io.File;
+import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @RunWith(SpringRunner.class)
@@ -136,12 +141,57 @@ public class ClustersServiceTest {
         assertEquals(Constants.RESULT_STATUS_SUCCESS, result.getResultCode());
     }
 
+    @Test
+    public void createClusters_register_INVALID_ReturnModel() {
+        // given
+        Clusters clusters = new Clusters();
+        clusters.setName(gParams.getResourceName());
+
+        ClusterInfo clusterInfo = new ClusterInfo();
+        clusterInfo.setClusterId(gParams.getCluster());
+        clusterInfo.setClusterApiUrl(vaultClusterModel.getClusterApiUrl());
+        clusterInfo.setClusterToken(CLUSTER_TOKEN);
+        gParams.setIsClusterRegister(true);
+
+        when(vaultService.getClusterDetails(gParams.getCluster())).thenReturn(new Clusters());
+
+        // when
+        Clusters result = clustersService.createClusters(gParams);
+
+        // then
+        assertEquals(Constants.RESULT_STATUS_FAIL, result.getResultCode());
+    }
+
+    @Test
+    public void createClusters_create_file_exception_ReturnModel() {
+        // given
+        Clusters clusters = new Clusters();
+        clusters.setName(gParams.getResourceName());
+
+        ClusterInfo clusterInfo = new ClusterInfo();
+        clusterInfo.setClusterId(gParams.getCluster());
+        clusterInfo.setClusterApiUrl(vaultClusterModel.getClusterApiUrl());
+        clusterInfo.setClusterToken(CLUSTER_TOKEN);
+        gParams.setIsClusterRegister(false);
+        gParams.setCluster(CLUSTER_NAME);
+
+        when(propertyService.getCpTerramanTemplatePath()).thenReturn("test_path");
+        when(vaultService.getClusterDetails(gParams.getCluster())).thenReturn(new Clusters());
+
+        // when
+        Clusters result = clustersService.createClusters(gParams);
+
+        // then
+    }
+
     /**
      * Clusters 정보 조회(Get Clusters Info) Test
      */
     @Test
     public void getClusters_Valid_ReturnModel() {
         // given
+
+
         when(restTemplateService.sendGlobal(Constants.TARGET_COMMON_API, "/clusters/" + gParams.getCluster(), HttpMethod.GET, null, Clusters.class, gParams)).thenReturn(gResultModel);
         when(commonService.getKubernetesInfo(gParams)).thenReturn(vaultClusterModel);
         when(restTemplateService.sendPing(Constants.TARGET_CP_MASTER_API, ResultStatus.class, gParams)).thenReturn(gResultStatus);
@@ -156,7 +206,7 @@ public class ClustersServiceTest {
     }
 
     @Test
-    public void getClustersList_Valid_ReturnModel() {
+    public void getClustersList_Invalid_ReturnModel() {
         // given
         when(restTemplateService.sendGlobal(Constants.TARGET_COMMON_API, "/clusters/users/{userAuthId}?userType={userType}"
                 .replace("{userAuthId}", gParams.getUserAuthId())
@@ -164,7 +214,7 @@ public class ClustersServiceTest {
         when(restTemplateService.sendGlobal(Constants.TARGET_COMMON_API, "/clusters/" + gParams.getCluster(), HttpMethod.GET, null, Clusters.class, gParams)).thenReturn(gResultModel);
         when(commonService.getKubernetesInfo(gParams)).thenReturn(vaultClusterModel);
         when(restTemplateService.sendPing(Constants.TARGET_CP_MASTER_API, ResultStatus.class, gParams)).thenReturn(gResultStatus);
-        when(nodesService.getNodesList(gParams)).thenReturn(new NodesList());
+//        when(nodesService.getNodesList(gParams)).thenReturn(nodeList);
         when(commonService.globalListProcessing(gResultListModel, gParams, ClustersList.class)).thenReturn(gResultListModel);
         when(commonService.setResultModel(gResultListModel, Constants.RESULT_STATUS_SUCCESS)).thenReturn(gFinalResultListModel);
 
@@ -172,6 +222,41 @@ public class ClustersServiceTest {
         ClustersList result = clustersService.getClustersList(gParams);
         // then
         assertEquals(Constants.RESULT_STATUS_SUCCESS, result.getResultCode());
+    }
+
+    @Test
+    public void getClusters_ReturnModel() {
+        // given
+        NodesList nodeList = new NodesList();
+        List<NodesListItem> itemList = new ArrayList<>();
+        NodesListItem item = new NodesListItem();
+        CommonMetaData metaData = new CommonMetaData();
+        Map<String, String> label = new HashMap<>();
+        label.put("node-role.kubernetes.io/control-plane", "version");
+        metaData.setLabels(label);
+        CommonStatus status = new CommonStatus();
+        CommonNodeInfo nodeInfo = new CommonNodeInfo();
+        nodeInfo.setKubeletVersion("version");
+        status.setNodeInfo(nodeInfo);
+        item.setStatus(status);
+        item.setMetadata(metaData);
+        itemList.add(item);
+        nodeList.setItems(itemList);
+        gResultModel.setStatus(Constants.ClusterStatus.ACTIVE.getInitial());
+        when(restTemplateService.sendGlobal(Constants.TARGET_COMMON_API, "/clusters/users/{userAuthId}?userType={userType}"
+                .replace("{userAuthId}", gParams.getUserAuthId())
+                .replace("{userType}", gParams.getUserType()), HttpMethod.GET, null, ClustersList.class, gParams)).thenReturn(gResultListModel);
+        when(restTemplateService.sendGlobal(Constants.TARGET_COMMON_API, "/clusters/" + gParams.getCluster(), HttpMethod.GET, null, Clusters.class, gParams)).thenReturn(gResultModel);
+        when(commonService.getKubernetesInfo(gParams)).thenReturn(vaultClusterModel);
+        when(restTemplateService.sendPing(Constants.TARGET_CP_MASTER_API, ResultStatus.class, gParams)).thenReturn(gResultStatus);
+
+        when(nodesService.getNodesList(new Params(gResultModel.getClusterId(), gResultModel.getName()))).thenReturn(nodeList);
+        when(commonService.globalListProcessing(gResultListModel, gParams, ClustersList.class)).thenReturn(gResultListModel);
+        when(commonService.setResultModel(gResultListModel, Constants.RESULT_STATUS_SUCCESS)).thenReturn(gFinalResultListModel);
+
+        // when
+        Clusters result = clustersService.getClusters(gParams);
+        // then
     }
 
     @Test
@@ -192,7 +277,7 @@ public class ClustersServiceTest {
 
     @Test
     public void updateClusters_Valid_ReturnModel() {
-        when(commonService.setResultModel(restTemplateService.sendGlobal(Constants.TARGET_COMMON_API, "/clusters", HttpMethod.PATCH, gParamsModel, Clusters.class, gParams), Constants.RESULT_STATUS_SUCCESS)).thenReturn(gFinalResultModel);
+        when(commonService.setResultModel(restTemplateService.sendGlobal(Constants.TARGET_COMMON_API, "/clusters", HttpMethod.PATCH, setClusters(gParams), Clusters.class, gParams), Constants.RESULT_STATUS_SUCCESS)).thenReturn(gFinalResultModel);
 
         Clusters result = clustersService.updateClusters(gParams);
 
@@ -201,11 +286,22 @@ public class ClustersServiceTest {
 
     @Test
     public void deleteClusters_Valid_ReturnModel() {
-        when(restTemplateService.sendGlobal(Constants.TARGET_COMMON_API, "/clusters/cp-cluster", HttpMethod.DELETE, null, Clusters.class, gParams)).thenReturn(gFinalResultModel);
+        when(restTemplateService.sendGlobal(Constants.TARGET_COMMON_API, "/clusters/{id}".replace("{id}", gParams.getCluster()) , HttpMethod.DELETE, null, Clusters.class, gParams)).thenReturn(gFinalResultModel);
 
         Clusters result = clustersService.deleteClusters(gParams);
 
         assertEquals(Constants.RESULT_STATUS_SUCCESS, result.getResultCode());
+    }
+
+    private Clusters setClusters(Params gParams) {
+        Clusters clusters = new Clusters();
+        clusters.setClusterId(gParams.getCluster());
+        clusters.setName(gParams.getResourceName());
+        clusters.setClusterType(gParams.getClusterType());
+        clusters.setProviderType(gParams.getProviderType());
+        clusters.setDescription(gParams.getDescription());
+
+        return clusters;
     }
 
 }

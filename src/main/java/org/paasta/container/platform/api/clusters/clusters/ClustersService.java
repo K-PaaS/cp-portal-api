@@ -118,7 +118,7 @@ public class ClustersService {
             terramanParams.setProvider(params.getProviderType().name());
             terramanParams.setSeq(params.getCloudAccountId());
             LOGGER.info("Terraman API call Start : " + terramanParams);
-            restTemplateService.sendGlobal(Constants.TARGET_TERRAMAN_API, "/clusters/create/daemon", HttpMethod.POST, terramanParams, TerramanParams.class, params);
+            restTemplateService.sendGlobal(Constants.TARGET_TERRAMAN_API, "/clusters/create/container", HttpMethod.POST, terramanParams, TerramanParams.class, params);
             LOGGER.info("Terraman API call end");
         }
         else {

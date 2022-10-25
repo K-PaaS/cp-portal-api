@@ -80,6 +80,13 @@ public class ClustersService {
     public Clusters createClusters(Params params) {
         Clusters clusters = setClusters(params);
         Clusters ret;
+
+        if(StringUtils.isNotBlank(this.getClusters(params).getClusterId())) {
+            clusters.setResultMessage("Cluster-Id already exists.");
+            clusters.setResultCode(Constants.RESULT_STATUS_FAIL);
+            return clusters;
+        }
+
         if (params.getIsClusterRegister() && !createClusterInfoToVault(params)) {
             clusters.setResultMessage("createClusterInfoToVault Failed");
             clusters.setResultCode(Constants.RESULT_STATUS_FAIL);

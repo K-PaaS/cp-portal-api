@@ -2,8 +2,6 @@ variables:
   GRADLE_OPTS: "-Dorg.gradle.daemon=false"
   SONAR_USER_HOME: "${CI_PROJECT_DIR}/.sonar"
   GIT_DEPTH: "0"
-  SONAR_TOKEN: 7e63d6ff74e9b2be5a177a4eaa85dd09e3887272
-  SONAR_HOST_URL: http://15.164.195.107:30087
 
 check coverage: # Job name
   stage: build # Stage name

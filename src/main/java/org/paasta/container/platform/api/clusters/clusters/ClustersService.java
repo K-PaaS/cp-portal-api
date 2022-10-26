@@ -82,7 +82,7 @@ public class ClustersService {
         Clusters ret;
 
         Clusters checkedClusters = restTemplateService.sendGlobal(Constants.TARGET_COMMON_API, "/clusters/" + params.getCluster(), HttpMethod.GET, null, Clusters.class, params);
-        if(checkedClusters != null && StringUtils.isNotBlank(checkedClusters.getClusterId())) {
+        if(checkedClusters != null) {
             clusters.setResultMessage("Cluster-Id already exists.");
             clusters.setResultCode(Constants.RESULT_STATUS_FAIL);
             return clusters;

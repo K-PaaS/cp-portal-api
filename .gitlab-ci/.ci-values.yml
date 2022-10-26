@@ -13,5 +13,3 @@ variables:
 
   SONAR_TOKEN: 7e63d6ff74e9b2be5a177a4eaa85dd09e3887272
   SONAR_HOST_URL: http://15.164.195.107:30087
-
-  ENV_SCOPE: dev_aws

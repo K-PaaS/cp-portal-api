@@ -12,6 +12,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
  */
 public enum MessageConstant {
     NOT_ALLOWED_POD_NAME("부적절한 Pod 이름 입니다.","Improper pod name."),
+    NOT_ALLOWED_CLUSTER_NAME("부적절한 Cluster 이름 입니다.","Improper cluster name."),
     NOT_ALLOWED_RESOURCE_NAME("부적절한 리소스 이름 입니다.","Improper resource name."),
     PREFIX_KUBE_NOT_ALLOW("'kube-' 접두사는 허용되지 않습니다.","'kube-' prefixes are not allowed."),
     NOT_MATCH_NAMESPACES("현재 네임스페이스와 요청한 네임스페이스가 일치하지 않습니다.","The current namespace and the requested namespace do not match."),
@@ -22,6 +23,7 @@ public enum MessageConstant {
     RESOURCE_NAMED(" 이름을 가진 리소스"," resources with names"),
     INCLUDE_INACCESSIBLE_RESOURCES("User 권한으로 생성이 불가한 리소스가 포함되어있습니다.","Resources that cannot be created with User permissions are included."),
     INVALID_YAML_FORMAT("잘못된 YAML 형식입니다.","Invalid YAML format."),
+    INVALID_NAME_FORMAT("잘못된 이름 형식입니다.","Invalid Name format."),
     DO_NOT_DELETE_DEFAULT_RESOURCES("해당 리소스는 삭제할 수 없습니다.","You cannot delete that resource."),
     MANDATORY_NAMESPACE_AND_ROLE("Namespace와 Role 선택은 필수입니다.","Namespace and Role selection is mandatory."),
     UNAPPROACHABLE_USERS("지정이 불가한 사용자입니다.","Users cannot be assigned."),
@@ -69,6 +71,7 @@ public enum MessageConstant {
     USER_ALREADY_REGISTERED_MESSAGE("USER_ALREADY_REGISTERED","USER_ALREADY_REGISTERED"),
     INVALID_PORT_INFO("포트 정보가 올바르지 않습니다.","The port information is incorrect."),
     UNABLE_TO_COMMUNICATE_K8S_API_SERVER("해당 클러스터 API 서버와 통신할 수 없습니다.","Unable to communicate with your cluster api server."),
+    UNABLE_TO_COMMUNICATE_TERRAMAN_SERVER("해당 terraman 서버와 통신할 수 없습니다.","Unable to communicate with your terraman server."),
     NO_CHANGED("변경된 사항이 없습니다.","There's no change.");
 
     private String ko_msg;

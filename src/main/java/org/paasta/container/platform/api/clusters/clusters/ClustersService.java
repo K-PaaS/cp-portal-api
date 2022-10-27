@@ -1,6 +1,8 @@
 package org.paasta.container.platform.api.clusters.clusters;
 
 import org.apache.commons.lang3.StringUtils;
+import org.paasta.container.platform.api.clusters.cloudAccounts.CloudAccounts;
+import org.paasta.container.platform.api.clusters.cloudAccounts.CloudAccountsService;
 import org.paasta.container.platform.api.clusters.clusters.support.ClusterInfo;
 import org.paasta.container.platform.api.clusters.clusters.support.TerramanParams;
 import org.paasta.container.platform.api.clusters.nodes.NodesList;
@@ -8,6 +10,7 @@ import org.paasta.container.platform.api.clusters.nodes.NodesService;
 import org.paasta.container.platform.api.common.*;
 import org.paasta.container.platform.api.common.model.Params;
 import org.paasta.container.platform.api.common.model.ResultStatus;
+import org.paasta.container.platform.api.exception.ResultStatusException;
 import org.paasta.container.platform.api.overview.support.Count;
 import org.paasta.container.platform.api.users.Users;
 import org.paasta.container.platform.api.users.UsersList;
@@ -19,6 +22,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
+import org.springframework.util.ObjectUtils;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -49,6 +53,7 @@ public class ClustersService {
     private final NodesService nodesService;
     private final PodsService podsService;
     private final UsersService usersService;
+    private final CloudAccountsService cloudAccountsService;
     private static final Logger LOGGER = LoggerFactory.getLogger(ClustersService.class);
 
     /**
@@ -60,7 +65,7 @@ public class ClustersService {
      * @param commonService the common service
      */
     @Autowired
-    public ClustersService(RestTemplateService restTemplateService, VaultService vaultService, PropertyService propertyService, CommonService commonService, NodesService nodesService, PodsService podsService, UsersService usersService) {
+    public ClustersService(RestTemplateService restTemplateService, VaultService vaultService, PropertyService propertyService, CommonService commonService, NodesService nodesService, PodsService podsService, UsersService usersService, CloudAccountsService cloudAccountsService) {
         this.restTemplateService = restTemplateService;
         this.vaultService = vaultService;
         this.propertyService = propertyService;
@@ -68,6 +73,7 @@ public class ClustersService {
         this.nodesService = nodesService;
         this.podsService = podsService;
         this.usersService = usersService;
+        this.cloudAccountsService = cloudAccountsService;
     }
 
 
@@ -81,20 +87,23 @@ public class ClustersService {
         Clusters clusters = setClusters(params);
         Clusters ret;
 
+        if (ObjectUtils.isEmpty(params) || ObjectUtils.isEmpty(params.getCluster())) {
+            throw new ResultStatusException(MessageConstant.INVALID_NAME_FORMAT.getMsg());
+        }
+
         Clusters checkedClusters = restTemplateService.sendGlobal(Constants.TARGET_COMMON_API, "/clusters/" + params.getCluster(), HttpMethod.GET, null, Clusters.class, params);
         if(checkedClusters != null) {
-            clusters.setResultMessage("Cluster-Id already exists.");
-            clusters.setResultCode(Constants.RESULT_STATUS_FAIL);
-            return clusters;
+            throw new ResultStatusException(MessageConstant.NOT_ALLOWED_CLUSTER_NAME.getMsg());
         }
 
         if (params.getIsClusterRegister() && !createClusterInfoToVault(params)) {
-            clusters.setResultMessage("createClusterInfoToVault Failed");
-            clusters.setResultCode(Constants.RESULT_STATUS_FAIL);
-            return clusters;
+            throw new ResultStatusException(MessageConstant.RE_CONFIRM_INPUT_VALUE.getMsg());
         }
 
         if (!params.getIsClusterRegister()) {
+            if(ObjectUtils.isEmpty(params.getCloudAccountId()) ||
+                    cloudAccountsService.getCloudAccounts(new Params(params.getCloudAccountId())).getResultCode().equals(Constants.RESULT_STATUS_FAIL))
+                throw new ResultStatusException(MessageConstant.RE_CONFIRM_INPUT_VALUE.getMsg());
             //Create Files
                 String path = propertyService.getCpTerramanTemplatePath().replace("{id}", params.getCluster());
                 Path filePath = Paths.get(path);
@@ -113,9 +122,7 @@ public class ClustersService {
             } catch (Exception e) {
                 LOGGER.info("Template file write Error");
                 LOGGER.info("Error Message: " + e.getMessage());
-                clusters.setResultMessage("Template file write Error");
-                clusters.setResultCode(Constants.RESULT_STATUS_FAIL);
-                return clusters;
+                throw new ResultStatusException(MessageConstant.CODE_ERROR.getMsg());
             }
             //DB Write
             ret = restTemplateService.sendGlobal(Constants.TARGET_COMMON_API, "/clusters", HttpMethod.POST, clusters, Clusters.class, params);
@@ -126,7 +133,15 @@ public class ClustersService {
             terramanParams.setProvider(params.getProviderType().name());
             terramanParams.setSeq(params.getCloudAccountId());
             LOGGER.info("Terraman API call Start : " + terramanParams);
-            restTemplateService.sendGlobal(Constants.TARGET_TERRAMAN_API, "/clusters/create/container", HttpMethod.POST, terramanParams, TerramanParams.class, params);
+
+            try {
+                restTemplateService.sendGlobal(Constants.TARGET_TERRAMAN_API, "/clusters/create/container", HttpMethod.POST, terramanParams, TerramanParams.class, params);
+            } catch (RuntimeException e) {
+                LOGGER.info("Terraman API call Error");
+                this.deleteClusters(params);
+                throw new ResultStatusException(MessageConstant.UNABLE_TO_COMMUNICATE_TERRAMAN_SERVER.getMsg());
+            }
+
             LOGGER.info("Terraman API call end");
         }
         else {
@@ -147,6 +162,9 @@ public class ClustersService {
     public Clusters getClusters(Params params) {
         // get k8s Info
         Clusters clusters = restTemplateService.sendGlobal(Constants.TARGET_COMMON_API, "/clusters/" + params.getCluster(), HttpMethod.GET, null, Clusters.class, params);
+        if (ObjectUtils.isEmpty(clusters)) {
+            throw new ResultStatusException(MessageConstant.NOT_EXIST_RESOURCE.getMsg());
+        }
         try {
             Clusters vaultClusters = commonService.getKubernetesInfo(params);
             clusters.setClusterApiUrl(vaultClusters.getClusterApiUrl());
@@ -282,6 +300,12 @@ public class ClustersService {
         Clusters clusters = vaultService.getClusterDetails(params.getCluster());
         if(!Objects.isNull(clusters)) {
             LOGGER.info("cluster id is already exist.");
+            return false;
+        }
+
+        if (ObjectUtils.isEmpty(params.getClusterApiUrl()) || ObjectUtils.isEmpty(params.getClusterToken()) ||
+            ObjectUtils.isEmpty(params.getCluster())) {
+            LOGGER.info("invalid cluster info");
             return false;
         }
 

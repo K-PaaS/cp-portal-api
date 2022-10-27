@@ -25,6 +25,8 @@ variables:
   VAULT_ROLE_NAME: webapp
   CP_PORTAL_PROVIDER_TYPE: cp-portal-$PROVIDER_TYPE
   CONFIGMAP_CHART_PATH: ./container-platform-helm-chart/container-platform-portal/container-platform-portal-configmap
+  REPOSITORY_URL: "https://$K8S_MASTER_NODE_IP:30002"
+  K8S_MASTER_HOST_KEY: "master-host-key"
 
 configmap deploy:
   stage: pre-deploy
@@ -64,6 +66,8 @@ configmap deploy:
     - sed -i "s/\${VAULT_ROLE_NAME}/$VAULT_ROLE_NAME/g" $CONFIGMAP_CHART_PATH/values.yaml
     - sed -i "s/\${VAULT_ROLE_ID}/$VAULT_ROLE_ID/g" $CONFIGMAP_CHART_PATH/values.yaml
     - sed -i "s/\${VAULT_SECRET_ID}/$VAULT_SECRET_ID/g" $CONFIGMAP_CHART_PATH/values.yaml
+    - sed -i "s/\${REPOSITORY_URL}/$REPOSITORY_URL/g" $CONFIGMAP_CHART_PATH/values.yaml
+    - sed -i "s/\${K8S_MASTER_HOST_KEY}/$K8S_MASTER_HOST_KEY/g" $CONFIGMAP_CHART_PATH/values.yaml
 
 
     # for check

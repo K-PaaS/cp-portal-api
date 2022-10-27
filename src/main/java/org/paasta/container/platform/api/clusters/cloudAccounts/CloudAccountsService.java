@@ -1,12 +1,15 @@
 package org.paasta.container.platform.api.clusters.cloudAccounts;
 
+import org.apache.commons.lang3.StringUtils;
 import org.paasta.container.platform.api.clusters.clusters.support.GCPInfo;
 import org.paasta.container.platform.api.common.*;
 import org.paasta.container.platform.api.common.model.Params;
+import org.paasta.container.platform.api.exception.ResultStatusException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
+import org.springframework.util.ObjectUtils;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -50,6 +53,10 @@ public class CloudAccountsService {
      */
     public CloudAccounts createCloudAccounts(Params params){
         CloudAccounts cloudAccounts = setCloudAccounts(params);
+        if (ObjectUtils.isEmpty(cloudAccounts.getName())) {
+            throw new ResultStatusException(MessageConstant.INVALID_NAME_FORMAT.getMsg());
+        }
+
         CloudAccounts ret = restTemplateService.sendGlobal(Constants.TARGET_COMMON_API, "/cloudAccounts", HttpMethod.POST, cloudAccounts, CloudAccounts.class, params);
         try {
             vaultService.write(propertyService.getCpVaultPathProviderCredential()
@@ -58,7 +65,9 @@ public class CloudAccountsService {
                             getProviderInfo(params));
         } catch (Exception e) {
             LOGGER.info("vault write failed");
-            return restTemplateService.sendGlobal(Constants.TARGET_COMMON_API, "/cloudAccounts/{id}".replace("{id}", params.getResourceUid()), HttpMethod.DELETE, null, CloudAccounts.class, params);
+            restTemplateService.sendGlobal(Constants.TARGET_COMMON_API, "/cloudAccounts/{id}".replace("{id}", params.getResourceUid()), HttpMethod.DELETE, null, CloudAccounts.class, params);
+            throw new ResultStatusException(MessageConstant.INVALID_NAME_FORMAT.getMsg());
+
         }
         return (CloudAccounts) commonService.setResultModel(ret, Constants.RESULT_STATUS_SUCCESS);
     }
@@ -123,7 +132,7 @@ public class CloudAccountsService {
         if(cloudAccounts == null){
             CloudAccounts ret = new CloudAccounts();
             ret.setResultCode(Constants.RESULT_STATUS_FAIL);
-            ret.setResultMessage("Invalid id");
+            ret.setDetailMessage("Invalid id");
             return ret;
         }
 

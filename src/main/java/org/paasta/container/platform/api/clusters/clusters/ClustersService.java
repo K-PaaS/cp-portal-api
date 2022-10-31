@@ -197,7 +197,7 @@ public class ClustersService {
                 params.setCluster(clusters.getClusterId());
                 ClusterPing clusterPing = restTemplateService.sendGlobal(Constants.TARGET_METRIC_COLLECTOR_API, "/v1/metrics/cluster/ping/{clusterId}"
                         .replace("{clusterId}", params.getCluster()), HttpMethod.GET, null, ClusterPing.class, params);
-                LOGGER.info("resultCode: " + clusterPing);
+                LOGGER.info("resultCode: " + clusterPing.getStatus_code());
                 if(clusterPing.getStatus_code() == 200) {
                     clusters.setIsActive(true);
                 } else {

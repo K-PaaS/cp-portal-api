@@ -1,13 +1,16 @@
 package org.paasta.container.platform.api.clusters.clusters;
 
+import com.google.gson.JsonObject;
 import org.apache.commons.lang3.StringUtils;
 import org.paasta.container.platform.api.clusters.clusters.support.ClusterInfo;
+import org.paasta.container.platform.api.clusters.clusters.support.ClusterPing;
 import org.paasta.container.platform.api.clusters.clusters.support.TerramanParams;
 import org.paasta.container.platform.api.clusters.nodes.NodesList;
 import org.paasta.container.platform.api.clusters.nodes.NodesService;
 import org.paasta.container.platform.api.common.*;
 import org.paasta.container.platform.api.common.model.Params;
 import org.paasta.container.platform.api.common.model.ResultStatus;
+import org.paasta.container.platform.api.overview.GlobalOverview;
 import org.paasta.container.platform.api.overview.support.Count;
 import org.paasta.container.platform.api.users.Users;
 import org.paasta.container.platform.api.users.UsersList;
@@ -181,7 +184,6 @@ public class ClustersService {
      * @return the clusters list
      */
     public ClustersList getClustersList(Params params) {
-
         ClustersList clustersList = restTemplateService.sendGlobal(Constants.TARGET_COMMON_API, "/clusters/users/{userAuthId}?userType={userType}"
                 .replace("{userAuthId}", params.getUserAuthId())
                 .replace("{userType}", params.getUserType()), HttpMethod.GET, null, ClustersList.class, params);
@@ -193,10 +195,14 @@ public class ClustersService {
             }
             try {
                 params.setCluster(clusters.getClusterId());
-                ResultStatus resultStatus = restTemplateService.sendPing(Constants.TARGET_CP_MASTER_API, ResultStatus.class, params);
-                LOGGER.info("resultCode: " + resultStatus.getResultCode());
-                clusters.setIsActive(true);
-
+                ClusterPing clusterPing = restTemplateService.sendGlobal(Constants.TARGET_METRIC_COLLECTOR_API, "/v1/metrics/cluster/ping/{clusterId}"
+                        .replace("{clusterId}", params.getCluster()), HttpMethod.GET, null, ClusterPing.class, params);
+                LOGGER.info("resultCode: " + clusterPing.getStatus_code());
+                if(clusterPing.getStatus_code() == 200) {
+                    clusters.setIsActive(true);
+                } else {
+                    clusters.setIsActive(false);
+                }
             } catch (Exception e) {
                 LOGGER.info("error from getClustersList, " + e.getMessage());
                 clusters.setIsActive(false);

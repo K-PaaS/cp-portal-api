@@ -1,11 +1,15 @@
 package org.paasta.container.platform.api.clusters.hclTemplates;
 
+import org.apache.commons.lang3.StringUtils;
 import org.paasta.container.platform.api.common.CommonService;
 import org.paasta.container.platform.api.common.Constants;
+import org.paasta.container.platform.api.common.MessageConstant;
 import org.paasta.container.platform.api.common.RestTemplateService;
 import org.paasta.container.platform.api.common.model.Params;
+import org.paasta.container.platform.api.exception.ResultStatusException;
 import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
+import org.springframework.util.ObjectUtils;
 
 /**
  * HclTemplates Service 클래스
@@ -79,7 +83,11 @@ public class HclTemplatesService {
      * @return the hclTemplates
      */
     HclTemplates createHclTemplates(Params params){
-        return (HclTemplates) commonService.setResultModel(restTemplateService.sendGlobal(Constants.TARGET_COMMON_API, "/hclTemplates", HttpMethod.POST, setHclTemplates(params), HclTemplates.class, params), Constants.RESULT_STATUS_SUCCESS);
+        HclTemplates hclTemplates = setHclTemplates(params);
+        if (ObjectUtils.isEmpty(hclTemplates.getName())) {
+            throw new ResultStatusException(MessageConstant.INVALID_NAME_FORMAT.getMsg());
+        }
+        return (HclTemplates) commonService.setResultModel(restTemplateService.sendGlobal(Constants.TARGET_COMMON_API, "/hclTemplates", HttpMethod.POST, hclTemplates, HclTemplates.class, params), Constants.RESULT_STATUS_SUCCESS);
     }
 
 

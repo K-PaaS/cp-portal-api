@@ -167,5 +167,9 @@ public class Params {
         this.clusterName = clusterName;
     }
 
+    public Params(String resourceUid) {
+        this.resourceUid = resourceUid;
+    }
+
 
 }

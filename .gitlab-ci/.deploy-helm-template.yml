@@ -12,8 +12,10 @@ app deploy:
     # Common
     - sed -i "s/\${DEPLOY_NAME}/$APP_NAME/g" $APP_CHART_PATH/values.yaml
     - sed -i "s/\${NAMESPACE}/$NAMESPACE/g" $APP_CHART_PATH/values.yaml
-    - sed -i "s~\${REPOSITORY_URL}~$CI_REGISTRY~g" $APP_CHART_PATH/values.yaml
-    - sed -i "s~\${REPOSITORY_PROJECT_NAME}~$CI_PROJECT_NAMESPACE~g" $APP_CHART_PATH/values.yaml
+    #- sed -i "s~\${REPOSITORY_URL}~$CI_REGISTRY~g" $APP_CHART_PATH/values.yaml
+    - sed -i "s~\${REPOSITORY_URL}~$HARBOR_HOST~g" $APP_CHART_PATH/values.yaml
+    #- sed -i "s~\${REPOSITORY_PROJECT_NAME}~$CI_PROJECT_NAMESPACE~g" $APP_CHART_PATH/values.yaml
+    - sed -i "s~\${REPOSITORY_PROJECT_NAME}~$HARBOR_PROJECT~g" $APP_CHART_PATH/values.yaml
     - sed -i "s/\${IMAGE_NAME}/$CI_PROJECT_TITLE/g" $APP_CHART_PATH/values.yaml
     - sed -i "s/\${IMAGE_TAGS}/$IMAGE_TAGS/g" $APP_CHART_PATH/values.yaml
     - sed -i "s/\${IMAGE_PULL_POLICY}/$IMAGE_PULL_POLICY/g" $APP_CHART_PATH/values.yaml

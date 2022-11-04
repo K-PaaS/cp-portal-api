@@ -416,9 +416,18 @@ public class ResourceYamlService {
             }
         }
 
+        try {
+            // secret 생성
+            createSecret(params);
+        } catch (Exception e) {
+            if (Integer.valueOf(e.getMessage()) == CommonStatusCode.CONFLICT.getCode()) {
+                LOGGER.info("*** CREATE_USER_RESOURCE: SECRET ALREADY EXISTS WITH THAT NAME...");
+            } else {
+                throw new ResultStatusException(CommonStatusCode.INTERNAL_SERVER_ERROR.getMsg());
+            }
+        }
 
         // secret 및 token 값 조회
-        getSecretName(params);
         getSecrets(params);
 
         // vault-user-token 등록
@@ -460,9 +469,18 @@ public class ResourceYamlService {
             }
         }
 
+        try {
+            // secret 생성
+            createSecret(params);
+        } catch (Exception e) {
+            if (Integer.valueOf(e.getMessage()) == CommonStatusCode.CONFLICT.getCode()) {
+                LOGGER.info("*** CREATE_CLUSTER_ADMIN_RESOURCE: SECRET ALREADY EXISTS WITH THAT NAME...");
+            } else {
+                throw new ResultStatusException(CommonStatusCode.INTERNAL_SERVER_ERROR.getMsg());
+            }
+        }
 
         // secret 및 token 값 조회
-        getSecretName(params);
         getSecrets(params);
 
         // vault-user-token 등록
@@ -572,6 +590,30 @@ public class ResourceYamlService {
                 .replace("{namespace:.+}", params.getNamespace())
                 .replace("{userAuthId:.+}", params.getUserAuthId())
                 .replace("{userType:.+}", params.getUserType()), HttpMethod.DELETE, null, ResultStatus.class, params);
+    }
+
+
+
+    /**
+     * ftl 파일로 Secret 생성(Create Secret)
+     *
+     * @param params the params
+     * @return the resultStatus
+     */
+    public ResultStatus createSecret(Params params) {
+        Map map = new HashMap();
+
+        params.setSaSecret(Constants.SA_TOKEN_NAME.replace("{username}", params.getRs_sa()));
+
+        map.put("userName", params.getRs_sa());
+        map.put("tokenName", params.getSaSecret());
+        map.put("spaceName", params.getNamespace());
+        params.setYaml(templateService.convert("create_secret.ftl", map));
+        System.out.println(params.getYaml());
+
+        ResultStatus resultStatus = restTemplateService.sendYaml(Constants.TARGET_CP_MASTER_API,
+                propertyService.getCpMasterApiListSecretsCreateUrl(), HttpMethod.POST, ResultStatus.class, params);
+        return (ResultStatus) commonService.setResultModel(resultStatus, Constants.RESULT_STATUS_SUCCESS);
     }
 
 

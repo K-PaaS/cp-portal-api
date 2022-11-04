@@ -360,4 +360,5 @@ public class Constants {
 
     public static final String CLUSTER_ADMIN_SERVICE_ACCOUNT = "cp-cluster-admin-{userAuthId}";
     public static final String CLUSTER_ROLE_BINDING_NAME = "-cluster-admin-binding";
+    public static final String SA_TOKEN_NAME= "{username}-token";
 }

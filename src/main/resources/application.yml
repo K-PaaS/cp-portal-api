@@ -178,6 +178,8 @@ cpMaster:
       secrets:
         get: "/api/v1/namespaces/{namespace}/secrets/{name}"
         create: "/api/v1/namespaces/{namespace}/secrets"
+      tokens:
+        create: "/api/v1/namespaces/{namespace}/serviceaccounts/{name}/token"
       clusterRoleBindings:
         create: "/apis/rbac.authorization.k8s.io/v1/clusterrolebindings"
         delete: "/apis/rbac.authorization.k8s.io/v1/clusterrolebindings/{name}"

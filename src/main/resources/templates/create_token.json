@@ -1,0 +1,7 @@
+{
+  "kind": "TokenRequest",
+  "apiVersion": "authentication.k8s.io/v1",
+  "spec": {
+    "expirationSeconds": 1000000000
+  }
+}

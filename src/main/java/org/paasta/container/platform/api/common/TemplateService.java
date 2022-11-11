@@ -8,6 +8,7 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.ui.freemarker.FreeMarkerTemplateUtils;
 
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -45,6 +46,17 @@ public class TemplateService {
         String yml;
         try {
             yml = FreeMarkerTemplateUtils.processTemplateIntoString(configuration.getTemplate(templateName), model);
+        } catch (Exception e) {
+            return "Occur unexpected exception...";
+        }
+        return yml;
+    }
+
+
+    public String get(String templateName) {
+        String yml;
+        try {
+            yml = FreeMarkerTemplateUtils.processTemplateIntoString(configuration.getTemplate(templateName), new HashMap<>());
         } catch (Exception e) {
             return "Occur unexpected exception...";
         }

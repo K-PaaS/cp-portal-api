@@ -15,6 +15,7 @@ import org.paasta.container.platform.api.common.model.Params;
 import org.paasta.container.platform.api.common.model.ResultStatus;
 import org.paasta.container.platform.api.exception.ResultStatusException;
 import org.paasta.container.platform.api.secret.Secrets;
+import org.paasta.container.platform.api.secret.TokenRequest;
 import org.paasta.container.platform.api.users.Users;
 import org.paasta.container.platform.api.users.UsersList;
 import org.slf4j.Logger;
@@ -417,18 +418,11 @@ public class ResourceYamlService {
         }
 
         try {
-            // secret 생성
-            createSecret(params);
+            // token 생성
+            createToken(params);
         } catch (Exception e) {
-            if (Integer.valueOf(e.getMessage()) == CommonStatusCode.CONFLICT.getCode()) {
-                LOGGER.info("*** CREATE_USER_RESOURCE: SECRET ALREADY EXISTS WITH THAT NAME...");
-            } else {
-                throw new ResultStatusException(CommonStatusCode.INTERNAL_SERVER_ERROR.getMsg());
-            }
+            throw new ResultStatusException(CommonStatusCode.INTERNAL_SERVER_ERROR.getMsg());
         }
-
-        // secret 및 token 값 조회
-        getSecrets(params);
 
         // vault-user-token 등록
         params.setUserType(AUTH_USER);
@@ -470,18 +464,11 @@ public class ResourceYamlService {
         }
 
         try {
-            // secret 생성
-            createSecret(params);
+            // token 생성
+            createToken(params);
         } catch (Exception e) {
-            if (Integer.valueOf(e.getMessage()) == CommonStatusCode.CONFLICT.getCode()) {
-                LOGGER.info("*** CREATE_CLUSTER_ADMIN_RESOURCE: SECRET ALREADY EXISTS WITH THAT NAME...");
-            } else {
-                throw new ResultStatusException(CommonStatusCode.INTERNAL_SERVER_ERROR.getMsg());
-            }
+            throw new ResultStatusException(CommonStatusCode.INTERNAL_SERVER_ERROR.getMsg());
         }
-
-        // secret 및 token 값 조회
-        getSecrets(params);
 
         // vault-user-token 등록
         params.setUserType(AUTH_CLUSTER_ADMIN);
@@ -616,5 +603,22 @@ public class ResourceYamlService {
         return (ResultStatus) commonService.setResultModel(resultStatus, Constants.RESULT_STATUS_SUCCESS);
     }
 
+
+    /**
+     * json 파일로 Token 생성(Create Token)
+     *
+     * @param params the params
+     * @return the HashMap
+     */
+    public void createToken(Params params) {
+        String bodyObject = templateService.get("create_token.json");
+        HashMap responseMap =  (HashMap) restTemplateService.sendGlobal(Constants.TARGET_CP_MASTER_API,
+                propertyService.getCpMasterApiListTokensCreateUrl()
+                        .replace("{namespace}", params.getNamespace())
+                        .replace("{name}",  params.getRs_sa()), HttpMethod.POST, bodyObject, Map.class, params);
+
+        TokenRequest tokenRequest = commonService.setResultObject(responseMap, TokenRequest.class);
+        params.setSaToken(tokenRequest.getToken());
+    }
 
 }

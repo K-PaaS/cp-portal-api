@@ -323,6 +323,10 @@ public class PropertyService {
     @Value("${cpMaster.api.list.secrets.create}")
     private String cpMasterApiListSecretsCreateUrl;
 
+    // token
+    @Value("${cpMaster.api.list.tokens.create}")
+    private String cpMasterApiListTokensCreateUrl;
+
     //clusterRoleBindings
     @Value("${cpMaster.api.list.clusterRoleBindings.create}")
     private String cpMasterApiListClusterRoleBindingsCreateUrl;

@@ -7,7 +7,6 @@ import org.paasta.container.platform.api.common.model.CommonStatusCode;
 import org.paasta.container.platform.api.common.model.Params;
 import org.paasta.container.platform.api.common.model.ResultStatus;
 import org.paasta.container.platform.api.exception.ResultStatusException;
-import org.paasta.container.platform.api.secret.Secrets;
 import org.paasta.container.platform.api.users.support.NamespaceRole;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -107,11 +106,6 @@ public class UsersService {
                 if (user.getUserType().equalsIgnoreCase(AUTH_CLUSTER_ADMIN)) {
                     user.setCpNamespace(propertyService.getClusterAdminNamespace());
                 }
-                Params p = new Params(user.getClusterId(), user.getCpNamespace(), user.getSaSecret(), true);
-                Secrets secrets = resourceYamlService.getSecret(p);
-                user.setSecretName(secrets.getMetadata().getName());
-                user.setSecretUid(secrets.getMetadata().getUid());
-                user.setSecretCreationTimestamp(secrets.getMetadata().getCreationTimestamp());
             }
 
         } catch (Exception e) {

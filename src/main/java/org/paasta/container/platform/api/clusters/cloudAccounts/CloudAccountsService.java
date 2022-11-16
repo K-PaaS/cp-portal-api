@@ -57,8 +57,9 @@ public class CloudAccountsService {
             throw new ResultStatusException(MessageConstant.INVALID_NAME_FORMAT.getMsg());
         }
 
-        CloudAccounts ret = restTemplateService.sendGlobal(Constants.TARGET_COMMON_API, "/cloudAccounts", HttpMethod.POST, cloudAccounts, CloudAccounts.class, params);
+        CloudAccounts ret = new CloudAccounts();
         try {
+            ret =  restTemplateService.sendGlobal(Constants.TARGET_COMMON_API, "/cloudAccounts", HttpMethod.POST, cloudAccounts, CloudAccounts.class, params);
             vaultService.write(propertyService.getCpVaultPathProviderCredential()
                             .replace("{iaas}", cloudAccounts.getProvider())
                             .replace("{id}", "" + ret.getId()),
@@ -161,7 +162,7 @@ public class CloudAccountsService {
      * @return the Object
      */
     public Object getProviderInfo(Params params){
-        Map providerInfoList = (Map) getProviderInfoList(params);
+        Map providerInfoList = getProviderInfoList(params).getItems();
         if (providerInfoList.containsKey(params.getProviderType().name())) {
             return commonService.setResultObject(params.getProviderInfo(), providerInfoList.get(params.getProviderType().name()).getClass());
         } else return null;
@@ -220,6 +221,9 @@ public class CloudAccountsService {
         cloudAccounts.setName(params.getResourceName());
         cloudAccounts.setProvider(params.getProviderType().name());
         cloudAccounts.setRegion(params.getRegion());
+        if(cloudAccounts.getProvider().equals(Constants.ProviderType.OPENSTACK.name()) && getProviderInfo(params) != null) {
+            cloudAccounts.setProject(params.getProject());
+        }
         if(cloudAccounts.getProvider().equals(Constants.ProviderType.GCP.name()) && getProviderInfo(params) != null) {
             GCPInfo gcpInfo = (GCPInfo) getProviderInfo(params);
             cloudAccounts.setProject(gcpInfo.getProject_name());

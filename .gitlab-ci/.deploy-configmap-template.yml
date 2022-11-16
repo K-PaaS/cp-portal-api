@@ -23,7 +23,6 @@ variables:
   DATABASE_NAMESPACE: mariadb
   KEYCLOAK_NAMESPACE: keycloak
   VAULT_ROLE_NAME: webapp
-  CP_PORTAL_PROVIDER_TYPE: cp-portal-$PROVIDER_TYPE
   CONFIGMAP_CHART_PATH: ./container-platform-helm-chart/container-platform-portal/container-platform-portal-configmap
   REPOSITORY_URL: "https://$K8S_MASTER_NODE_IP:30002"
   K8S_MASTER_HOST_KEY: "master-host-key"
@@ -39,7 +38,6 @@ configmap deploy:
     - sed -i "s/\${NAMESPACE}/$NAMESPACE/g" $CONFIGMAP_CHART_PATH/values.yaml
     - sed -i "s/\${K8S_MASTER_NODE_IP}/$K8S_MASTER_NODE_IP/g" $CONFIGMAP_CHART_PATH/values.yaml
     - sed -i "s/\${K8S_API_SERVER_PORT}/$K8S_API_SERVER_PORT/g" $CONFIGMAP_CHART_PATH/values.yaml
-    - sed -i "s/\${K8S_AUTH_BEARER_TOKEN}/$K8S_AUTH_BEARER_TOKEN/g" $CONFIGMAP_CHART_PATH/values.yaml
     - sed -i "s~\${KEYCLOAK_URL}~$KEYCLOAK_URL~g" $CONFIGMAP_CHART_PATH/values.yaml
     - sed -i "s~\${KEYCLOAK_DB_SCHEMA}~$KEYCLOAK_DB_SCHEMA~g" $CONFIGMAP_CHART_PATH/values.yaml
     - sed -i "s~\${CP_PORTAL_DB_SCHEMA}~$CP_PORTAL_DB_SCHEMA~g" $CONFIGMAP_CHART_PATH/values.yaml
@@ -60,7 +58,6 @@ configmap deploy:
     - sed -i "s/\${REPOSITORY_NAMESPACE}/$REPOSITORY_NAMESPACE/g" $CONFIGMAP_CHART_PATH/values.yaml
     - sed -i "s/\${DATABASE_NAMESPACE}/$DATABASE_NAMESPACE/g" $CONFIGMAP_CHART_PATH/values.yaml
     - sed -i "s/\${KEYCLOAK_NAMESPACE}/$KEYCLOAK_NAMESPACE/g" $CONFIGMAP_CHART_PATH/values.yaml
-    - sed -i "s/\${CP_PORTAL_PROVIDER_TYPE}/$CP_PORTAL_PROVIDER_TYPE/g" $CONFIGMAP_CHART_PATH/values.yaml
     - sed -i "s/\${VAULT_IP}/$VAULT_IP/g" $CONFIGMAP_CHART_PATH/values.yaml
     - sed -i "s/\${VAULT_PORT}/$VAULT_PORT/g" $CONFIGMAP_CHART_PATH/values.yaml
     - sed -i "s/\${VAULT_ROLE_NAME}/$VAULT_ROLE_NAME/g" $CONFIGMAP_CHART_PATH/values.yaml

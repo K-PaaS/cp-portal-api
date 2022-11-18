@@ -1,5 +1,6 @@
 package org.paasta.container.platform.api.clusters.cloudAccounts;
 
+import net.bytebuddy.implementation.bytecode.Throw;
 import org.apache.commons.lang3.StringUtils;
 import org.paasta.container.platform.api.clusters.clusters.support.GCPInfo;
 import org.paasta.container.platform.api.common.*;
@@ -59,14 +60,14 @@ public class CloudAccountsService {
 
         CloudAccounts ret = new CloudAccounts();
         try {
-            ret =  restTemplateService.sendGlobal(Constants.TARGET_COMMON_API, "/cloudAccounts", HttpMethod.POST, cloudAccounts, CloudAccounts.class, params);
+            ret = restTemplateService.sendGlobal(Constants.TARGET_COMMON_API, "/cloudAccounts", HttpMethod.POST, cloudAccounts, CloudAccounts.class, params);
             vaultService.write(propertyService.getCpVaultPathProviderCredential()
                             .replace("{iaas}", cloudAccounts.getProvider())
                             .replace("{id}", "" + ret.getId()),
                             getProviderInfo(params));
         } catch (Exception e) {
             LOGGER.info("vault write failed");
-            restTemplateService.sendGlobal(Constants.TARGET_COMMON_API, "/cloudAccounts/{id}".replace("{id}", params.getResourceUid()), HttpMethod.DELETE, null, CloudAccounts.class, params);
+            restTemplateService.sendGlobal(Constants.TARGET_COMMON_API, "/cloudAccounts/{id}".replace("{id}", String.valueOf(ret.getId())), HttpMethod.DELETE, null, CloudAccounts.class, params);
             throw new ResultStatusException(MessageConstant.INVALID_NAME_FORMAT.getMsg());
 
         }

@@ -782,8 +782,8 @@ public class CommonService {
         //clusterId, namespaceId로 조회.
         Clusters clusters = new Clusters();
         PortalGrantedAuthority portalGrantedAuthority;
-        LOGGER.info("in getKubernetesInfo, params: "  + params);
-        LOGGER.info("cluster AUTHORITY: " + getClusterAuthorityFromContext(params.getCluster()));
+        LOGGER.info("in getKubernetesInfo, params: "  + CommonUtils.loggerReplace(params));
+        LOGGER.info("cluster AUTHORITY: " + CommonUtils.loggerReplace(getClusterAuthorityFromContext(params.getCluster())));
         switch (getClusterAuthorityFromContext(params.getCluster())) {
             case Constants.AUTH_SUPER_ADMIN:
             case Constants.AUTH_CLUSTER_ADMIN:

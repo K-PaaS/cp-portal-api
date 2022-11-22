@@ -88,7 +88,7 @@ public class GlobalExceptionHandler extends RuntimeException {
             return new ErrorMessage(Constants.RESULT_STATUS_FAIL, CommonStatusCode.NOT_FOUND.getMsg(), HttpStatus.NOT_FOUND.value(), CommonStatusCode.NOT_FOUND.getMsg());
         }
 
-        LOGGER.info( ex.getClass() + "  Exception >>> {}",   CommonUtils.loggerReplace(ex.getLocalizedMessage()));
+        LOGGER.info( CommonUtils.loggerReplace(ex.getClass()) + "  Exception >>> {}",   CommonUtils.loggerReplace(ex.getLocalizedMessage()));
         return new ErrorMessage(Constants.RESULT_STATUS_FAIL, CommonStatusCode.INTERNAL_SERVER_ERROR.getMsg(), HttpStatus.INTERNAL_SERVER_ERROR.value(), CommonStatusCode.INTERNAL_SERVER_ERROR.getMsg());
     }
 

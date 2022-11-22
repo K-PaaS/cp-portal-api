@@ -116,7 +116,7 @@ public class CloudAccountsService {
         }
 
         params.setProviderType(Constants.ProviderType.valueOf(cloudAccounts.getProvider()));
-        LOGGER.info("providerType : " + cloudAccounts.getProvider());
+        LOGGER.info("providerType : " + CommonUtils.loggerReplace(cloudAccounts.getProvider()));
         cloudAccounts.setProviderInfo(getProviderInfoFromVault(params)); //FIXME 예외처리
 
         return (CloudAccounts) commonService.setResultModel(cloudAccounts, Constants.RESULT_STATUS_SUCCESS);
@@ -184,7 +184,7 @@ public class CloudAccountsService {
                 Class<?> classType = Class.forName(providerInfoPath + "." + p.getClassType());
                 ret.put(p.name(), classType.newInstance());
             } catch (Exception e) {
-                LOGGER.info("Invalid ClassName: " + e.getMessage());
+                LOGGER.info("Invalid ClassName: " + CommonUtils.loggerReplace(e.getMessage()));
             }
         }
 

@@ -1,5 +1,6 @@
 package org.paasta.container.platform.api.clusters.clusters;
 
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.paasta.container.platform.api.clusters.cloudAccounts.CloudAccounts;
 import org.paasta.container.platform.api.clusters.cloudAccounts.CloudAccountsService;
@@ -112,18 +113,18 @@ public class ClustersService {
             try {
                 Files.createDirectories(filePath.getParent());
             } catch (Exception e) {
-                LOGGER.info("Template directory create Error : " + e.getMessage());
+                LOGGER.info("Template directory create Error : " + CommonUtils.loggerReplace(e.getMessage()));
                 return clusters;
             }
 
-            try(BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(new FileOutputStream(path)) ) {
-                LOGGER.info("File write Start : " + path);
+            try(BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(new FileOutputStream(FilenameUtils.getName(path))) ) {
+                LOGGER.info("File write Start : " + CommonUtils.loggerReplace(path));
                 bufferedOutputStream.write(params.getHclScript().getBytes());
                 LOGGER.info("File write End");
 
             } catch (Exception e) {
                 LOGGER.info("Template file write Error");
-                LOGGER.info("Error Message: " + e.getMessage());
+                LOGGER.info("Error Message: " + CommonUtils.loggerReplace(e.getMessage()));
                 throw new ResultStatusException(MessageConstant.CODE_ERROR.getMsg());
             }
             //DB Write
@@ -134,7 +135,7 @@ public class ClustersService {
             terramanParams.setClusterId(params.getCluster());
             terramanParams.setProvider(params.getProviderType().name());
             terramanParams.setSeq(params.getCloudAccountId());
-            LOGGER.info("Terraman API call Start : " + terramanParams);
+            LOGGER.info("Terraman API call Start : " + CommonUtils.loggerReplace(terramanParams));
 
             try {
                 restTemplateService.sendGlobal(Constants.TARGET_TERRAMAN_API, "/clusters/create/container", HttpMethod.POST, terramanParams, TerramanParams.class, params);
@@ -222,7 +223,7 @@ public class ClustersService {
                     clusters.setIsActive(false);
                 }
             } catch (Exception e) {
-                LOGGER.info("error from getClustersList, " + e.getMessage());
+                LOGGER.info("error from getClustersList, " + CommonUtils.loggerReplace(e.getMessage()));
                 clusters.setIsActive(false);
             }
 

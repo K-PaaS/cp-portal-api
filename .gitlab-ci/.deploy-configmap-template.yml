@@ -1,7 +1,5 @@
 variables:
   CONFIGMAP_NAME: cp-portal-configmap
-  CONFIGMAP_VERSION: "1.3"
-
   DATABASE_URL: "cp-mariadb.mariadb.svc.cluster.local:3306"
   DATABASE_USER_ID: cp-admin
   DATABASE_USER_PASSWORD: Paasta!2022
@@ -24,7 +22,7 @@ variables:
   KEYCLOAK_NAMESPACE: keycloak
   VAULT_ROLE_NAME: webapp
   CONFIGMAP_CHART_PATH: ./container-platform-helm-chart/container-platform-portal/container-platform-portal-configmap
-  REPOSITORY_URL: "https://$K8S_MASTER_NODE_IP:30002"
+  REPOSITORY_URL: "http://$K8S_MASTER_NODE_IP:30002"
   K8S_MASTER_HOST_KEY: "master-host-key"
 
 configmap deploy:
@@ -71,6 +69,6 @@ configmap deploy:
     - cat $CONFIGMAP_CHART_PATH/values.yaml
 
     - helm package $CONFIGMAP_CHART_PATH
-    - helm upgrade --install "$CONFIGMAP_NAME" $CONFIGMAP_NAME-$CONFIGMAP_VERSION.tgz -f $CONFIGMAP_CHART_PATH/values.yaml -n "$NAMESPACE"
+    - helm upgrade --install "$CONFIGMAP_NAME" $CONFIGMAP_NAME-$APP_VERSION.tgz -f $CONFIGMAP_CHART_PATH/values.yaml -n "$NAMESPACE"
   environment:
     name: $ENV_SCOPE

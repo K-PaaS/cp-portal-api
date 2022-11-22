@@ -6,10 +6,7 @@ import org.paasta.container.platform.api.clusters.namespaces.support.NamespacesL
 import org.paasta.container.platform.api.clusters.nodes.NodesList;
 import org.paasta.container.platform.api.clusters.nodes.NodesService;
 import org.paasta.container.platform.api.clusters.nodes.support.NodesListItem;
-import org.paasta.container.platform.api.common.CommonService;
-import org.paasta.container.platform.api.common.Constants;
-import org.paasta.container.platform.api.common.RestTemplateService;
-import org.paasta.container.platform.api.common.VaultService;
+import org.paasta.container.platform.api.common.*;
 import org.paasta.container.platform.api.common.model.Params;
 import org.paasta.container.platform.api.common.model.ResultStatus;
 import org.paasta.container.platform.api.metrics.*;
@@ -131,7 +128,7 @@ public class GlobalOverviewService {
                         getPvCount(params), getPvcCount(params), getClusterUsage(nodesList, nodesMetricsList));
 
             } catch (Exception e) {
-                LOGGER.info("GLOBAL OVERVIEW Exception: "+ e.getLocalizedMessage());
+                LOGGER.info("GLOBAL OVERVIEW Exception: "+ CommonUtils.loggerReplace(e.getLocalizedMessage()));
                 globalOverviewItems = new GlobalOverviewItems(Constants.RESULT_STATUS_FAIL, users.getClusterId(), users.getClusterName(), users.getClusterProviderType());
                 nodesList = new NodesList();
             }

@@ -1,6 +1,7 @@
 package org.paasta.container.platform.api.login;
 
 import org.paasta.container.platform.api.accessInfo.AccessTokenService;
+import org.paasta.container.platform.api.common.CommonUtils;
 import org.paasta.container.platform.api.common.Constants;
 import org.paasta.container.platform.api.common.MessageConstant;
 import org.paasta.container.platform.api.common.model.Params;
@@ -121,7 +122,7 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
         UsernamePasswordAuthenticationToken result = new UsernamePasswordAuthenticationToken(loadedUser, null, authorities);
         result.setDetails(authentication.getDetails());
 
-        LOGGER.info("authenticate END, result : " + result);
+        LOGGER.info("authenticate END, result : " + CommonUtils.loggerReplace(result));
         return result;
     }
 

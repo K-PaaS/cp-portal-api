@@ -138,27 +138,4 @@ public class IngressesController {
     }
 
 
-    /**
-     * Ingresses 목록 및 Ingress Controller 정보 조회 (Get Ingresses List Ingress Controller)
-     *
-     * @param params the params
-     * @return the IngressesList
-     */
-    @ApiOperation(value = "Ingresses List Ingress Controller 정보 조회(Get Ingresses List Ingress Controller Info)", nickname = "getIngressesListIngressControllerInfo")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body")
-    })
-    @GetMapping("/ingressControllerInfo")
-    public IngressesList getIngressesListIngressControllerInfo(Params params){
-        IngressesList ingressesList = ingressesService.getIngressesList(params);
-
-        params.setNamespace(Constants.INGRESS_CONTROLLER_NAMESPACE);
-        params.setResourceName(Constants.INGRESS_CONTROLLER_RESOURCE_NAME);
-
-        CustomServices customServices = customServicesService.getCustomServices(params);
-        ingressesList.setIngressControllerPort(customServices.getPort());
-
-        return ingressesList;
-    }
-
 }

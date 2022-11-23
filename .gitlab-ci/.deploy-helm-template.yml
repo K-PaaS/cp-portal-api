@@ -10,32 +10,32 @@ app deploy:
     - ls -al $APP_CHART_PATH
     - export
     # Common
-    - sed -i "s/\${DEPLOY_NAME}/$APP_NAME/g" $APP_CHART_PATH/$APP_CHART_VALUE_PATH/values.yaml
-    - sed -i "s/\${NAMESPACE}/$NAMESPACE/g" $APP_CHART_PATH/$APP_CHART_VALUE_PATH/values.yaml
-    #- sed -i "s~\${REPOSITORY_URL}~$CI_REGISTRY~g" $APP_CHART_PATH/$APP_CHART_VALUE_PATH/values.yaml
-    - sed -i "s~\${REPOSITORY_URL}~$HARBOR_HOST~g" $APP_CHART_PATH/$APP_CHART_VALUE_PATH/values.yaml
-    #- sed -i "s~\${REPOSITORY_PROJECT_NAME}~$CI_PROJECT_NAMESPACE~g" $APP_CHART_PATH/$APP_CHART_VALUE_PATH/values.yaml
-    - sed -i "s~\${REPOSITORY_PROJECT_NAME}~$HARBOR_PROJECT~g" $APP_CHART_PATH/$APP_CHART_VALUE_PATH/values.yaml
-    - sed -i "s/\${IMAGE_NAME}/$CI_PROJECT_TITLE/g" $APP_CHART_PATH/$APP_CHART_VALUE_PATH/values.yaml
-    - sed -i "s/\${IMAGE_TAGS}/$IMAGE_TAGS/g" $APP_CHART_PATH/$APP_CHART_VALUE_PATH/values.yaml
-    - sed -i "s/\${IMAGE_PULL_POLICY}/$IMAGE_PULL_POLICY/g" $APP_CHART_PATH/$APP_CHART_VALUE_PATH/values.yaml
-    - sed -i "s/\${IMAGE_PULL_SECRET}/$IMAGE_PULL_SECRET/g" $APP_CHART_PATH/$APP_CHART_VALUE_PATH/values.yaml
-    - sed -i "s/\${SERVICE_TYPE}/$SERVICE_TYPE/g" $APP_CHART_PATH/$APP_CHART_VALUE_PATH/values.yaml
-    - sed -i "s/\${SERVICE_PROTOCOL}/$SERVICE_PROTOCOL/g" $APP_CHART_PATH/$APP_CHART_VALUE_PATH/values.yaml
-    - sed -i "s/\${SERVICE_PORT}/$SERVICE_PORT/g" $APP_CHART_PATH/$APP_CHART_VALUE_PATH/values.yaml
-    - sed -i "s/\${SERVICE_TARGET_PORT}/$SERVICE_TARGET_PORT/g" $APP_CHART_PATH/$APP_CHART_VALUE_PATH/values.yaml
-    - sed -i "s/\${SERVICE_NODEPORT}/$SERVICE_NODEPORT/g" $APP_CHART_PATH/$APP_CHART_VALUE_PATH/values.yaml
-    - sed -i "s/\${CP_PORTAL_CONFIGMAP_NAME}/$CP_PORTAL_CONFIGMAP_NAME/g" $APP_CHART_PATH/$APP_CHART_VALUE_PATH/values.yaml
-    - sed -i "s/\${DEPLOY_TO_MASTER_NODE}/$DEPLOY_TO_MASTER_NODE/g" $APP_CHART_PATH/$APP_CHART_VALUE_PATH/values.yaml
-    - sed -i "s/\${USE_VOLUMES}/$USE_VOLUMES/g" $APP_CHART_PATH/$APP_CHART_VALUE_PATH/values.yaml
-    - sed -i "s/\${K8S_MASTER_HOST_KEY}/$K8S_MASTER_HOST_KEY/g" $APP_CHART_PATH/$APP_CHART_VALUE_PATH/values.yaml
-    - sed -i "s/\${PERSISTENT_STORAGE_CLASS_NAME}/$PERSISTENT_STORAGE_CLASS_NAME/g" $APP_CHART_PATH/$APP_CHART_VALUE_PATH/values.yaml
+    - sed -i "s/\${DEPLOY_NAME}/$APP_NAME/g" $APP_CHART_VALUE_PATH/values.yaml
+    - sed -i "s/\${NAMESPACE}/$NAMESPACE/g" $APP_CHART_VALUE_PATH/values.yaml
+    #- sed -i "s~\${REPOSITORY_URL}~$CI_REGISTRY~g" $APP_CHART_VALUE_PATH/values.yaml
+    - sed -i "s~\${REPOSITORY_URL}~$HARBOR_HOST~g" $APP_CHART_VALUE_PATH/values.yaml
+    #- sed -i "s~\${REPOSITORY_PROJECT_NAME}~$CI_PROJECT_NAMESPACE~g" $APP_CHART_VALUE_PATH/values.yaml
+    - sed -i "s~\${REPOSITORY_PROJECT_NAME}~$HARBOR_PROJECT~g" $APP_CHART_VALUE_PATH/values.yaml
+    - sed -i "s/\${IMAGE_NAME}/$CI_PROJECT_TITLE/g" $APP_CHART_VALUE_PATH/values.yaml
+    - sed -i "s/\${IMAGE_TAGS}/$IMAGE_TAGS/g" $APP_CHART_VALUE_PATH/values.yaml
+    - sed -i "s/\${IMAGE_PULL_POLICY}/$IMAGE_PULL_POLICY/g" $APP_CHART_VALUE_PATH/values.yaml
+    - sed -i "s/\${IMAGE_PULL_SECRET}/$IMAGE_PULL_SECRET/g" $APP_CHART_VALUE_PATH/values.yaml
+    - sed -i "s/\${SERVICE_TYPE}/$SERVICE_TYPE/g" $APP_CHART_VALUE_PATH/values.yaml
+    - sed -i "s/\${SERVICE_PROTOCOL}/$SERVICE_PROTOCOL/g" $APP_CHART_VALUE_PATH/values.yaml
+    - sed -i "s/\${SERVICE_PORT}/$SERVICE_PORT/g" $APP_CHART_VALUE_PATH/values.yaml
+    - sed -i "s/\${SERVICE_TARGET_PORT}/$SERVICE_TARGET_PORT/g" $APP_CHART_VALUE_PATH/values.yaml
+    - sed -i "s/\${SERVICE_NODEPORT}/$SERVICE_NODEPORT/g" $APP_CHART_VALUE_PATH/values.yaml
+    - sed -i "s/\${CP_PORTAL_CONFIGMAP_NAME}/$CP_PORTAL_CONFIGMAP_NAME/g" $APP_CHART_VALUE_PATH/values.yaml
+    - sed -i "s/\${DEPLOY_TO_MASTER_NODE}/$DEPLOY_TO_MASTER_NODE/g" $APP_CHART_VALUE_PATH/values.yaml
+    - sed -i "s/\${USE_VOLUMES}/$USE_VOLUMES/g" $APP_CHART_VALUE_PATH/values.yaml
+    - sed -i "s/\${K8S_MASTER_HOST_KEY}/$K8S_MASTER_HOST_KEY/g" $APP_CHART_VALUE_PATH/values.yaml
+    - sed -i "s/\${PERSISTENT_STORAGE_CLASS_NAME}/$PERSISTENT_STORAGE_CLASS_NAME/g" $APP_CHART_VALUE_PATH/values.yaml
 
     # for check
-    - cat $APP_CHART_PATH/$APP_CHART_VALUE_PATH/values.yaml
+    - cat $APP_CHART_VALUE_PATH/values.yaml
 
     - helm package $APP_CHART_PATH
     #- mv $APP_NAME-$APP_VERSION.tgz $APP_CHART_PATH/$APP_NAME.tgz
-    - helm upgrade --install "$APP_NAME" $CHART_NAME-$APP_VERSION.tgz -f $APP_CHART_PATH/$APP_CHART_VALUE_PATH/values.yaml -n "$NAMESPACE"
+    - helm upgrade --install "$APP_NAME" $CHART_NAME-$APP_VERSION.tgz -f $APP_CHART_VALUE_PATH/values.yaml -n "$NAMESPACE"
   environment:
     name: $ENV_SCOPE

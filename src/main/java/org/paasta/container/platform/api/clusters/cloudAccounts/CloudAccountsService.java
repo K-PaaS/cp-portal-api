@@ -1,8 +1,8 @@
 package org.paasta.container.platform.api.clusters.cloudAccounts;
 
-import net.bytebuddy.implementation.bytecode.Throw;
-import org.apache.commons.lang3.StringUtils;
-import org.paasta.container.platform.api.clusters.clusters.support.GCPInfo;
+
+import org.paasta.container.platform.api.clusters.clusters.support.AWSInfo;
+import org.paasta.container.platform.api.clusters.clusters.support.OpenstackInfo;
 import org.paasta.container.platform.api.common.*;
 import org.paasta.container.platform.api.common.model.Params;
 import org.paasta.container.platform.api.exception.ResultStatusException;
@@ -225,11 +225,35 @@ public class CloudAccountsService {
         if(cloudAccounts.getProvider().equals(Constants.ProviderType.OPENSTACK.name()) && getProviderInfo(params) != null) {
             cloudAccounts.setProject(params.getProject());
         }
-        if(cloudAccounts.getProvider().equals(Constants.ProviderType.GCP.name()) && getProviderInfo(params) != null) {
+     /*   if(cloudAccounts.getProvider().equals(Constants.ProviderType.GCP.name()) && getProviderInfo(params) != null) {
             GCPInfo gcpInfo = (GCPInfo) getProviderInfo(params);
             cloudAccounts.setProject(gcpInfo.getProject_name());
-        }
+        }*/
         return cloudAccounts;
+    }
+
+    public void validationCheckCloudAccounts(Params params) {
+        String provider = params.getProviderType().name();
+        if (params.getResourceName().equals(Constants.EMPTY_STRING) || params.getRegion().equals(Constants.EMPTY_STRING)) {
+            throw new ResultStatusException(MessageConstant.REQUEST_VALUE_IS_MISSING.getMsg());
+        }
+
+        if (provider.equalsIgnoreCase(Constants.ProviderType.OPENSTACK.name())) {
+            OpenstackInfo openstackInfo = commonService.setResultObject(params.getProviderInfo(), OpenstackInfo.class);
+            if (params.getProject().equals(Constants.EMPTY_STRING) ||
+                    openstackInfo.getAuth_url().equals(Constants.EMPTY_STRING) ||
+                    openstackInfo.getPassword().equals(Constants.EMPTY_STRING) ||
+                    openstackInfo.getUser_name().equals(Constants.EMPTY_STRING)) {
+                throw new ResultStatusException(MessageConstant.REQUEST_VALUE_IS_MISSING.getMsg());
+            }
+
+        } else {
+            AWSInfo awsInfo = commonService.setResultObject(params.getProviderInfo(), AWSInfo.class);
+            if (awsInfo.getAccessKey().equals(Constants.EMPTY_STRING) ||
+                    awsInfo.getSecretKey().equals(Constants.EMPTY_STRING)) {
+                throw new ResultStatusException(MessageConstant.REQUEST_VALUE_IS_MISSING.getMsg());
+            }
+        }
     }
 
 }

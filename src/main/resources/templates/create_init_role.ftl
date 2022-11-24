@@ -40,3 +40,6 @@ rules:
 - apiGroups: ["core"]
   resources: ["serviceaccount"]
   verbs: ["get", "list", "watch"]
+- apiGroups: ["networking.k8s.io"]
+  resources: ["ingresses"]
+  verbs: ["get", "list", "watch"]

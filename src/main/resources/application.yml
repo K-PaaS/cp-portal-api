@@ -280,4 +280,4 @@ commonApi:
 
 cpTerraman:
   template:
-    path: "/home/1000/tmp/terraform/{id}/{id}.tf"
+    path: "/tmp/terraform/{id}/{id}.tf"

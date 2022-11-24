@@ -95,6 +95,7 @@ public class CloudAccountsController {
     })
     @PostMapping
     public Object createCloudAccounts(@RequestBody Params params) {
+        cloudAccountsService.validationCheckCloudAccounts(params);
         return cloudAccountsService.createCloudAccounts(params);
     }
 

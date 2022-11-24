@@ -308,8 +308,9 @@ public class Constants {
 
     public enum ProviderType {
         AWS("AWSInfo"),
-        GCP("GCPInfo"),
         OPENSTACK("OpenstackInfo");
+        // GCP("GCPInfo")
+
 
         private final String classType;
 

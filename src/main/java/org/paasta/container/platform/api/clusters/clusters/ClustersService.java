@@ -117,7 +117,7 @@ public class ClustersService {
                 return clusters;
             }
 
-            try(BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(new FileOutputStream(FilenameUtils.getName(path))) ) {
+            try(BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(new FileOutputStream(path)) ) {
                 LOGGER.info("File write Start : " + CommonUtils.loggerReplace(path));
                 bufferedOutputStream.write(params.getHclScript().getBytes());
                 LOGGER.info("File write End");

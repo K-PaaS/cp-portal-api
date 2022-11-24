@@ -128,7 +128,7 @@ public class ClustersService {
                 throw new ResultStatusException(MessageConstant.CODE_ERROR.getMsg());
             }
             //DB Write
-            ret = restTemplateService.sendGlobal(Constants.TARGET_COMMON_API, "/clusters", HttpMethod.POST, clusters, Clusters.class, params);
+            ret = (Clusters) commonService.setResultModel(restTemplateService.sendGlobal(Constants.TARGET_COMMON_API, "/clusters", HttpMethod.POST, clusters, Clusters.class, params), Constants.RESULT_STATUS_SUCCESS);
 
             //Setting arguments
             TerramanParams terramanParams = new TerramanParams();

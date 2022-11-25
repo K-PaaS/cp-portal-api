@@ -1,6 +1,5 @@
 package org.paasta.container.platform.api.clusters.hclTemplates;
 
-import org.apache.commons.lang3.StringUtils;
 import org.paasta.container.platform.api.common.CommonService;
 import org.paasta.container.platform.api.common.Constants;
 import org.paasta.container.platform.api.common.MessageConstant;
@@ -86,6 +85,9 @@ public class HclTemplatesService {
         HclTemplates hclTemplates = setHclTemplates(params);
         if (ObjectUtils.isEmpty(hclTemplates.getName())) {
             throw new ResultStatusException(MessageConstant.INVALID_NAME_FORMAT.getMsg());
+        }
+        if (ObjectUtils.isEmpty(hclTemplates.getHclScript())) {
+            throw new ResultStatusException(MessageConstant.REQUEST_VALUE_IS_MISSING.getMsg());
         }
         return (HclTemplates) commonService.setResultModel(restTemplateService.sendGlobal(Constants.TARGET_COMMON_API, "/hclTemplates", HttpMethod.POST, hclTemplates, HclTemplates.class, params), Constants.RESULT_STATUS_SUCCESS);
     }

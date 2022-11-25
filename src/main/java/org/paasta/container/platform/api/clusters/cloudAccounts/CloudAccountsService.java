@@ -35,9 +35,9 @@ public class CloudAccountsService {
      * Instantiates a new Clusters service
      *
      * @param restTemplateService the rest template service
-     * @param vaultService the vault service
-     * @param propertyService the property service
-     * @param commonService the common service
+     * @param vaultService        the vault service
+     * @param propertyService     the property service
+     * @param commonService       the common service
      */
     CloudAccountsService(RestTemplateService restTemplateService, VaultService vaultService, PropertyService propertyService, CommonService commonService) {
         this.restTemplateService = restTemplateService;
@@ -52,7 +52,7 @@ public class CloudAccountsService {
      * @param params the params
      * @return the CloudAccounts
      */
-    public CloudAccounts createCloudAccounts(Params params){
+    public CloudAccounts createCloudAccounts(Params params) {
         CloudAccounts cloudAccounts = setCloudAccounts(params);
         if (ObjectUtils.isEmpty(cloudAccounts.getName())) {
             throw new ResultStatusException(MessageConstant.INVALID_NAME_FORMAT.getMsg());
@@ -64,7 +64,7 @@ public class CloudAccountsService {
             vaultService.write(propertyService.getCpVaultPathProviderCredential()
                             .replace("{iaas}", cloudAccounts.getProvider())
                             .replace("{id}", "" + ret.getId()),
-                            getProviderInfo(params));
+                    getProviderInfo(params));
         } catch (Exception e) {
             LOGGER.info("vault write failed");
             restTemplateService.sendGlobal(Constants.TARGET_COMMON_API, "/cloudAccounts/{id}".replace("{id}", String.valueOf(ret.getId())), HttpMethod.DELETE, null, CloudAccounts.class, params);
@@ -80,7 +80,7 @@ public class CloudAccountsService {
      * @param params the params
      * @return the CloudAccountsList
      */
-    public CloudAccountsList getCloudAccountsList(Params params){
+    public CloudAccountsList getCloudAccountsList(Params params) {
         CloudAccountsList cloudAccountsList = restTemplateService.sendGlobal(Constants.TARGET_COMMON_API, "/cloudAccounts", HttpMethod.GET, null, CloudAccountsList.class, params);
         cloudAccountsList = commonService.globalListProcessing(cloudAccountsList, params, CloudAccountsList.class);
         return (CloudAccountsList) commonService.setResultModel(cloudAccountsList, Constants.RESULT_STATUS_SUCCESS);
@@ -93,7 +93,7 @@ public class CloudAccountsService {
      * @param params the params
      * @return the CloudAccountsList
      */
-    public CloudAccountsList getCloudAccountsListByProvider(Params params){
+    public CloudAccountsList getCloudAccountsListByProvider(Params params) {
         CloudAccountsList cloudAccountsList = restTemplateService.sendGlobal(Constants.TARGET_COMMON_API, "/cloudAccounts/provider/{providerType:.+}"
                 .replace("{providerType:.+}", params.getProviderType().name()), HttpMethod.GET, null, CloudAccountsList.class, params);
         cloudAccountsList = commonService.globalListProcessing(cloudAccountsList, params, CloudAccountsList.class);
@@ -108,7 +108,7 @@ public class CloudAccountsService {
      * @param params the params
      * @return the CloudAccounts
      */
-    public CloudAccounts getCloudAccounts(Params params){
+    public CloudAccounts getCloudAccounts(Params params) {
         CloudAccounts cloudAccounts = restTemplateService.sendGlobal(Constants.TARGET_COMMON_API, "/cloudAccounts/{id:.+}"
                 .replace("{id:.+}", params.getResourceUid()), HttpMethod.GET, null, CloudAccounts.class, params);
         if (cloudAccounts.getResultCode() != null && cloudAccounts.getResultCode().equals(Constants.RESULT_STATUS_FAIL)) {
@@ -128,10 +128,10 @@ public class CloudAccountsService {
      * @param params the params
      * @return the CloudAccounts
      */
-    public CloudAccounts updateCloudAccounts(Params params){
+    public CloudAccounts updateCloudAccounts(Params params) {
         //check id
         CloudAccounts cloudAccounts = setCloudAccounts(params);
-        if(cloudAccounts == null){
+        if (cloudAccounts == null) {
             CloudAccounts ret = new CloudAccounts();
             ret.setResultCode(Constants.RESULT_STATUS_FAIL);
             ret.setDetailMessage("Invalid id");
@@ -147,10 +147,19 @@ public class CloudAccountsService {
      * @param params the params
      * @return the CloudAccounts
      */
-    public CloudAccounts deleteCloudAccounts(Params params){
+    public CloudAccounts deleteCloudAccounts(Params params) {
+        CloudAccounts getCA = restTemplateService.sendGlobal(Constants.TARGET_COMMON_API, "/cloudAccounts/{id:.+}"
+                .replace("{id:.+}", params.getResourceUid()), HttpMethod.GET, null, CloudAccounts.class, params);
+
+        String caPath = propertyService.getCpVaultPathProviderCredential()
+                .replace("{iaas}", getCA.getProvider()).replace("{id}", params.getResourceUid());
+
+        //vault delete
+        vaultService.delete(caPath);
+
         CloudAccounts cloudAccounts = restTemplateService.sendGlobal(Constants.TARGET_COMMON_API, "/cloudAccounts/{id:.+}"
                 .replace("{id:.+}", params.getResourceUid()), HttpMethod.DELETE, null, CloudAccounts.class, params);
-        if (cloudAccounts.getResultCode() !=null && cloudAccounts.getResultCode().equals(Constants.RESULT_STATUS_FAIL)) {
+        if (cloudAccounts.getResultCode() != null && cloudAccounts.getResultCode().equals(Constants.RESULT_STATUS_FAIL)) {
             return cloudAccounts;
         }
         return (CloudAccounts) commonService.setResultModel(cloudAccounts, Constants.RESULT_STATUS_SUCCESS);
@@ -162,7 +171,7 @@ public class CloudAccountsService {
      * @param params the params
      * @return the Object
      */
-    public Object getProviderInfo(Params params){
+    public Object getProviderInfo(Params params) {
         Map providerInfoList = getProviderInfoList(params).getItems();
         if (providerInfoList.containsKey(params.getProviderType().name())) {
             return commonService.setResultObject(params.getProviderInfo(), providerInfoList.get(params.getProviderType().name()).getClass());
@@ -175,7 +184,7 @@ public class CloudAccountsService {
      * @param params the params
      * @return the Object
      */
-    public ProviderInfoList getProviderInfoList(Params params){
+    public ProviderInfoList getProviderInfoList(Params params) {
         final String providerInfoPath = "org.paasta.container.platform.api.clusters.clusters.support";
         ProviderInfoList providerInfoList = new ProviderInfoList();
         Map<String, Object> ret = new HashMap<>();
@@ -200,12 +209,12 @@ public class CloudAccountsService {
      * @param params the params
      * @return the Object
      */
-    public Object getProviderInfoFromVault(Params params){
+    public Object getProviderInfoFromVault(Params params) {
         Object ret;
         String path = propertyService.getCpVaultPathProviderCredential()
                 .replace("{iaas}", params.getProviderType().name()).replace("{id}", params.getResourceUid());
         try {
-            ret = vaultService.read(path, ((Map)(getProviderInfoList(params))).get(params.getProviderType().name()).getClass());
+            ret = vaultService.read(path, ((Map) (getProviderInfoList(params))).get(params.getProviderType().name()).getClass());
         } catch (Exception e) {
             LOGGER.info("Error from getProviderInfoFromVault!");
             return null;
@@ -214,15 +223,15 @@ public class CloudAccountsService {
         return ret;
     }
 
-    public CloudAccounts setCloudAccounts(Params params){
+    public CloudAccounts setCloudAccounts(Params params) {
         CloudAccounts cloudAccounts = new CloudAccounts();
         //FIXME! uid 검사, 유효한 값 검사
-        if(params.getResourceUid()!= null && params.getResourceUid()!= "")
+        if (params.getResourceUid() != null && params.getResourceUid() != "")
             cloudAccounts.setId(Long.parseLong(params.getResourceUid()));
         cloudAccounts.setName(params.getResourceName());
         cloudAccounts.setProvider(params.getProviderType().name());
         cloudAccounts.setRegion(params.getRegion());
-        if(cloudAccounts.getProvider().equals(Constants.ProviderType.OPENSTACK.name()) && getProviderInfo(params) != null) {
+        if (cloudAccounts.getProvider().equals(Constants.ProviderType.OPENSTACK.name()) && getProviderInfo(params) != null) {
             cloudAccounts.setProject(params.getProject());
         }
      /*   if(cloudAccounts.getProvider().equals(Constants.ProviderType.GCP.name()) && getProviderInfo(params) != null) {

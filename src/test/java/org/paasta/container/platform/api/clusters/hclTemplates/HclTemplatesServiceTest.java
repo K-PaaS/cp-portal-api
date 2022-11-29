@@ -45,6 +45,9 @@ public class HclTemplatesServiceTest {
     public void setUp() {
         gParams = new Params();
         gParams.setProviderType(Constants.ProviderType.AWS);
+        gParams.setResourceName("resourceName");
+        gParams.setHclScript("script");
+        gParams.setRegion("region");
 
         gResultModel = new HclTemplates();
         gFinalResultModel = new HclTemplates();

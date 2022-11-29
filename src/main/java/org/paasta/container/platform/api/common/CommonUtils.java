@@ -364,7 +364,11 @@ public class CommonUtils {
      * @return String the replaced string
      */
     public static String loggerReplace(String str) {
-        return str.replaceAll("[\r\n]","");
+        if(org.apache.commons.lang3.StringUtils.isNotBlank(str)) {
+            return str.replaceAll("[\r\n]","");
+        } else {
+            return "";
+        }
     }
 
 }

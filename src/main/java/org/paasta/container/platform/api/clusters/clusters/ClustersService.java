@@ -4,9 +4,7 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.paasta.container.platform.api.clusters.cloudAccounts.CloudAccounts;
 import org.paasta.container.platform.api.clusters.cloudAccounts.CloudAccountsService;
-import org.paasta.container.platform.api.clusters.clusters.support.ClusterInfo;
-import org.paasta.container.platform.api.clusters.clusters.support.ClusterPing;
-import org.paasta.container.platform.api.clusters.clusters.support.TerramanParams;
+import org.paasta.container.platform.api.clusters.clusters.support.*;
 import org.paasta.container.platform.api.clusters.nodes.NodesList;
 import org.paasta.container.platform.api.clusters.nodes.NodesService;
 import org.paasta.container.platform.api.common.*;
@@ -287,6 +285,7 @@ public class ClustersService {
      */
     public Clusters setClusters(Params params) {
         Clusters clusters = new Clusters();
+        this.validationCheckCluster(params);
         clusters.setClusterId(params.getCluster());
         clusters.setName(params.getResourceName());
         clusters.setClusterType(params.getClusterType());
@@ -323,5 +322,15 @@ public class ClustersService {
         }
 
         return true;
+    }
+
+    private void validationCheckCluster(Params params) {
+        if(StringUtils.isBlank(params.getCluster())
+            || StringUtils.isBlank(params.getResourceName())
+            || StringUtils.isBlank(params.getClusterType())
+            || StringUtils.isBlank(String.valueOf(params.getProviderType()))
+        ) {
+            throw new ResultStatusException(MessageConstant.REQUEST_VALUE_IS_MISSING.getMsg());
+        }
     }
 }

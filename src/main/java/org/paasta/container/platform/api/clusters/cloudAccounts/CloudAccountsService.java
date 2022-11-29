@@ -67,7 +67,9 @@ public class CloudAccountsService {
                     getProviderInfo(params));
         } catch (Exception e) {
             LOGGER.info("vault write failed");
-            restTemplateService.sendGlobal(Constants.TARGET_COMMON_API, "/cloudAccounts/{id}".replace("{id}", String.valueOf(ret.getId())), HttpMethod.DELETE, null, CloudAccounts.class, params);
+            if(ret != null) {
+                restTemplateService.sendGlobal(Constants.TARGET_COMMON_API, "/cloudAccounts/{id}".replace("{id}", String.valueOf(ret.getId())), HttpMethod.DELETE, null, CloudAccounts.class, params);
+            }
             throw new ResultStatusException(MessageConstant.INVALID_NAME_FORMAT.getMsg());
 
         }
@@ -148,11 +150,14 @@ public class CloudAccountsService {
      * @return the CloudAccounts
      */
     public CloudAccounts deleteCloudAccounts(Params params) {
+        String caPath = "";
         CloudAccounts getCA = restTemplateService.sendGlobal(Constants.TARGET_COMMON_API, "/cloudAccounts/{id:.+}"
                 .replace("{id:.+}", params.getResourceUid()), HttpMethod.GET, null, CloudAccounts.class, params);
 
-        String caPath = propertyService.getCpVaultPathProviderCredential()
-                .replace("{iaas}", getCA.getProvider()).replace("{id}", params.getResourceUid());
+        if(getCA != null) {
+            caPath = propertyService.getCpVaultPathProviderCredential()
+                    .replace("{iaas}", getCA.getProvider()).replace("{id}", params.getResourceUid());
+        }
 
         //vault delete
         vaultService.delete(caPath);

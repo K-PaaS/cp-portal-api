@@ -20,7 +20,6 @@ import org.springframework.test.context.junit4.SpringRunner;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.junit.Assert.*;
 import static org.mockito.Mockito.when;
 import static org.paasta.container.platform.api.common.Constants.NULL_REPLACE_TEXT;
 import static org.paasta.container.platform.api.common.Constants.TARGET_COMMON_API;
@@ -81,8 +80,6 @@ public class SignUpServiceTest {
                 gParams.getUserType(), NULL_REPLACE_TEXT, gParams.getUserAuthId(), NULL_REPLACE_TEXT, NULL_REPLACE_TEXT), ResultStatus.class, new Params())).thenReturn(gResultStatus);
         when(commonService.setResultModel(gResultStatus, Constants.RESULT_STATUS_SUCCESS)).thenReturn(gResultStatus);
         when(signUpServiceMock.sendSignUpUser(gResultUsersModel)).thenReturn(gResultStatus);
-
-        System.out.println("gResultStatus = " + gResultStatus);
 
         signUpService.signUpUsers(gParams);
 

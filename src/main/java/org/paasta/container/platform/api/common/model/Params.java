@@ -35,6 +35,7 @@ public class Params {
     public Integer topN = 5;
     public String saToken = Constants.EMPTY_STRING;
     public String saSecret =  Constants.EMPTY_STRING;
+    public Boolean includeUsage = false;
 
     // request parameter setting
     public String selectorType = Constants.EMPTY_STRING;

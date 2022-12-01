@@ -5,10 +5,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Spy;
-import org.paasta.container.platform.api.accessInfo.AccessToken;
-import org.paasta.container.platform.api.accessInfo.AccessTokenService;
-import org.paasta.container.platform.api.clusters.clusters.Clusters;
 import org.paasta.container.platform.api.clusters.clusters.ClustersService;
 import org.paasta.container.platform.api.common.*;
 import org.paasta.container.platform.api.common.model.CommonMetaData;
@@ -18,15 +14,10 @@ import org.paasta.container.platform.api.common.model.ResultStatus;
 import org.paasta.container.platform.api.secret.Secrets;
 import org.paasta.container.platform.api.users.support.NamespaceRole;
 import org.springframework.http.HttpMethod;
-import org.springframework.security.core.parameters.P;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
-import org.springframework.test.util.ReflectionTestUtils;
 import java.util.*;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.when;
 import static org.paasta.container.platform.api.common.Constants.*;
 
@@ -274,7 +265,7 @@ public class UsersServiceTest {
         try {
             usersService.modifyToUser(gParams, users);
         } catch (Exception e) {
-            System.out.println("e = " + e);
+
         }
 
     }

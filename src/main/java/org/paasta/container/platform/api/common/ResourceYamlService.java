@@ -596,7 +596,6 @@ public class ResourceYamlService {
         map.put("tokenName", params.getSaSecret());
         map.put("spaceName", params.getNamespace());
         params.setYaml(templateService.convert("create_secret.ftl", map));
-        System.out.println(params.getYaml());
 
         ResultStatus resultStatus = restTemplateService.sendYaml(Constants.TARGET_CP_MASTER_API,
                 propertyService.getCpMasterApiListSecretsCreateUrl(), HttpMethod.POST, ResultStatus.class, params);

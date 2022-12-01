@@ -7,6 +7,11 @@ import org.paasta.container.platform.api.common.model.Params;
 import org.paasta.container.platform.api.metrics.custom.BaseExponent;
 import org.paasta.container.platform.api.metrics.custom.ContainerMetrics;
 import org.paasta.container.platform.api.metrics.custom.Quantity;
+import org.paasta.container.platform.api.workloads.pods.Pods;
+import org.paasta.container.platform.api.workloads.pods.PodsList;
+import org.paasta.container.platform.api.workloads.pods.support.PodsListItem;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
@@ -30,11 +35,9 @@ public class MetricsService {
     private final RestTemplateService restTemplateService;
     private final CommonService commonService;
     private final PropertyService propertyService;
-    private final ResultStatusService resultStatusService;
 
 
-    public static final String USAGE = "usage";
-    public static final String PERCENT = "percent";
+    private static final Logger LOGGER = LoggerFactory.getLogger(MetricsService.class);
 
     /**
      * Instantiates a new Roles service
@@ -44,11 +47,10 @@ public class MetricsService {
      * @param propertyService     the property service
      */
     @Autowired
-    public MetricsService(RestTemplateService restTemplateService, CommonService commonService, PropertyService propertyService, ResultStatusService resultStatusService) {
+    public MetricsService(RestTemplateService restTemplateService, CommonService commonService, PropertyService propertyService) {
         this.restTemplateService = restTemplateService;
         this.commonService = commonService;
         this.propertyService = propertyService;
-        this.resultStatusService = resultStatusService;
     }
 
 
@@ -184,7 +186,7 @@ public class MetricsService {
      */
     public Map<String, Object> generatePodsUsageMap(String type, PodsMetricsItems pm) {
         Map<String, Object> result = new HashMap<>();
-        result.put(USAGE, convertUsageUnit(type, podMetricSum(pm, type)));
+        result.put(Constants.USAGE, convertUsageUnit(type, podMetricSum(pm, type)));
         return result;
     }
 
@@ -232,8 +234,8 @@ public class MetricsService {
      */
     public Map<String, Object> generateNodeUsageMap(String type, NodesListItem node) {
         Map<String, Object> result = new HashMap<>();
-        result.put(USAGE, convertUsageUnit(type, node.getUsage().get(type).getNumber().doubleValue()));
-        result.put(PERCENT, convertPercnUnit(findNodePercentage(node, type)));
+        result.put(Constants.USAGE, convertUsageUnit(type, node.getUsage().get(type).getNumber().doubleValue()));
+        result.put(Constants.PERCENT, convertPercnUnit(findNodePercentage(node, type)));
         return result;
     }
 
@@ -285,6 +287,104 @@ public class MetricsService {
         }
         double multiply = Math.pow(baseExpont.getBase(), -baseExpont.getExponent());
         return Math.round(usage * multiply);
+    }
+
+
+    /**
+     * Pod Metrics 조회(Get Metrics for Pods)
+     *
+     * @param podName         the podName
+     * @param podsMetricsList the podsMetricsList
+     * @return the PodsMetricsItems
+     */
+    public PodsMetricsItems findPodsMetrics(String podName, PodsMetricsList podsMetricsList) {
+        for (PodsMetricsItems metric : podsMetricsList.getItems()) {
+            if (metric.getName().equals(podName)) {
+                return metric;
+            }
+        }
+        return null;
+    }
+
+
+    /**
+     * Pod Metrics 조회(Get Metrics for Nodes)
+     *
+     * @param podsList the podsList
+     * @param params   the params
+     * @return the PodsList
+     */
+    public PodsList setPodsMetrics(PodsList podsList, Params params) {
+        PodsMetricsList podsMetricsList;
+        try {
+            //get pod metrics data
+            podsMetricsList = getPodsMetricsList(params);
+        } catch (Exception e) {
+            LOGGER.info(CommonUtils.loggerReplace("[EXCEPTION OCCURRED WHILE GET PODS METRICS LIST...] >> " + e.getMessage()));
+            return podsList;
+        }
+
+        for (PodsListItem pods : podsList.getItems()) {
+            PodsMetricsItems podsMetricsItems;
+            try {
+                podsMetricsItems = findPodsMetrics(pods.getName(), podsMetricsList);
+                pods.setCpu(generatePodsUsageMapWithUnit(Constants.CPU, podsMetricsItems));
+                pods.setMemory(generatePodsUsageMapWithUnit(Constants.MEMORY, podsMetricsItems));
+            } catch (Exception e) {
+            }
+
+        }
+        return podsList;
+    }
+
+
+    /**
+     * Pods 사용량 Map 반환 (Return Map for Pods Usage)
+     *
+     * @param type the type
+     * @param pm   the podsMetricsItems
+     * @return the Map<String, String>
+     */
+    public Map<String, Object> generatePodsUsageMapWithUnit(String type, PodsMetricsItems pm) {
+        String unit = (type.equals(Constants.CPU)) ? Constants.CPU_UNIT : Constants.MEMORY_UNIT;
+        Map<String, Object> result = new HashMap<>();
+        result.put(Constants.USAGE, convertUsageUnit(type, podMetricSum(pm, type)) + unit);
+        return result;
+    }
+
+
+    /**
+     * Metrics Pods 상세 조회(Get Metrics for Pods)
+     *
+     * @param params the params
+     * @return the PodsMetricsList
+     */
+    public PodsMetricsItems getPodsMetricsDetails(Params params) {
+        HashMap responseMap = (HashMap) restTemplateService.send(Constants.TARGET_CP_MASTER_API,
+                propertyService.getCpMasterApiMetricsPodsGetUrl(), HttpMethod.GET, null, Map.class, params);
+        PodsMetricsItems podsMetricsItems = commonService.setResultObject(responseMap, PodsMetricsItems.class);
+        return podsMetricsItems;
+    }
+
+
+    /**
+     * Metrics Pods 상세 설정(Setting Metrics for Pods)
+     *
+     * @param params the params
+     * @return the Pods
+     */
+    public Pods setPodsMetricsDetails(Pods pods, Params params) {
+        PodsMetricsItems podsMetricsItems;
+        try {
+            //get pod metrics detail data
+            podsMetricsItems = getPodsMetricsDetails(params);
+            pods.setCpu(generatePodsUsageMapWithUnit(Constants.CPU, podsMetricsItems));
+            pods.setMemory(generatePodsUsageMapWithUnit(Constants.MEMORY, podsMetricsItems));
+        } catch (Exception e) {
+            LOGGER.info(CommonUtils.loggerReplace("[EXCEPTION OCCURRED WHILE GET PODS METRICS DETAIL ...] >> " + e.getMessage()));
+            return pods;
+        }
+        return pods;
     }
 
 

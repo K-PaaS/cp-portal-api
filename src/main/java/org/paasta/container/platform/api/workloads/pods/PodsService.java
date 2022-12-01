@@ -8,6 +8,7 @@ import org.paasta.container.platform.api.common.RestTemplateService;
 import org.paasta.container.platform.api.common.model.CommonResourcesYaml;
 import org.paasta.container.platform.api.common.model.Params;
 import org.paasta.container.platform.api.common.model.ResultStatus;
+import org.paasta.container.platform.api.metrics.MetricsService;
 import org.paasta.container.platform.api.workloads.pods.support.ContainerStatusesItem;
 import org.paasta.container.platform.api.workloads.pods.support.PodsListItem;
 import org.paasta.container.platform.api.workloads.pods.support.PodsStatus;
@@ -36,6 +37,7 @@ public class PodsService {
     private final RestTemplateService restTemplateService;
     private final CommonService commonService;
     private final PropertyService propertyService;
+    private final MetricsService metricsService;
 
     /**
      * Instantiates a new Pods service
@@ -45,47 +47,14 @@ public class PodsService {
      * @param propertyService     the property service
      */
     @Autowired
-    public PodsService(RestTemplateService restTemplateService, CommonService commonService, PropertyService propertyService) {
+    public PodsService(RestTemplateService restTemplateService, CommonService commonService,
+                       PropertyService propertyService, MetricsService metricsService) {
         this.restTemplateService = restTemplateService;
         this.commonService = commonService;
         this.propertyService = propertyService;
+        this.metricsService = metricsService;
     }
 
-
-
-/*    *//**
-     * Pods Metric 정보 병합(Merge Pods Metric List)
-     *
-     * @param podsList    the podsList
-     * @param podsMetrics the podsMetrics
-     *//*
-    public void getMergeMetric(PodsList podsList, PodsMetric podsMetrics) {
-        Pods pods = null;
-        PodsUsage podsUsage = null;
-        CommonContainer container = null;
-        Containers containerUsage = null;
-        HashMap hm = null;
-        for (int i = 0; i < podsList.getItems().size(); i++) {
-            pods = podsList.getItems().get(i);
-            for (int t = 0; t < podsMetrics.getItems().size(); t++) {
-                podsUsage = podsMetrics.getItems().get(t);
-                if (pods.getMetadata().getName().equals(podsUsage.getMetadata().getName())) {
-                    for (int u = 0; u < pods.getSpec().getContainers().size(); u++) {
-                        container = pods.getSpec().getContainers().get(u);
-                        for (int y = 0; y < podsUsage.getContainers().size(); y++) {
-                            containerUsage = podsUsage.getContainers().get(y);
-                            if (container.getName().equals(containerUsage.getName())) {
-                                hm = new HashMap();
-                                hm.put("cpu", containerUsage.getUsage().getCpu());
-                                hm.put("memory", containerUsage.getUsage().getMemory());
-                                container.getResources().setUsage(hm);
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }*/
 
     /**
      * Pods 목록 조회(Get Pods List)
@@ -99,6 +68,10 @@ public class PodsService {
         PodsList podsList = commonService.setResultObject(responseMap, PodsList.class);
         podsList =  commonService.resourceListProcessing(podsList, params, PodsList.class);
         podsList = restartCountProcessing(podsList);
+
+        if(params.includeUsage) {
+            podsList = metricsService.setPodsMetrics(podsList, params);
+        }
         return (PodsList) commonService.setResultModel(podsList, Constants.RESULT_STATUS_SUCCESS);
     }
 

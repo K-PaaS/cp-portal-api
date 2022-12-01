@@ -8,6 +8,7 @@ import org.paasta.container.platform.api.common.model.CommonMetaData;
 import org.paasta.container.platform.api.common.model.CommonSpec;
 
 import java.util.List;
+import java.util.Map;
 
 @Data
 public class PodsListItem {
@@ -20,6 +21,10 @@ public class PodsListItem {
     private String creationTimestamp;
     private String phase;
     private String containerStatus;
+
+    private Map<String, Object> cpu = Constants.INIT_USAGE;
+    private Map<String, Object> memory = Constants.INIT_USAGE;
+
 
     @JsonIgnore
     private CommonMetaData metadata;

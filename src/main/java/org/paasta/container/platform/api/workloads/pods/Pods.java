@@ -12,6 +12,7 @@ import org.paasta.container.platform.api.workloads.pods.support.PodsStatus;
 import org.paasta.container.platform.api.workloads.pods.support.Volume;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * Pods Model 클래스
@@ -43,6 +44,9 @@ public class Pods {
     private String volumes;
     private String containersName;
     private String containersImage;
+
+    private Map<String, Object> cpu = Constants.INIT_USAGE;
+    private Map<String, Object> memory = Constants.INIT_USAGE;
 
     @JsonIgnore
     private CommonMetaData metadata;

@@ -1,6 +1,7 @@
 package org.paasta.container.platform.api.workloads.deployments.support;
 
 import lombok.Data;
+import org.paasta.container.platform.api.common.CommonUtils;
 
 /**
  * Deployments Strategy Model 클래스
@@ -13,4 +14,16 @@ import lombok.Data;
 public class DeploymentsStrategy {
     private String type;
     private RollingUpdateDeployments rollingUpdate;
+
+
+    public String getType() {
+        return CommonUtils.procReplaceNullValue(type);
+    }
+
+    public RollingUpdateDeployments getRollingUpdate() {
+        if (rollingUpdate == null) {
+            return new RollingUpdateDeployments();
+        }
+        return rollingUpdate;
+    }
 }

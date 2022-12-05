@@ -605,6 +605,10 @@ public class CommonService {
                     }
                 }
 
+                if(key.contains(propertyService.getCpAnnotationsLastApplied())) {
+                    commonAnnotations.setCheckYn(Constants.CHECK_Y);
+                }
+
                 commonAnnotations.setKey(key);
                 commonAnnotations.setValue(annotations.get(key));
 

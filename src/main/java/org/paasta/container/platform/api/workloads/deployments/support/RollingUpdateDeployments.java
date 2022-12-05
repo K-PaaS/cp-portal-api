@@ -1,6 +1,7 @@
 package org.paasta.container.platform.api.workloads.deployments.support;
 
 import lombok.Data;
+import org.paasta.container.platform.api.common.CommonUtils;
 
 /**
  * Rolling Update Deployments Model 클래스
@@ -13,4 +14,12 @@ import lombok.Data;
 public class RollingUpdateDeployments {
     private String maxSurge;
     private String maxUnavailable;
+
+    public String getMaxSurge() {
+        return CommonUtils.procReplaceNullValue(maxSurge);
+    }
+
+    public String getMaxUnavailable() {
+        return CommonUtils.procReplaceNullValue(maxUnavailable);
+    }
 }

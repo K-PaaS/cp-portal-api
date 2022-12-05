@@ -75,7 +75,8 @@ cpNamespace:
  
 cpAnnotations:
   configuration: kubectl.kubernetes.io/, kubernetes.io/, k8s.io/
- 
+  last-applied: last-applied
+
 cpResource:
   clusterResource: Namespace, PersistentVolume, StorageClass, Role, ResourceQuota, LimitRange, ConfigMap
  

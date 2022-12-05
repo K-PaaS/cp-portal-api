@@ -76,6 +76,9 @@ public class PropertyService {
     @Value("${cpAnnotations.configuration}")
     List<String> cpAnnotationsConfiguration;
 
+    @Value("${cpAnnotations.last-applied}")
+    String cpAnnotationsLastApplied;
+
     //service
     @Value("${cpMaster.api.list.services.list}")
     private String cpMasterApiListServicesListUrl;

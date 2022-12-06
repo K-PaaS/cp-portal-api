@@ -65,7 +65,8 @@ public class EndpointsService {
         Endpoints endpoints = commonService.setResultObject(responseMap, Endpoints.class);
 
         if (endpoints.getSubsets() == null) {
-            return resultStatusService.NOT_FOUND_RESULT_STATUS();
+            List<EndpointSubset> subset = new ArrayList<>();
+            endpoints.setSubsets(subset);
         }
         endpoints = endpointsProcessing(endpoints, params);
         return (Endpoints) commonService.setResultModel(endpoints, Constants.RESULT_STATUS_SUCCESS);

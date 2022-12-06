@@ -1,7 +1,6 @@
 package org.paasta.container.platform.api.overview;
 
 import net.minidev.json.JSONObject;
-import org.apache.catalina.User;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -23,15 +22,12 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import static org.mockito.Mockito.when;
 
-import static org.junit.Assert.*;
-
 @RunWith(SpringRunner.class)
 @TestPropertySource("classpath:application.yml")
-public class GlobalOverviewNewServiceTest {
+public class GlobalOverviewServiceTest {
 
     private static HashMap gResultMap = null;
     private static Params gParams = null;
@@ -48,7 +44,7 @@ public class GlobalOverviewNewServiceTest {
     UsersService usersService;
 
     @InjectMocks
-    GlobalOverviewNewService globalOverviewService;
+    GlobalOverviewService globalOverviewService;
 
     @Before
     public void setUp() throws Exception {

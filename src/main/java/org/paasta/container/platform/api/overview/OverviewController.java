@@ -20,7 +20,7 @@ import org.springframework.web.bind.annotation.*;
 public class OverviewController {
 
     private final OverviewService overviewService;
-    private final GlobalOverviewNewService globalOverviewService;
+    private final GlobalOverviewService globalOverviewService;
 
     /**
      * Instantiates a new Overview controller
@@ -28,7 +28,7 @@ public class OverviewController {
      * @param overviewService the overview service
      */
     @Autowired
-    public OverviewController(OverviewService overviewService, GlobalOverviewNewService globalOverviewService) {
+    public OverviewController(OverviewService overviewService, GlobalOverviewService globalOverviewService) {
         this.overviewService = overviewService;
         this.globalOverviewService = globalOverviewService;
     }

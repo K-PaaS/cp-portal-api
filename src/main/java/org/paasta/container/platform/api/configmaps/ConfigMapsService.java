@@ -64,6 +64,7 @@ public class ConfigMapsService {
         HashMap responseMap = (HashMap) restTemplateService.send(Constants.TARGET_CP_MASTER_API,
                 propertyService.getCpMasterApiListConfigMapsGetUrl(), HttpMethod.GET, null, Map.class, params);
         ConfigMaps configMaps = commonService.setResultObject(responseMap, ConfigMaps.class);
+        configMaps = commonService.annotationsProcessing(configMaps, ConfigMaps.class);
         return (ConfigMaps) commonService.setResultModel(configMaps, Constants.RESULT_STATUS_SUCCESS);
     }
 

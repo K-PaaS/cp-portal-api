@@ -117,7 +117,7 @@ public class MethodHandler {
             }
 
             if (StringUtils.isNotEmpty(createYamlResourceName) && StringUtils.isNotEmpty(createYamlResourceNamespace)) {
-                if (createYamlResourceName.startsWith("kube") || createYamlResourceNamespace.startsWith("kube")) {
+                if (createYamlResourceName.startsWith("kube")) {
                     return new ResultStatus(Constants.RESULT_STATUS_FAIL, MessageConstant.PREFIX_KUBE_NOT_ALLOW.getMsg(), CommonStatusCode.UNPROCESSABLE_ENTITY.getCode(), MessageConstant.PREFIX_KUBE_NOT_ALLOW.getMsg());
                 } else {
                     break;
@@ -273,7 +273,7 @@ public class MethodHandler {
             }
 
             if (StringUtils.isNotEmpty(updateYamlResourceName) && StringUtils.isNotEmpty(updateYamlResourceNamespace)) {
-                if (updateYamlResourceName.startsWith("kube") || updateYamlResourceNamespace.startsWith("kube")) {
+                if (updateYamlResourceName.startsWith("kube")) {
                     return new ResultStatus(Constants.RESULT_STATUS_FAIL, MessageConstant.PREFIX_KUBE_NOT_ALLOW.getMsg(), CommonStatusCode.UNPROCESSABLE_ENTITY.getCode(), MessageConstant.PREFIX_KUBE_NOT_ALLOW.getMsg());
                 } else {
                     break;

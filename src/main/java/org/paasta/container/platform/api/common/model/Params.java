@@ -14,7 +14,7 @@ public class Params {
     public String namespace = Constants.EMPTY_STRING;
     public String resource;
     public String resourceName = Constants.EMPTY_STRING;
-    public String metadataName;
+    public String metadataName =  Constants.EMPTY_STRING;
     public int offset = 0;
     public int limit = 0;
     public String orderBy = "creationTime";

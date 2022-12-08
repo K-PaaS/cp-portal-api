@@ -72,7 +72,8 @@ public enum MessageConstant {
     INVALID_PORT_INFO("포트 정보가 올바르지 않습니다.","The port information is incorrect."),
     UNABLE_TO_COMMUNICATE_K8S_API_SERVER("해당 클러스터 API 서버와 통신할 수 없습니다.","Unable to communicate with your cluster api server."),
     UNABLE_TO_COMMUNICATE_TERRAMAN_SERVER("해당 terraman 서버와 통신할 수 없습니다.","Unable to communicate with your terraman server."),
-    NO_CHANGED("변경된 사항이 없습니다.","There's no change.");
+    NO_CHANGED("변경된 사항이 없습니다.","There's no change."),
+    RESOURCE_CREATION_FAILED("리소스 생성에 실패했습니다.","Resource creation failed.");
 
     private String ko_msg;
     private String eng_msg;

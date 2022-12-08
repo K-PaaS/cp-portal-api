@@ -20,6 +20,6 @@ public class ConfigMapsList {
     private Integer httpStatusCode;
     private String detailMessage;
     private Map metadata;
-    private List<ConfigMaps> items;
     private CommonItemMetaData itemMetaData;
+    private List<ConfigMaps> items;
 }

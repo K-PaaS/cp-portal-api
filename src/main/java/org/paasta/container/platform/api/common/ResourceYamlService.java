@@ -244,15 +244,34 @@ public class ResourceYamlService {
      */
     public void deleteSaAndRb(Params params) {
 
-        restTemplateService.send(Constants.TARGET_CP_MASTER_API,
-                propertyService.getCpMasterApiListUsersDeleteUrl().replace("{namespace}", params.getNamespace()).replace("{name}", params.getRs_sa()),
-                HttpMethod.DELETE, null, ResultStatus.class, params);
+       try {
+           restTemplateService.send(Constants.TARGET_CP_MASTER_API,
+                   propertyService.getCpMasterApiListUsersDeleteUrl().replace("{namespace}", params.getNamespace()).replace("{name}", params.getRs_sa()),
+                   HttpMethod.DELETE, null, ResultStatus.class, params);
+       }
+       catch (Exception e) {
+           if (Integer.valueOf(e.getMessage()) == CommonStatusCode.NOT_FOUND.getCode()) {
+               LOGGER.info("*** EXCEPTION FOR DELETE SERVICE ACCOUNT : NOT FOUND...");
+           } else {
+               throw new ResultStatusException(CommonStatusCode.INTERNAL_SERVER_ERROR.getMsg());
+           }
+       }
 
-        restTemplateService.send(Constants.TARGET_CP_MASTER_API,
-                propertyService.getCpMasterApiListRoleBindingsDeleteUrl()
-                        .replace("{namespace}", params.getNamespace())
-                        .replace("{name}", params.getRs_sa() + Constants.NULL_REPLACE_TEXT + params.getRs_role() + "-binding"),
-                HttpMethod.DELETE, null, ResultStatus.class, params);
+
+       try {
+           restTemplateService.send(Constants.TARGET_CP_MASTER_API,
+                   propertyService.getCpMasterApiListRoleBindingsDeleteUrl()
+                           .replace("{namespace}", params.getNamespace())
+                           .replace("{name}", params.getRs_sa() + Constants.NULL_REPLACE_TEXT + params.getRs_role() + "-binding"),
+                   HttpMethod.DELETE, null, ResultStatus.class, params);
+       }
+       catch (Exception e) {
+           if (Integer.valueOf(e.getMessage()) == CommonStatusCode.NOT_FOUND.getCode()) {
+               LOGGER.info("*** EXCEPTION FOR DELETE ROLE BINDING : NOT FOUND...");
+           } else {
+               throw new ResultStatusException(CommonStatusCode.INTERNAL_SERVER_ERROR.getMsg());
+           }
+       }
     }
 
 
@@ -371,9 +390,22 @@ public class ResourceYamlService {
      * @return the resultStatus
      */
     public ResultStatus deleteServiceAccount(Params params) {
-        return restTemplateService.send(Constants.TARGET_CP_MASTER_API,
-                propertyService.getCpMasterApiListUsersDeleteUrl().replace("{namespace}", params.getNamespace()).replace("{name}", params.getRs_sa()),
-                HttpMethod.DELETE, null, ResultStatus.class, params);
+        ResultStatus resultStatus = new ResultStatus();
+
+        try {
+            resultStatus = restTemplateService.send(Constants.TARGET_CP_MASTER_API,
+                    propertyService.getCpMasterApiListUsersDeleteUrl().replace("{namespace}", params.getNamespace()).replace("{name}", params.getRs_sa()),
+                    HttpMethod.DELETE, null, ResultStatus.class, params);
+        }
+        catch (Exception e) {
+            if (Integer.valueOf(e.getMessage()) == CommonStatusCode.NOT_FOUND.getCode()) {
+                LOGGER.info("*** EXCEPTION FOR DELETE SERVICE ACCOUNT : NOT FOUND...");
+            } else {
+                throw new ResultStatusException(CommonStatusCode.INTERNAL_SERVER_ERROR.getMsg());
+            }
+        }
+
+        return resultStatus;
     }
 
 
@@ -384,10 +416,23 @@ public class ResourceYamlService {
      * @return
      */
     public ResultStatus deleteClusterRoleBinding(Params params) {
-        return restTemplateService.send(Constants.TARGET_CP_MASTER_API,
-                propertyService.getCpMasterApiListClusterRoleBindingsDeleteUrl()
-                        .replace("{name}", params.getRs_sa() + Constants.CLUSTER_ROLE_BINDING_NAME),
-                HttpMethod.DELETE, null, ResultStatus.class, params);
+        ResultStatus resultStatus = new ResultStatus();
+
+        try {
+            resultStatus = restTemplateService.send(Constants.TARGET_CP_MASTER_API,
+                    propertyService.getCpMasterApiListClusterRoleBindingsDeleteUrl()
+                            .replace("{name}", params.getRs_sa() + Constants.CLUSTER_ROLE_BINDING_NAME),
+                    HttpMethod.DELETE, null, ResultStatus.class, params);
+        }
+        catch (Exception e) {
+            if (Integer.valueOf(e.getMessage()) == CommonStatusCode.NOT_FOUND.getCode()) {
+                LOGGER.info("*** EXCEPTION FOR DELETE CLUSTER ROLE BINDING : NOT FOUND...");
+            } else {
+                throw new ResultStatusException(CommonStatusCode.INTERNAL_SERVER_ERROR.getMsg());
+            }
+        }
+
+        return resultStatus;
     }
 
 

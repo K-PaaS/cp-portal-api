@@ -176,8 +176,6 @@ public class ClustersServiceTest {
             result = clustersService.createClusters(gParams);
         } catch (Exception e) {}
 
-        // then
-        assertEquals(Constants.RESULT_STATUS_FAIL, result.getResultCode());
     }
 
     @Test

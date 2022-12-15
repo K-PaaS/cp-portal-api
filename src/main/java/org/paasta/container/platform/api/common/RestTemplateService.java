@@ -376,4 +376,47 @@ public class RestTemplateService {
     }
 
 
+
+
+    /**
+     * t 전송(Send t)
+     * <p></p>
+     *
+     * @param <T>          the type parameter
+     * @param reqUrl       the req url
+     * @param httpMethod   the http method
+     * @param responseType the response type
+     * @return the t
+     */
+
+    public <T> T sendValid(String reqUrl, HttpMethod httpMethod, Class<T> responseType,  Params params) {
+        HttpHeaders reqHeaders = new HttpHeaders();
+        reqHeaders.add(AUTHORIZATION_HEADER_KEY,"Bearer " + params.getClusterToken());
+        reqHeaders.add(CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
+        reqHeaders.add("ACCEPT", Constants.ACCEPT_TYPE_JSON);
+
+        HttpEntity<Object> reqEntity;
+        reqEntity = new HttpEntity<>(reqHeaders);
+
+
+        LOGGER.info("<T> T SEND :: REQUEST: {} BASE-URL: {}, CONTENT-TYPE: {}", CommonUtils.loggerReplace(httpMethod),
+                CommonUtils.loggerReplace(reqUrl), CommonUtils.loggerReplace(reqHeaders.get(CONTENT_TYPE)));
+
+        ResponseEntity<T> resEntity = null;
+
+        try {
+            resEntity = restTemplate.exchange(reqUrl, httpMethod, reqEntity, responseType);
+        } catch (HttpStatusCodeException exception) {
+            LOGGER.info("HttpStatusCodeException API Call URL : {}, errorCode : {}, errorMessage : {}", CommonUtils.loggerReplace(reqUrl), CommonUtils.loggerReplace(exception.getRawStatusCode()),
+                    CommonUtils.loggerReplace(exception.getMessage()));
+            throw new CommonStatusCodeException(Integer.toString(exception.getRawStatusCode()));
+        }
+
+        if (resEntity.getBody() == null) {
+            LOGGER.error("RESPONSE-TYPE: RESPONSE BODY IS NULL");
+        }
+
+        return resEntity.getBody();
+    }
+
 }

@@ -1,22 +1,17 @@
 package org.paasta.container.platform.api.clusters.clusters;
 
-import org.apache.commons.io.FilenameUtils;
+
 import org.apache.commons.lang3.StringUtils;
-import org.paasta.container.platform.api.clusters.cloudAccounts.CloudAccounts;
 import org.paasta.container.platform.api.clusters.cloudAccounts.CloudAccountsService;
 import org.paasta.container.platform.api.clusters.clusters.support.*;
-import org.paasta.container.platform.api.clusters.nodes.NodesList;
 import org.paasta.container.platform.api.clusters.nodes.NodesService;
 import org.paasta.container.platform.api.common.*;
+import org.paasta.container.platform.api.common.model.CommonStatusCode;
 import org.paasta.container.platform.api.common.model.Params;
 import org.paasta.container.platform.api.common.model.ResultStatus;
+import org.paasta.container.platform.api.exception.CommonStatusCodeException;
 import org.paasta.container.platform.api.exception.ResultStatusException;
-import org.paasta.container.platform.api.overview.GlobalOverview;
-import org.paasta.container.platform.api.overview.support.Count;
-import org.paasta.container.platform.api.users.Users;
-import org.paasta.container.platform.api.users.UsersList;
 import org.paasta.container.platform.api.users.UsersService;
-import org.paasta.container.platform.api.workloads.pods.PodsList;
 import org.paasta.container.platform.api.workloads.pods.PodsService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,15 +21,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 
 import java.io.BufferedOutputStream;
-import java.io.File;
 import java.io.FileOutputStream;
-import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -94,11 +85,7 @@ public class ClustersService {
 
         Clusters checkedClusters = restTemplateService.sendGlobal(Constants.TARGET_COMMON_API, "/clusters/" + params.getCluster(), HttpMethod.GET, null, Clusters.class, params);
         if(checkedClusters != null) {
-            throw new ResultStatusException(MessageConstant.NOT_ALLOWED_CLUSTER_NAME.getMsg());
-        }
-
-        if (params.getIsClusterRegister() && !createClusterInfoToVault(params)) {
-            throw new ResultStatusException(MessageConstant.RE_CONFIRM_INPUT_VALUE.getMsg());
+            throw new ResultStatusException(CommonStatusCode.CONFLICT.getMsg());
         }
 
         if (!params.getIsClusterRegister()) {
@@ -146,8 +133,25 @@ public class ClustersService {
             LOGGER.info("Terraman API call end");
         }
         else {
-            clusters.setStatus(Constants.ClusterStatus.ACTIVE.getInitial());
-            return (Clusters) commonService.setResultModel(restTemplateService.sendGlobal(Constants.TARGET_COMMON_API, "/clusters", HttpMethod.POST, clusters, Clusters.class, params), Constants.RESULT_STATUS_SUCCESS);
+
+            Clusters rgCluster = new Clusters();
+
+            try{
+                restTemplateService.sendValid(params.getClusterApiUrl(), HttpMethod.GET,  Map.class, params);
+                createClusterInfoToVault(params);
+                clusters.setStatus(Constants.ClusterStatus.ACTIVE.getInitial());
+                restTemplateService.sendGlobal(Constants.TARGET_COMMON_API, "/clusters", HttpMethod.POST, clusters, Clusters.class, params);
+            }
+            catch (CommonStatusCodeException e) {
+                LOGGER.info("CLUSTER_REGISTRATION_FAILED : " + CommonUtils.loggerReplace(e.getErrorMessage()));
+                throw new CommonStatusCodeException(e.getErrorMessage());
+            }
+            catch(Exception e){
+                LOGGER.info("CLUSTER_REGISTRATION_FAILED : " + CommonUtils.loggerReplace(e.getMessage()));
+                throw new ResultStatusException(MessageConstant.CLUSTER_REGISTRATION_FAILED.getMsg());
+            }
+
+            return (Clusters) commonService.setResultModel(rgCluster, Constants.RESULT_STATUS_SUCCESS);
         }
 
         return ret;
@@ -167,7 +171,7 @@ public class ClustersService {
             throw new ResultStatusException(MessageConstant.NOT_EXIST_RESOURCE.getMsg());
         }
         try {
-            Clusters vaultClusters = commonService.getKubernetesInfo(params);
+            Clusters vaultClusters = vaultService.getClusterDetails(params.getCluster());
             clusters.setClusterApiUrl(vaultClusters.getClusterApiUrl());
             clusters.setClusterToken(vaultClusters.getClusterToken());
         } catch (Exception e) {

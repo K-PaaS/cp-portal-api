@@ -19,7 +19,7 @@ public enum CommonStatusCode {
     UNAUTHORIZED(401, "인증 오류입니다.", "Authentication error."),
     FORBIDDEN(403, "해당 리소스에 접근할 수 있는 권한이 없습니다.", "You do not have permission to access the resource."),
     NOT_FOUND(404, "찾을 수 없습니다.", "Could not be found."),
-    CONFLICT(409, "같은 이름의 리소스가 이미 존재합니다.", "A resource with the same name already exists."),
+    CONFLICT(409, "동일한 이름의 리소스가 이미 존재합니다.", "A resource with the same name already exists."),
     UNPROCESSABLE_ENTITY(422, "문법 오류로 인하여 요청을 처리할 수 없습니다.", "The request could not be processed due to a grammatical error."),
     INTERNAL_SERVER_ERROR(500, "요청 사항을 수행 할 수 없습니다.", "The request could not be processed."),
     SERVICE_UNAVAILABLE(503, "서버가 요청을 처리할 준비가 되지 않았습니다.", "The server is not ready to process the request."),

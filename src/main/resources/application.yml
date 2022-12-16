@@ -84,6 +84,7 @@ cpMaster:
   name:
   api:
     url: ${K8S_API_SERVER}
+    access: "/api"
     list:
       services:
         list: "/api/v1/namespaces/{namespace}/services"

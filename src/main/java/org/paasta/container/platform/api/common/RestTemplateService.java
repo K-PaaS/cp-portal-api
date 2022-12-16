@@ -2,10 +2,12 @@ package org.paasta.container.platform.api.common;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.paasta.container.platform.api.clusters.clusters.Clusters;
+import org.paasta.container.platform.api.clusters.support.ClusterApiAccess;
 import org.paasta.container.platform.api.common.model.CommonStatusCode;
 import org.paasta.container.platform.api.common.model.Params;
 import org.paasta.container.platform.api.common.model.ResultStatus;
 import org.paasta.container.platform.api.exception.CommonStatusCodeException;
+import org.paasta.container.platform.api.exception.ResultStatusException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -394,6 +396,7 @@ public class RestTemplateService {
         reqHeaders.add(AUTHORIZATION_HEADER_KEY,"Bearer " + params.getClusterToken());
         reqHeaders.add(CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
         reqHeaders.add("ACCEPT", Constants.ACCEPT_TYPE_JSON);
+        reqUrl = reqUrl + propertyService.getCpMasterApiAccessUrl();
 
         HttpEntity<Object> reqEntity;
         reqEntity = new HttpEntity<>(reqHeaders);
@@ -412,8 +415,9 @@ public class RestTemplateService {
             throw new CommonStatusCodeException(Integer.toString(exception.getRawStatusCode()));
         }
 
-        if (resEntity.getBody() == null) {
-            LOGGER.error("RESPONSE-TYPE: RESPONSE BODY IS NULL");
+        ClusterApiAccess apiAccess = commonService.setResultObject(resEntity.getBody(), ClusterApiAccess.class);
+        if(apiAccess.getVersions() == null || apiAccess.getServerAddressByClientCIDRs() == null) {
+            throw new ResultStatusException(MessageConstant.CLUSTER_REGISTRATION_FAILED.getMsg());
         }
 
         return resEntity.getBody();

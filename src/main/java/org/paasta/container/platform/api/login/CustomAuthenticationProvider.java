@@ -122,7 +122,7 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
         UsernamePasswordAuthenticationToken result = new UsernamePasswordAuthenticationToken(loadedUser, null, authorities);
         result.setDetails(authentication.getDetails());
 
-        LOGGER.info("authenticate END, result : " + CommonUtils.loggerReplace(result));
+        LOGGER.info("authenticate END, result : " + CommonUtils.loggerReplace(result.toString()));
         return result;
     }
 

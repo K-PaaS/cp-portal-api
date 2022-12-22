@@ -1,6 +1,7 @@
 package org.paasta.container.platform.api.clusters.clusters;
 
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.apache.commons.lang3.StringUtils;
 import org.paasta.container.platform.api.clusters.cloudAccounts.CloudAccountsService;
 import org.paasta.container.platform.api.clusters.clusters.support.*;
@@ -75,6 +76,7 @@ public class ClustersService {
      * @param params the params
      * @return the clusters
      */
+    @SuppressFBWarnings
     public Clusters createClusters(Params params) {
         Clusters clusters = setClusters(params);
         Clusters ret;
@@ -120,7 +122,7 @@ public class ClustersService {
             terramanParams.setClusterId(params.getCluster());
             terramanParams.setProvider(params.getProviderType().name());
             terramanParams.setSeq(params.getCloudAccountId());
-            LOGGER.info("Terraman API call Start : " + CommonUtils.loggerReplace(terramanParams));
+            LOGGER.info("Terraman API call Start : " + CommonUtils.loggerReplace(terramanParams.toString()));
 
             try {
                 restTemplateService.sendGlobal(Constants.TARGET_TERRAMAN_API, "/clusters/create/container", HttpMethod.POST, terramanParams, TerramanParams.class, params);

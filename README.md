@@ -32,15 +32,15 @@ PaaS-TA 컨테이너 플랫폼 API의 개발 환경은 다음과 같습니다.
 | Situation                      | Version |
 | ------------------------------ | ------- |
 | JDK                            | 8       |
-| Gradle                         | 6.5     |
-| Spring Boot                    | 2.3.3   |
-| Spring Boot Management         | 1.0.10  |
+| Gradle                         | 6.9.2   |
+| Spring Boot                    | 2.7.3   |
+| Spring Boot Management         | 1.0.11.RELEASE  |
 | ApacheHttpClient               | 4.5.12  |
 | JJWT                           | 0.9.1   |
 | Gson                           | 2.8.6   |
-| Lombok		                     | 1.18.12 |
-| Jacoco		                     | 0.8.5   |
-| Swagger	                       | 2.9.2   |
+| Lombok		                 | 1.18.12 |
+| Jacoco		                 | 0.8.5   |
+| Swagger	                     | 2.9.2   |
 
 
 

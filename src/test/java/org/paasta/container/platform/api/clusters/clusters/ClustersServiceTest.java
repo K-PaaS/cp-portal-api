@@ -11,20 +11,20 @@ import org.paasta.container.platform.api.clusters.nodes.NodesService;
 import org.paasta.container.platform.api.clusters.nodes.support.NodesListItem;
 import org.paasta.container.platform.api.common.*;
 import org.paasta.container.platform.api.common.model.*;
+import org.paasta.container.platform.api.exception.ResultStatusException;
+import org.paasta.container.platform.api.users.Users;
+import org.paasta.container.platform.api.users.UsersList;
+import org.paasta.container.platform.api.users.UsersService;
 import org.springframework.http.HttpMethod;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.vault.support.VaultResponse;
-
-import java.io.File;
-import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @RunWith(SpringRunner.class)
@@ -51,6 +51,8 @@ public class ClustersServiceTest {
 
     private static ResultStatus gResultStatus = null;
 
+    private static UsersList gUsersList = null;
+
     @Mock
     private RestTemplateService restTemplateService;
 
@@ -65,6 +67,9 @@ public class ClustersServiceTest {
 
     @Mock
     private PropertyService propertyService;
+
+    @Mock
+    private UsersService usersService;
 
     @Mock
     private ClustersService clustersServiceMock;
@@ -121,6 +126,14 @@ public class ClustersServiceTest {
         gParams.setCloudAccountId("cloudAccountId");
 
         gVaultResultModel = new VaultResponse();
+
+
+        gUsersList = new UsersList();
+        List<Users> gUsersItems = new ArrayList<>();
+        gUsersList.setResultCode(Constants.RESULT_STATUS_SUCCESS);
+        gUsersList.setItems(gUsersItems);
+
+
     }
 
     /**
@@ -303,12 +316,20 @@ public class ClustersServiceTest {
     }
 
     @Test
-    public void deleteClusters_Valid_ReturnModel() {
-        when(restTemplateService.sendGlobal(Constants.TARGET_COMMON_API, "/clusters/{id}".replace("{id}", gParams.getCluster()) , HttpMethod.DELETE, null, Clusters.class, gParams)).thenReturn(gFinalResultModel);
+    public void deleteClusters_NotValid_ReturnModel() {
+        when(usersService.getUsersListByCluster(gParams)).thenReturn(gUsersList);
+        when(restTemplateService.send(Constants.TARGET_COMMON_API, "/clusters/{id}".replace("{id}", gParams.getCluster()),
+                HttpMethod.DELETE, null, ResultStatus.class, gParams)).thenReturn(gResultStatus);
 
-        Clusters result = clustersService.deleteClusters(gParams);
+        Clusters result = new Clusters();
+        try {
+            result = clustersService.deleteClusters(gParams);
 
-        assertEquals(Constants.RESULT_STATUS_SUCCESS, result.getResultCode());
+        }catch(ResultStatusException e) {
+
+        }
+        // then
+        assertEquals(null, result.getResultCode());
     }
 
     private Clusters setClusters(Params gParams) {

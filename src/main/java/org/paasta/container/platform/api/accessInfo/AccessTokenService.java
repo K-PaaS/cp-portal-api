@@ -56,26 +56,6 @@ public class AccessTokenService {
         params.setClusterApiUrl(clusters.getClusterApiUrl());
         params.setClusterToken(vaultService.getClusterInfoDetails(params).getClusterToken());
 
-//        if (params.getUserType().equals("SUPER_ADMIN")) {
-//            Clusters clusters = vaultService.getClusterInfoDetails(params);
-//            apiUrl = clusters.getClusterApiUrl();
-//            id = clusters.getClusterId();
-//            token = clusters.getClusterToken();
-//        } else if (params.getUserType().equals("CLUSTER_ADMIN")) {
-//            Clusters clusters = vaultService.getClusterInfoDetails(params.getUserAuthId(), params.getCluster());
-//            apiUrl = clusters.getClusterApiUrl();
-//            id = clusters.getClusterId();
-//            token = clusters.getClusterToken();
-//        } else if (params.getUserType().equals("USER")) {
-//            Clusters clusters = vaultService.getClusterInfoDetails(params.getUserAuthId(), params.getCluster(), params.getNamespace());
-//            apiUrl = clusters.getClusterApiUrl();
-//            id = clusters.getClusterId();
-//            token = clusters.getClusterToken();
-//        }
-
-//        params.setClusterApiUrl(apiUrl);
-//        params.setCluster(id);
-//        params.setClusterToken(token);
 
         return params;
     }

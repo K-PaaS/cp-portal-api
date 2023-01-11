@@ -1,6 +1,8 @@
 package org.paasta.container.platform.api.users;
 
 import lombok.Data;
+import org.paasta.container.platform.api.common.Constants;
+
 import java.util.List;
 
 /**
@@ -17,6 +19,7 @@ public class UsersList {
     public Integer httpStatusCode;
     public String detailMessage;
 
+    public String clusterType = Constants.EMPTY_STRING;
     private List<Users> items;
 
     public UsersList(){};

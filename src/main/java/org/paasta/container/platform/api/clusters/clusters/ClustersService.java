@@ -12,6 +12,8 @@ import org.paasta.container.platform.api.common.model.Params;
 import org.paasta.container.platform.api.common.model.ResultStatus;
 import org.paasta.container.platform.api.exception.CommonStatusCodeException;
 import org.paasta.container.platform.api.exception.ResultStatusException;
+import org.paasta.container.platform.api.users.Users;
+import org.paasta.container.platform.api.users.UsersList;
 import org.paasta.container.platform.api.users.UsersService;
 import org.paasta.container.platform.api.workloads.pods.PodsService;
 import org.slf4j.Logger;
@@ -280,7 +282,34 @@ public class ClustersService {
      * @return the clusters
      */
     public Clusters deleteClusters(Params params) {
-        return restTemplateService.sendGlobal(Constants.TARGET_COMMON_API, "/clusters/{id}".replace("{id}", params.getCluster()) , HttpMethod.DELETE, null, Clusters.class, params);
+        UsersList usersList;
+
+        try {
+            usersList = usersService.getUsersListByCluster(params);
+        } catch (Exception e) {
+            throw new ResultStatusException(CommonStatusCode.INTERNAL_SERVER_ERROR.getMsg());
+        }
+
+        if (usersList.getClusterType().equalsIgnoreCase(Constants.CLUSTER_TYPE_HOST)) {
+            throw new ResultStatusException(MessageConstant.DO_NOT_DISCONNECTED_HOST_CLUSTER.getMsg());
+        }
+
+        try {
+            restTemplateService.send(Constants.TARGET_COMMON_API, "/clusters/{id}".replace("{id}", params.getCluster()),
+                    HttpMethod.DELETE, null, ResultStatus.class, params);
+
+            vaultService.delete(propertyService.getVaultClusterTokenPath().replace("{id}", params.getCluster()));
+
+            for (Users users : usersList.getItems()) {
+                Params deleteUser = new Params(users.getClusterId(), users.getUserAuthId(), users.getUserType(), users.getCpNamespace());
+                vaultService.deleteUserAccessToken(deleteUser);
+            }
+
+        } catch (Exception e) {
+            throw new ResultStatusException(CommonStatusCode.INTERNAL_SERVER_ERROR.getMsg());
+        }
+
+        return (Clusters) commonService.setResultModel(new Clusters(), Constants.RESULT_STATUS_SUCCESS);
     }
 
     /**

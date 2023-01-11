@@ -65,7 +65,6 @@ public class UsersService {
 
     /**
      * Users 전체 목록 조회(Get Users list)
-     * 개발 0809 사용자 목록 조회 - active
      *
      * @param params the params
      * @return the users list
@@ -90,7 +89,6 @@ public class UsersService {
 
     /**
      * 하나의 Cluster 내 여러 Namespaces 에 속한 User 에 대한 상세 조회(Get Users cluster namespace)
-     * 개발 0811 사용자 상세 조회
      *
      * @param params the params
      * @return the users detail
@@ -377,6 +375,12 @@ public class UsersService {
         return restTemplateService.send(TARGET_COMMON_API, Constants.URI_COMMON_API_USERS_LIST_BY_NAMESPACE
                 .replace("{cluster:.+}", params.getCluster())
                 .replace("{namespace:.+}", params.getNamespace()), HttpMethod.GET, null, UsersList.class, params);
+    }
+
+
+    public UsersList getUsersListByCluster(Params params) {
+        return restTemplateService.send(TARGET_COMMON_API, Constants.URI_COMMON_API_USERS_ALL_BY_CLUSTER
+                .replace("{cluster:.+}", params.getCluster()), HttpMethod.GET, null, UsersList.class, params);
     }
 
 }

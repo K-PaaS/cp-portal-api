@@ -42,10 +42,8 @@ public class UsersController {
 
 
     /**
-     * Users 전체 목록 조회(Get Users List) -
-     * 개발 0809 클러스터 관리자 목록 조회 (완)
-     * 개발 0809 사용자 목록 조회
-     * 개발 0819 클러스터 관리자 목록 조회 테스트
+     * Users 전체 목록 조회(Get Users List)
+     *
      * @param params the params
      * @return the users list
      */
@@ -64,7 +62,7 @@ public class UsersController {
 
     /**
      * 특정 Cluster 내 여러 Namespace 에 속한 User 에 대한 상세 조회(Get Users cluster namespace)
-     * 개발 0811 사용자 상세 조회
+     *
      * @param params the params
      * @return the users detail
      */
@@ -78,8 +76,6 @@ public class UsersController {
     }
 
 
-
-    /* //////////////////////////////////////////////////////////////////////////////////add info //////////////////////////////////////////////////////////////////////*/
     /**
      * 하나의 Cluster 내 여러 Namespace 에 속한 User 에 대한 상세 조회(Get Users Access Info)
      *
@@ -95,8 +91,6 @@ public class UsersController {
         return usersService.getUsersAccessInfo(params);
     }
 
-
-    /* //////////////////////////////////////////////////////////////////////////////////add info //////////////////////////////////////////////////////////////////////*/
 
     /**
      * Users 수정(Update Users)

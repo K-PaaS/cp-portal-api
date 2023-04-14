@@ -14,4 +14,6 @@ public class CommonPort {
     private String name;
     private String port;
     private String protocol;
+    private String targetPort;
+    private String nodePort;
 }

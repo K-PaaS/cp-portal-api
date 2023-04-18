@@ -1,6 +1,7 @@
 package org.paasta.container.platform.api.customServices.ingresses;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.aspectj.apache.bcel.generic.LOOKUPSWITCH;
 import org.paasta.container.platform.api.common.*;
 import org.paasta.container.platform.api.common.model.CommonResourcesYaml;
 import org.paasta.container.platform.api.common.model.Params;
@@ -59,6 +60,7 @@ public class IngressesService {
         ingressesList = commonService.resourceListProcessing(ingressesList, params, IngressesList.class);
 
         Map<String, Object> map = new HashMap<>();
+        Map<String, Object> pathsMap = new HashMap<>();
         Object obj = null;
         for(IngressesListItem item : ingressesList.getItems()) {
 
@@ -67,6 +69,7 @@ public class IngressesService {
             for (String key : map.keySet()) {
                 Object value = map.get(key);
                 Object target = null;
+                Object target2 = null;
                 LOGGER.error("[key]: {}  //  [value]: {}", key, value);
 
                 if (key.equals("rules")) {
@@ -80,8 +83,41 @@ public class IngressesService {
                             String bb = aa.toString()+":30325";
                             LOGGER.error("bb = {}", bb);
                             map1.put("host", bb);
+                            aa = map1.get("http");
+                            Map<String, Object> httpMap = objectMapper.convertValue(aa, Map.class);
+
+
+                            List<Object> pathsList = new ArrayList<Object>();
+
+                            ObjectMapper om = new ObjectMapper();
+                            for (String elementHttp : httpMap.keySet()){
+                                LOGGER.error("elementHttp :: {}", elementHttp);
+                                Object elementHttpObj = httpMap.get(elementHttp);
+                                if(elementHttpObj instanceof ArrayList<?>) {
+                                    LOGGER.error("elementHttpObj :: {}", elementHttpObj.toString());
+                                    for (Object o2 : (List<?>) elementHttpObj){
+                                        LOGGER.error("o2 :: {}", o2.toString());
+                                        pathsMap = om.convertValue(o2, Map.class);
+
+                                        Object c1 = pathsMap.get("path");
+                                        String d1 = c1.toString().replace("(/|$)(.*)", "/");
+                                        pathsMap.put("path", d1);
+
+                                        target2 = om.convertValue(pathsMap, Object.class);
+                                        LOGGER.error("target2 = {}", target2.toString());
+                                        pathsList.add(target2);
+                                    }
+                                }
+                                //map1.put("http", pathsList);
+                                httpMap.put("paths", pathsList);
+                            }
+
+                            map1.put("http", httpMap);
+
+
 
                             target = objectMapper.convertValue(map1, Object.class);
+                            LOGGER.error("target = {}", target.toString());
                         }
                     }
                     List<Object> dd = new ArrayList<Object>();

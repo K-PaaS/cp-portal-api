@@ -7,10 +7,7 @@ import java.util.Map;
 
 import lombok.Data;
 
-import org.paasta.container.platform.api.common.model.CommonItemMetaData;
-import org.paasta.container.platform.api.common.model.CommonMetaData;
-import org.paasta.container.platform.api.common.model.CommonSpec;
-import org.paasta.container.platform.api.common.model.CommonStatus;
+import org.paasta.container.platform.api.common.model.*;
 
 /**
  * CustomServices List Admin Model 클래스
@@ -36,6 +33,7 @@ class CustomServicesListItem {
     private String namespace;
     private String type;
     private String clusterIP;
+    private List<CommonPort> ports;
     private String creationTimestamp;
 
     @JsonIgnore
@@ -62,6 +60,8 @@ class CustomServicesListItem {
     public String getClusterIP() {
         return spec.getClusterIP();
     }
+
+    public List<CommonPort> getPorts() { return spec.getPorts(); }
 
     public String getCreationTimestamp() {
         return metadata.getCreationTimestamp();

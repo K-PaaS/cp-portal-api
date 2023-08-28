@@ -39,7 +39,7 @@ public class CommonSpec {
     private long terminationGracePeriodSeconds;
     private String type;
     private String clusterIP;
-    private List ports;
+    private List<CommonPort> ports;
     private String sessionAffinity;
     private Map selector;
     private List<CommonContainer> containers;

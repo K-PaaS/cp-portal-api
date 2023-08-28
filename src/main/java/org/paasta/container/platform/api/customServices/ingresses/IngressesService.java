@@ -1,14 +1,20 @@
 package org.paasta.container.platform.api.customServices.ingresses;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.aspectj.apache.bcel.generic.LOOKUPSWITCH;
 import org.paasta.container.platform.api.common.*;
 import org.paasta.container.platform.api.common.model.CommonResourcesYaml;
 import org.paasta.container.platform.api.common.model.Params;
 import org.paasta.container.platform.api.common.model.ResultStatus;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -24,6 +30,8 @@ public class IngressesService {
     private final RestTemplateService restTemplateService;
     private final CommonService commonService;
     private final PropertyService propertyService;
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(CommonService.class);
 
     /**
      * Instantiates a new Ingresses service
@@ -50,6 +58,76 @@ public class IngressesService {
                 propertyService.getCpMasterApiListIngressesListUrl(), HttpMethod.GET, null, Map.class, params);
         IngressesList ingressesList = commonService.setResultObject(responseMap, IngressesList.class);
         ingressesList = commonService.resourceListProcessing(ingressesList, params, IngressesList.class);
+
+        Map<String, Object> map = new HashMap<>();
+        Map<String, Object> pathsMap = new HashMap<>();
+        Object obj = null;
+        for(IngressesListItem item : ingressesList.getItems()) {
+
+            map = item.getSpec();
+            ObjectMapper objectMapper = new ObjectMapper();
+            for (String key : map.keySet()) {
+                Object value = map.get(key);
+                Object target = null;
+                Object target2 = null;
+                LOGGER.error("[key]: {}  //  [value]: {}", key, value);
+
+                if (key.equals("rules")) {
+                    List<String> result = new ArrayList<String>();
+
+                    if(value instanceof ArrayList<?>) {
+                        for (Object o : (List<?>) value){
+                            Map<String, Object> map1 = objectMapper.convertValue(o, Map.class);
+
+                            Object aa = map1.get("host");
+                            String bb = aa.toString()+":30325";
+                            LOGGER.error("bb = {}", bb);
+                            map1.put("host", bb);
+                            aa = map1.get("http");
+                            Map<String, Object> httpMap = objectMapper.convertValue(aa, Map.class);
+
+
+                            List<Object> pathsList = new ArrayList<Object>();
+
+                            ObjectMapper om = new ObjectMapper();
+                            for (String elementHttp : httpMap.keySet()){
+                                LOGGER.error("elementHttp :: {}", elementHttp);
+                                Object elementHttpObj = httpMap.get(elementHttp);
+                                if(elementHttpObj instanceof ArrayList<?>) {
+                                    LOGGER.error("elementHttpObj :: {}", elementHttpObj.toString());
+                                    for (Object o2 : (List<?>) elementHttpObj){
+                                        LOGGER.error("o2 :: {}", o2.toString());
+                                        pathsMap = om.convertValue(o2, Map.class);
+
+                                        Object c1 = pathsMap.get("path");
+                                        String d1 = c1.toString().replace("(/|$)(.*)", "/");
+                                        pathsMap.put("path", d1);
+
+                                        target2 = om.convertValue(pathsMap, Object.class);
+                                        LOGGER.error("target2 = {}", target2.toString());
+                                        pathsList.add(target2);
+                                    }
+                                }
+                                //map1.put("http", pathsList);
+                                httpMap.put("paths", pathsList);
+                            }
+
+                            map1.put("http", httpMap);
+
+
+
+                            target = objectMapper.convertValue(map1, Object.class);
+                            LOGGER.error("target = {}", target.toString());
+                        }
+                    }
+                    List<Object> dd = new ArrayList<Object>();
+                    dd.add(target);
+                    map.put(key, dd);
+                }
+            }
+
+        }
+
         return (IngressesList) commonService.setResultModel(ingressesList, Constants.RESULT_STATUS_SUCCESS);
     }
 
@@ -86,6 +164,11 @@ public class IngressesService {
      * @return the resultStatus
      */
     public ResultStatus createIngresses(Params params) {
+
+        if(params.getResourceName().equals("ingresses")){
+            params.setYaml(params.getYaml().replace("metadata:", "metadata:\n  annotations:\n    nginx.ingress.kubernetes.io/rewrite-target: /"));
+        }
+
         ResultStatus resultStatus = restTemplateService.sendYaml(Constants.TARGET_CP_MASTER_API,
                 propertyService.getCpMasterApiListIngressesCreateUrl(), HttpMethod.POST, ResultStatus.class, params);
         return (ResultStatus) commonService.setResultModel(resultStatus, Constants.RESULT_STATUS_SUCCESS);

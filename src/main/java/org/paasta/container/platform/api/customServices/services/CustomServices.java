@@ -5,10 +5,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 
 import org.paasta.container.platform.api.common.CommonUtils;
-import org.paasta.container.platform.api.common.model.CommonAnnotations;
-import org.paasta.container.platform.api.common.model.CommonMetaData;
-import org.paasta.container.platform.api.common.model.CommonSpec;
-import org.paasta.container.platform.api.common.model.CommonStatus;
+import org.paasta.container.platform.api.common.model.*;
 
 import java.util.List;
 
@@ -31,7 +28,7 @@ public class CustomServices {
     private String uid;
     private String namespace;
     private Object labels;
-    private List port;
+    private List<CommonPort> ports;
     private List<CommonAnnotations> annotations;
     private String creationTimestamp;
 
@@ -86,7 +83,7 @@ public class CustomServices {
         return spec.getSelector();
     }
 
-    public List getPort() {
+    public List<CommonPort> getPorts() {
         return spec.getPorts();
     }
 }

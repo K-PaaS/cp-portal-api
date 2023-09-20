@@ -29,7 +29,7 @@ spec:
         - name: CONTAINER_PLATFORM_COMMON_API_URL
           value: CONTAINER_PLATFORM_COMMON_API_URL
       imagePullSecrets:
-        - name: paasta-cp-dev-secret
+        - name: cp-dev-secret
 ---
 apiVersion: v1
 kind: Service

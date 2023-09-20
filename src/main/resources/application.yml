@@ -37,7 +37,7 @@ jwt:
 project:
   name: cp-portal-api
   artifactId: cp-portal-api
-  description: API of the PaaS-TA Container Platform Portal
+  description: API of the K-PaaS Container Platform Portal
  
 management:
   security:
@@ -221,7 +221,7 @@ cpTerraman:
 cpMetricCollector:
   api:
     authorization:
-      id: paasta
+      id: kpaas
       password: password
     url: ${CP_PORTAL_METRIC_COLLECTOR_API_URI}
     clusters:
@@ -250,7 +250,7 @@ commonApi:
   url: http://localhost:3334
   authorization:
     id: admin
-    password: PaaS-TA
+    password: K-PaaS
 
 
 cpTerraman:
@@ -278,7 +278,7 @@ commonApi:
   url: ${CP_PORTAL_COMMON_API_DNS}
   authorization:
     id: admin
-    password: PaaS-TA
+    password: K-PaaS
 
 cpTerraman:
   template:

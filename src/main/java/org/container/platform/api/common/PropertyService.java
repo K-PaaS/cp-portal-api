@@ -17,9 +17,6 @@ import java.util.List;
 @Data
 public class PropertyService {
 
-    @Value("${cpMaster.api.url}")
-    private String cpMasterApiUrl;
-
     @Value("${cpMaster.api.access}")
     private String cpMasterApiAccessUrl;
 

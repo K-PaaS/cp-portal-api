@@ -8,6 +8,7 @@ import org.container.platform.api.common.model.CommonMetaData;
 import org.container.platform.api.common.model.CommonStatus;
 import org.container.platform.api.customServices.ingresses.support.IngressesPaths;
 import org.container.platform.api.customServices.ingresses.support.IngressesRules;
+import org.container.platform.api.customServices.ingresses.support.IngressesSpec;
 
 import java.util.List;
 import java.util.Map;
@@ -34,7 +35,7 @@ public class Ingresses {
     private List<CommonAnnotations> annotations;
 
     private String creationTimestamp;
-    private Map spec;
+    private IngressesSpec spec;
 
     @JsonIgnore
     private List<IngressesRules> rules;

@@ -160,7 +160,7 @@ commonApi:
   url: http://localhost:3334
   authorization:
     id: admin
-    password: K-PaaS
+    password: cpcommon!123
 
 ---
 spring:
@@ -181,4 +181,4 @@ commonApi:
   url: http://common-api-deployment.default.svc.cluster.local:3334
   authorization:
     id: admin
-    password: K-PaaS
+    password: cpcommon!123

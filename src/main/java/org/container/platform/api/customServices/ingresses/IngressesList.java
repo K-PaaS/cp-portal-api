@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 import org.container.platform.api.common.model.CommonItemMetaData;
 import org.container.platform.api.common.model.CommonMetaData;
+import org.container.platform.api.customServices.ingresses.support.IngressesSpec;
 
 import java.util.List;
 import java.util.Map;
@@ -34,7 +35,7 @@ class IngressesListItem {
     private String name;
     private String namespace;
     private String creationTimestamp;
-    private Map spec;
+    private IngressesSpec spec;
 
     @JsonIgnore
     private CommonMetaData metadata;

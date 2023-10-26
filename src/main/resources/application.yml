@@ -9,8 +9,7 @@ spring:
   cloud:
     vault:
       scheme: http
-      host: ${VAULT_IP}
-      port: ${VAULT_PORT}
+      uri: ${VAULT_URL}
       authentication: APPROLE
       kv:
         enabled: true
@@ -83,7 +82,6 @@ cpResource:
 cpMaster:
   name:
   api:
-    url: ${K8S_API_SERVER}
     access: "/api"
     list:
       services:
@@ -221,7 +219,7 @@ cpTerraman:
 cpMetricCollector:
   api:
     authorization:
-      id: kpaas
+      id: paasta
       password: password
     url: ${CP_PORTAL_METRIC_COLLECTOR_API_URI}
     clusters:
@@ -250,7 +248,7 @@ commonApi:
   url: http://localhost:3334
   authorization:
     id: admin
-    password: K-PaaS
+    password: cpcommon!123
 
 
 cpTerraman:
@@ -275,10 +273,10 @@ server:
     valid: N
  
 commonApi:
-  url: ${CP_PORTAL_COMMON_API_DNS}
+  url: ${CP_PORTAL_COMMON_API_URI}
   authorization:
     id: admin
-    password: K-PaaS
+    password: cpcommon!123
 
 cpTerraman:
   template:

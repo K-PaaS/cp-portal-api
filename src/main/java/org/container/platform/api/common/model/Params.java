@@ -51,6 +51,7 @@ public class Params {
     public String region = Constants.EMPTY_STRING;
     public Constants.ProviderType providerType = Constants.ProviderType.AWS;
     public String project = Constants.EMPTY_STRING;
+    public String tenant_id = Constants.EMPTY_STRING;
 
     //hcl
     public String hclScript = Constants.EMPTY_STRING;

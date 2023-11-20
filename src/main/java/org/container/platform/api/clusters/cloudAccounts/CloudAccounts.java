@@ -1,6 +1,7 @@
 package org.container.platform.api.clusters.cloudAccounts;
 
 import lombok.Data;
+import org.container.platform.api.common.Constants;
 
 /**
  * CloudAccounts Model 클래스
@@ -24,5 +25,5 @@ public class CloudAccounts {
     private String created;
     private String lastModified;
     private Object providerInfo;
-
+    private String tenant_id;
 }

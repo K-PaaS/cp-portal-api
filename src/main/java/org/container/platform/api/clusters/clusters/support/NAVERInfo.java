@@ -6,4 +6,5 @@ import org.container.platform.api.common.Constants;
 @Data
 public class NAVERInfo {
     private String accessKey = Constants.EMPTY_STRING;
+    private String secretKey = Constants.EMPTY_STRING;
 }

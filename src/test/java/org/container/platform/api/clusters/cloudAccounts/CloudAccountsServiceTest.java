@@ -1,5 +1,7 @@
 package org.container.platform.api.clusters.cloudAccounts;
 
+import org.container.platform.api.clusters.clusters.support.NAVERInfo;
+import org.container.platform.api.clusters.clusters.support.NHNInfo;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -47,6 +49,9 @@ public class CloudAccountsServiceTest {
     private static GCPInfo gGCPInfo = null;
     private static AWSInfo gAWSInfo = null;
 
+    private static NHNInfo gNHNInfo = null;
+
+    private static NAVERInfo gNaverInfo = null;
     @Mock
     private RestTemplateService restTemplateService;
     @Mock
@@ -65,16 +70,18 @@ public class CloudAccountsServiceTest {
         gParams = new Params();
         gAWSInfo = new AWSInfo();
         gGCPInfo = new GCPInfo();
+        gNHNInfo = new NHNInfo();
+        gNaverInfo =  new NAVERInfo();
 
         gParams.setResourceUid(RESOURCE_ID);
         gParams.setResourceName(RESOURCE_NAME);
-        gParams.setProviderType(Constants.ProviderType.AWS);
-        gParams.setProviderInfo(gAWSInfo);
+        gParams.setProviderType(Constants.ProviderType.NHN);
+        gParams.setProviderInfo(gNaverInfo);
 
         gResultModel = new CloudAccounts();
         gResultModel.setId(Long.parseLong(RESOURCE_ID));
         gResultModel.setResultCode(Constants.RESULT_STATUS_SUCCESS);
-        gResultModel.setProvider(Constants.ProviderType.AWS.name());
+        gResultModel.setProvider(Constants.ProviderType.NHN.name());
 
         gFinalResultModel = new CloudAccounts();
         gFinalResultModel.setResultCode(Constants.RESULT_STATUS_SUCCESS);

@@ -2,6 +2,8 @@ package org.container.platform.api.clusters.cloudAccounts;
 
 
 import org.container.platform.api.clusters.clusters.support.AWSInfo;
+import org.container.platform.api.clusters.clusters.support.NAVERInfo;
+import org.container.platform.api.clusters.clusters.support.NHNInfo;
 import org.container.platform.api.clusters.clusters.support.OpenstackInfo;
 import org.container.platform.api.common.*;
 import org.container.platform.api.common.model.Params;
@@ -99,6 +101,8 @@ public class CloudAccountsService {
         CloudAccountsList cloudAccountsList = restTemplateService.sendGlobal(Constants.TARGET_COMMON_API, "/cloudAccounts/provider/{providerType:.+}"
                 .replace("{providerType:.+}", params.getProviderType().name()), HttpMethod.GET, null, CloudAccountsList.class, params);
         cloudAccountsList = commonService.globalListProcessing(cloudAccountsList, params, CloudAccountsList.class);
+        System.out.print("클러스터 타입별 목록조회 account List " + cloudAccountsList);
+        System.out.print("클러스터 타입 별 목록 조회 params " + params);
         return (CloudAccountsList) commonService.setResultModel(cloudAccountsList, Constants.RESULT_STATUS_SUCCESS);
 
     }
@@ -114,6 +118,7 @@ public class CloudAccountsService {
         CloudAccounts cloudAccounts = restTemplateService.sendGlobal(Constants.TARGET_COMMON_API, "/cloudAccounts/{id:.+}"
                 .replace("{id:.+}", params.getResourceUid()), HttpMethod.GET, null, CloudAccounts.class, params);
         if (cloudAccounts.getResultCode() != null && cloudAccounts.getResultCode().equals(Constants.RESULT_STATUS_FAIL)) {
+            System.out.print("cluster account 조회 " + cloudAccounts);
             return cloudAccounts;
         }
 
@@ -218,6 +223,7 @@ public class CloudAccountsService {
         Object ret;
         String path = propertyService.getCpVaultPathProviderCredential()
                 .replace("{iaas}", params.getProviderType().name()).replace("{id}", params.getResourceUid());
+        System.out.println("vault error " +  params);
         try {
             ret = vaultService.read(path, ((Map) (getProviderInfoList(params))).get(params.getProviderType().name()).getClass());
         } catch (Exception e) {
@@ -239,6 +245,12 @@ public class CloudAccountsService {
         if (cloudAccounts.getProvider().equals(Constants.ProviderType.OPENSTACK.name()) && getProviderInfo(params) != null) {
             cloudAccounts.setProject(params.getProject());
         }
+        if (cloudAccounts.getProvider().equals(Constants.ProviderType.NHN.name()) && getProviderInfo(params) != null) {
+            cloudAccounts.setTenant_id(params.getTenant_id());
+        }
+//        if (cloudAccounts.getProvider().equals(Constants.ProviderType.NAVER.name()) && getProviderInfo(params) != null) {
+//            cloudAccounts.setProject(params.getProject());
+//        }
      /*   if(cloudAccounts.getProvider().equals(Constants.ProviderType.GCP.name()) && getProviderInfo(params) != null) {
             GCPInfo gcpInfo = (GCPInfo) getProviderInfo(params);
             cloudAccounts.setProject(gcpInfo.getProject_name());
@@ -246,18 +258,35 @@ public class CloudAccountsService {
         return cloudAccounts;
     }
 
+    // Cloud Account 등록 시 필수 사항 누락 check
     public void validationCheckCloudAccounts(Params params) {
         String provider = params.getProviderType().name();
+        System.out.println("provider Type" + provider);
+        System.out.println("클라우드 어카운트 서비스 필수누락 사항 " + params);
         if (params.getResourceName().equals(Constants.EMPTY_STRING) || params.getRegion().equals(Constants.EMPTY_STRING)) {
             throw new ResultStatusException(MessageConstant.REQUEST_VALUE_IS_MISSING.getMsg());
         }
 
         if (provider.equalsIgnoreCase(Constants.ProviderType.OPENSTACK.name())) {
             OpenstackInfo openstackInfo = commonService.setResultObject(params.getProviderInfo(), OpenstackInfo.class);
+            System.out.println("openstack");
             if (params.getProject().equals(Constants.EMPTY_STRING) ||
                     openstackInfo.getAuth_url().equals(Constants.EMPTY_STRING) ||
                     openstackInfo.getPassword().equals(Constants.EMPTY_STRING) ||
                     openstackInfo.getUser_name().equals(Constants.EMPTY_STRING)) {
+                throw new ResultStatusException(MessageConstant.REQUEST_VALUE_IS_MISSING.getMsg());
+            }
+
+
+        }
+        else if (provider.equalsIgnoreCase(Constants.ProviderType.NHN.name())) {
+            System.out.println("NHN");
+            NHNInfo nhnInfo = commonService.setResultObject(params.getProviderInfo(), NHNInfo.class);
+            System.out.println("NHN2" + nhnInfo);
+            if (params.getTenant_id().equals(Constants.EMPTY_STRING) ||
+                    nhnInfo.getUser_name().equals(Constants.EMPTY_STRING) ||
+                    nhnInfo.getAuth_url().equals(Constants.EMPTY_STRING) ||
+                    nhnInfo.getPassword().equals(Constants.EMPTY_STRING)) {
                 throw new ResultStatusException(MessageConstant.REQUEST_VALUE_IS_MISSING.getMsg());
             }
 
@@ -267,6 +296,15 @@ public class CloudAccountsService {
                     awsInfo.getSecretKey().equals(Constants.EMPTY_STRING)) {
                 throw new ResultStatusException(MessageConstant.REQUEST_VALUE_IS_MISSING.getMsg());
             }
+         else {
+            NAVERInfo naverInfo = commonService.setResultObject(params.getProviderInfo(), NAVERInfo.class);
+            if (naverInfo.getAccessKey().equals(Constants.EMPTY_STRING) ||
+                    naverInfo.getSecretKey().equals(Constants.EMPTY_STRING)) {
+                throw new ResultStatusException(MessageConstant.REQUEST_VALUE_IS_MISSING.getMsg());
+
+            }
+
+        }
         }
     }
 

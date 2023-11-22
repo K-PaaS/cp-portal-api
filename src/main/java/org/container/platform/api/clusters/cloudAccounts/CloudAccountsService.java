@@ -279,24 +279,14 @@ public class CloudAccountsService {
                 throw new ResultStatusException(MessageConstant.REQUEST_VALUE_IS_MISSING.getMsg());
             }
         }
-        if (provider.equalsIgnoreCase(Constants.ProviderType.NHN.name())) {
+        else if (provider.equalsIgnoreCase(Constants.ProviderType.NHN.name())) {
             NHNInfo nhnInfo = commonService.setResultObject(params.getProviderInfo(), NHNInfo.class);
-            System.out.println("여기1");
             if (params.getProject().equals(Constants.EMPTY_STRING) ||
                     nhnInfo.getAuth_url().equals(Constants.EMPTY_STRING) ||
                     nhnInfo.getPassword().equals(Constants.EMPTY_STRING) ||
                     nhnInfo.getUser_name().equals(Constants.EMPTY_STRING)) {
                 throw new ResultStatusException(MessageConstant.REQUEST_VALUE_IS_MISSING.getMsg());
             }
-         else {
-            NAVERInfo naverInfo = commonService.setResultObject(params.getProviderInfo(), NAVERInfo.class);
-            if (naverInfo.getAccessKey().equals(Constants.EMPTY_STRING) ||
-                    naverInfo.getSecretKey().equals(Constants.EMPTY_STRING)) {
-                throw new ResultStatusException(MessageConstant.REQUEST_VALUE_IS_MISSING.getMsg());
-
-            }
-
-        }
         }
             else if (provider.equalsIgnoreCase(Constants.ProviderType.NAVER.name())) {
                 System.out.println("Naver");

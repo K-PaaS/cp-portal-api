@@ -25,5 +25,5 @@ public class CloudAccounts {
     private String created;
     private String lastModified;
     private Object providerInfo;
-    private String tenant_id;
+    private String site;
 }

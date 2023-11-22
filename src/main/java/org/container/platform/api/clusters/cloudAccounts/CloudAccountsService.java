@@ -246,7 +246,10 @@ public class CloudAccountsService {
             cloudAccounts.setProject(params.getProject());
         }
         if (cloudAccounts.getProvider().equals(Constants.ProviderType.NHN.name()) && getProviderInfo(params) != null) {
-            cloudAccounts.setTenant_id(params.getTenant_id());
+            cloudAccounts.setProject(params.getProject());
+        }
+        if (cloudAccounts.getProvider().equals(Constants.ProviderType.NAVER.name()) && getProviderInfo(params) != null) {
+            cloudAccounts.setSite(params.getSite());
         }
 //        if (cloudAccounts.getProvider().equals(Constants.ProviderType.NAVER.name()) && getProviderInfo(params) != null) {
 //            cloudAccounts.setProject(params.getProject());
@@ -266,7 +269,6 @@ public class CloudAccountsService {
         if (params.getResourceName().equals(Constants.EMPTY_STRING) || params.getRegion().equals(Constants.EMPTY_STRING)) {
             throw new ResultStatusException(MessageConstant.REQUEST_VALUE_IS_MISSING.getMsg());
         }
-
         if (provider.equalsIgnoreCase(Constants.ProviderType.OPENSTACK.name())) {
             OpenstackInfo openstackInfo = commonService.setResultObject(params.getProviderInfo(), OpenstackInfo.class);
             System.out.println("openstack");
@@ -276,24 +278,14 @@ public class CloudAccountsService {
                     openstackInfo.getUser_name().equals(Constants.EMPTY_STRING)) {
                 throw new ResultStatusException(MessageConstant.REQUEST_VALUE_IS_MISSING.getMsg());
             }
-
-
         }
-        else if (provider.equalsIgnoreCase(Constants.ProviderType.NHN.name())) {
-            System.out.println("NHN");
+        if (provider.equalsIgnoreCase(Constants.ProviderType.NHN.name())) {
             NHNInfo nhnInfo = commonService.setResultObject(params.getProviderInfo(), NHNInfo.class);
-            System.out.println("NHN2" + nhnInfo);
-            if (params.getTenant_id().equals(Constants.EMPTY_STRING) ||
-                    nhnInfo.getUser_name().equals(Constants.EMPTY_STRING) ||
+            System.out.println("여기1");
+            if (params.getProject().equals(Constants.EMPTY_STRING) ||
                     nhnInfo.getAuth_url().equals(Constants.EMPTY_STRING) ||
-                    nhnInfo.getPassword().equals(Constants.EMPTY_STRING)) {
-                throw new ResultStatusException(MessageConstant.REQUEST_VALUE_IS_MISSING.getMsg());
-            }
-
-        } else {
-            AWSInfo awsInfo = commonService.setResultObject(params.getProviderInfo(), AWSInfo.class);
-            if (awsInfo.getAccessKey().equals(Constants.EMPTY_STRING) ||
-                    awsInfo.getSecretKey().equals(Constants.EMPTY_STRING)) {
+                    nhnInfo.getPassword().equals(Constants.EMPTY_STRING) ||
+                    nhnInfo.getUser_name().equals(Constants.EMPTY_STRING)) {
                 throw new ResultStatusException(MessageConstant.REQUEST_VALUE_IS_MISSING.getMsg());
             }
          else {
@@ -306,6 +298,24 @@ public class CloudAccountsService {
 
         }
         }
+            else if (provider.equalsIgnoreCase(Constants.ProviderType.NAVER.name())) {
+                System.out.println("Naver");
+                NAVERInfo naverInfo = commonService.setResultObject(params.getProviderInfo(), NAVERInfo.class);
+                if (params.getSite().equals(Constants.EMPTY_STRING) ||
+                        naverInfo.getAccessKey().equals(Constants.EMPTY_STRING) ||
+                        naverInfo.getSecretKey().equals(Constants.EMPTY_STRING)) {
+                    throw new ResultStatusException(MessageConstant.REQUEST_VALUE_IS_MISSING.getMsg());
+
+                }
+            } else {
+                AWSInfo awsInfo = commonService.setResultObject(params.getProviderInfo(), AWSInfo.class);
+                if (awsInfo.getAccessKey().equals(Constants.EMPTY_STRING) ||
+                     awsInfo.getSecretKey().equals(Constants.EMPTY_STRING)) {
+                    throw new ResultStatusException(MessageConstant.REQUEST_VALUE_IS_MISSING.getMsg());
+                }
+
+        }
+        }
     }
 
-}
+

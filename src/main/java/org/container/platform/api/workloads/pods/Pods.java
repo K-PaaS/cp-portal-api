@@ -5,6 +5,7 @@ import lombok.Data;
 import org.container.platform.api.common.CommonUtils;
 import org.container.platform.api.common.Constants;
 import org.container.platform.api.common.model.CommonAnnotations;
+import org.container.platform.api.common.model.CommonContainer;
 import org.container.platform.api.common.model.CommonMetaData;
 import org.container.platform.api.common.model.CommonSpec;
 import org.container.platform.api.workloads.pods.support.ContainerStatusesItem;
@@ -42,11 +43,11 @@ public class Pods {
     private int restarts;
     private String controllers;
     private String volumes;
-    private String containersName;
-    private String containersImage;
 
     private Map<String, Object> cpu = Constants.INIT_USAGE;
     private Map<String, Object> memory = Constants.INIT_USAGE;
+
+    private List<CommonContainer> containers;
 
     @JsonIgnore
     private CommonMetaData metadata;
@@ -104,14 +105,6 @@ public class Pods {
         return spec.getVolumes();
     }
 
-    public String getContainersName() {
-        return spec.getContainers().get(0).getName();
-    }
-
-    public String getContainersImage() {
-        return spec.getContainers().get(0).getImage();
-    }
-
     public String getPodStatus() {
         return findPodStatus(status.getContainerStatuses());
     }
@@ -136,4 +129,7 @@ public class Pods {
         return status.getPhase();
     }
 
+    public Object getContainers() {
+        return CommonUtils.procReplaceNullValue(spec.getContainers());
+    }
 }

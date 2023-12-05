@@ -108,6 +108,7 @@ public class EndpointsService {
 
                     if (!nodeName.equals(Constants.noName)) {
                         params.setResourceName(nodeName);
+                        params.setIsClusterToken(true);
                         Nodes nodesDetails = nodesService.getNodes(params);
 
                         List<CommonCondition> nodeConditionList = nodesDetails.getStatus().getConditions();

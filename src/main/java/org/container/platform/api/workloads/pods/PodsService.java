@@ -70,6 +70,7 @@ public class PodsService {
         podsList = restartCountProcessing(podsList);
 
         if(params.includeUsage) {
+            params.setIsClusterToken(true);
             podsList = metricsService.setPodsMetrics(podsList, params);
         }
         return (PodsList) commonService.setResultModel(podsList, Constants.RESULT_STATUS_SUCCESS);

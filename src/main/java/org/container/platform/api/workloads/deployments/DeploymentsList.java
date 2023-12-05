@@ -2,11 +2,14 @@ package org.container.platform.api.workloads.deployments;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
+import org.container.platform.api.common.CommonUtils;
+import org.container.platform.api.common.model.CommonContainer;
 import org.container.platform.api.common.model.CommonItemMetaData;
 import org.container.platform.api.common.model.CommonMetaData;
 import org.container.platform.api.workloads.deployments.support.DeploymentsSpec;
 import org.container.platform.api.workloads.deployments.support.DeploymentsStatus;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -32,7 +35,7 @@ class DeploymentsListItem {
     private String namespace;
     private int runningPods;
     private int totalPods;
-    private String images;
+    private List<String> images;
     private String creationTimestamp;
 
     @JsonIgnore
@@ -60,8 +63,18 @@ class DeploymentsListItem {
         return totalPods = status.getReplicas();
     }
 
-    public String getImages() {
-        return images = spec.getTemplate().getSpec().getContainers().get(0).getImage();
+    public Object getImages() {
+        List<String> images = new ArrayList<>();
+        List<CommonContainer> containers = new ArrayList<CommonContainer>();
+        try {
+            containers = spec.getTemplate().getSpec().getContainers();
+            for (CommonContainer c : containers) {
+                images.add(CommonUtils.procReplaceNullValue(c.getImage()));
+            }
+        } catch (Exception e) {
+            return CommonUtils.procReplaceNullValue(images);
+        }
+        return CommonUtils.procReplaceNullValue(images);
     }
 
     public String getCreationTimestamp() {

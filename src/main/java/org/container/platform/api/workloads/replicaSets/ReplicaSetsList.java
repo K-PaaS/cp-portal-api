@@ -2,11 +2,10 @@ package org.container.platform.api.workloads.replicaSets;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
-import org.container.platform.api.common.model.CommonItemMetaData;
-import org.container.platform.api.common.model.CommonMetaData;
-import org.container.platform.api.common.model.CommonSpec;
-import org.container.platform.api.common.model.CommonStatus;
+import org.container.platform.api.common.CommonUtils;
+import org.container.platform.api.common.model.*;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -37,7 +36,7 @@ class ReplicaSetsListItem {
     private String namespace;
     private int runningPods;
     private int totalPods;
-    private String image;
+    private List<String> images;
     private String creationTimestamp;
 
     @JsonIgnore
@@ -65,8 +64,18 @@ class ReplicaSetsListItem {
         return status.getReplicas();
     }
 
-    public String getImage() {
-        return spec.getTemplate().getSpec().getContainers().get(0).getImage();
+    public Object getImages() {
+        List<String> images = new ArrayList<>();
+        List<CommonContainer> containers = new ArrayList<CommonContainer>();
+        try {
+            containers = spec.getTemplate().getSpec().getContainers();
+            for (CommonContainer c : containers) {
+                images.add(CommonUtils.procReplaceNullValue(c.getImage()));
+            }
+        } catch (Exception e) {
+            return CommonUtils.procReplaceNullValue(images);
+        }
+        return CommonUtils.procReplaceNullValue(images);
     }
 
     public String getCreationTimestamp() {

@@ -93,7 +93,6 @@ public class VaultService {
      */
     public Clusters getClusterDetails(String clusterId) {
         Assert.hasText(clusterId);
-        System.out.println(clusterId);
         return read(propertyService.getVaultClusterTokenPath().replace("{id}", clusterId), Clusters.class);
     }
 

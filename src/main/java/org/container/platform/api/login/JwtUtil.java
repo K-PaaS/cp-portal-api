@@ -10,6 +10,8 @@ import org.container.platform.api.login.support.PortalGrantedAuthority;
 import org.container.platform.api.users.Users;
 import org.container.platform.api.users.UsersList;
 import org.container.platform.api.users.UsersService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -37,6 +39,8 @@ public class JwtUtil {
     private String secret;
     public static int jwtExpirationInMs;
     public static int refreshExpirationDateInMs;
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandler.class);
 
     @Autowired
     private UsersService usersService;
@@ -179,7 +183,6 @@ public class JwtUtil {
     public List<GrantedAuthority> getPortalRolesFromToken(String authToken) {
         List<GrantedAuthority> roles = new ArrayList<>();
         Claims claims = Jwts.parser().setSigningKey(secret).parseClaimsJws(authToken).getBody();
-        System.out.println("claims = " + claims);
         Map<String, Object> rolesInfo = claims.get("rolesInfo", Map.class);
         String userType = claims.get("userType", String.class);
         String userAuthId = claims.get("userAuthId", String.class);
@@ -187,7 +190,6 @@ public class JwtUtil {
 
         roles.add(new SimpleGrantedAuthority(userType)); //Default role
         rolesInfo.keySet().forEach(clusterId -> {
-            System.out.println("clusterId = " + clusterId);
             JWTRoleInfoItem item = commonService.setResultObject(rolesInfo.get(clusterId), JWTRoleInfoItem.class);
             if(item.getUserType().equals(Constants.AUTH_USER)){ //USER Type의 경우
                 roles.add(new PortalGrantedAuthority(clusterId, Constants.ContextType.CLUSTER.name(), item.getUserType()));
@@ -286,7 +288,7 @@ public class JwtUtil {
         Map<String, Object> roleInfo = setRolesInfo(params);
 
         claims.put("rolesInfo", roleInfo);
-        System.out.println("#######REFRESHED roleInfo = " + roleInfo);
+        LOGGER.info(CommonUtils.loggerReplace("#######REFRESHED roleInfo = " + roleInfo));
 
         return Jwts.builder().setClaims(claims).setSubject(subject).setIssuedAt(new Date(System.currentTimeMillis()))
                 .setExpiration(new Date(System.currentTimeMillis() + refreshExpirationDateInMs))

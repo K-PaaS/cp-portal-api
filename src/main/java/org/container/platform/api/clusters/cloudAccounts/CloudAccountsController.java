@@ -47,7 +47,6 @@ public class CloudAccountsController {
     })
     @GetMapping
     public CloudAccountsList getCloudAccountsList(Params params) {
-        System.out.println("cloud account 목록 조회" + params);
         return cloudAccountsService.getCloudAccountsList(params);
     }
 
@@ -79,7 +78,6 @@ public class CloudAccountsController {
     })
     @GetMapping(value = "/{resourceUid:.+}")
     public Object getCloudAccounts(Params params) {
-        System.out.print("클러스터 상세 조회" + params);
         return cloudAccountsService.getCloudAccounts(params);
     }
 
@@ -97,9 +95,7 @@ public class CloudAccountsController {
     })
     @PostMapping
     public Object createCloudAccounts(@RequestBody Params params) {
-        System.out.print("클러스터 생성" + params);
         cloudAccountsService.validationCheckCloudAccounts(params);
-        System.out.print("클러스터 생성 후 " + params);
         return cloudAccountsService.createCloudAccounts(params);
     }
 
@@ -151,14 +147,12 @@ public class CloudAccountsController {
 
     @GetMapping(value = "/provider/info")
     public Object getProviderInfo(Params params) {
-        System.out.println("Provider info" + params);
         return cloudAccountsService.getProviderInfoList(params);
     }
 
 
     @GetMapping(value = "/provider/info/{providerType:.+}")
     public Object getProviderInfoDetail(Params params) {
-        System.out.println("Provider Info Detail" + params);
         return cloudAccountsService.getProviderInfo(params);
     }
 }

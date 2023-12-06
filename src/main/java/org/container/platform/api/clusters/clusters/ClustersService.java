@@ -188,7 +188,6 @@ public class ClustersService {
                 restTemplateService.sendPing(Constants.TARGET_CP_MASTER_API, ResultStatus.class, params); // check ping
                 clusters.setKubernetesVersion(
                         nodesService.getNodesList(new Params(clusters.getClusterId(), clusters.getName())).getItems().stream()
-                        .filter(x -> x.getMetadata().getLabels().containsKey("node-role.kubernetes.io/control-plane"))
                         .filter(Objects::nonNull)
                         .collect(Collectors.toList())
                         .get(0).getStatus().getNodeInfo().getKubeletVersion());

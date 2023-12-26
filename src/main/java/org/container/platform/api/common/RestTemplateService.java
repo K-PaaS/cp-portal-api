@@ -41,11 +41,11 @@ public class RestTemplateService {
     private final String metricCollectorApiBase64Authorization;
     private final RestTemplate restTemplate;
     private final RestTemplate shortRestTemplate;
-    private final PropertyService propertyService;
+    protected final PropertyService propertyService;
     private final CommonService commonService;
-    private final VaultService vaultService;
-    private String base64Authorization;
-    private String baseUrl;
+    protected final VaultService vaultService;
+    protected String base64Authorization;
+    protected String baseUrl;
 
 
     /**
@@ -324,7 +324,7 @@ public class RestTemplateService {
      *
      * @param reqApi the reqApi
      */
-    private void setApiUrlAuthorization(String reqApi, Params params) {
+    protected void setApiUrlAuthorization(String reqApi, Params params) {
         String apiUrl = "";
         String authorization = "";
 

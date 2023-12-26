@@ -44,10 +44,12 @@ management:
 
 vault:
   path:
+    base: "secret/"
     super-admin-token: "secret/cluster/{clusterId}"
     user-token: "secret/user/{userAuthId}/{clusterId}/{namespace}"
     provider-credential: "secret/{iaas}/{id}"
     cluster-token: "secret/cluster/{id}"
+    ssh-key: "secret/ssh-key/{id}"
 
 cp:
   provide-as-service: cp-portal-service

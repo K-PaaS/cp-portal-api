@@ -124,6 +124,7 @@ public class ClustersService {
             terramanParams.setClusterId(params.getCluster());
             terramanParams.setProvider(params.getProviderType().name());
             terramanParams.setSeq(params.getCloudAccountId());
+            terramanParams.setSshKey(params.getSshKey());
             LOGGER.info("Terraman API call Start : " + CommonUtils.loggerReplace(terramanParams.toString()));
 
             try {
@@ -325,6 +326,7 @@ public class ClustersService {
         clusters.setClusterType(params.getClusterType());
         clusters.setProviderType(params.getProviderType());
         clusters.setDescription(params.getDescription());
+        clusters.setSshKey(params.getSshKey());
 
         return clusters;
     }

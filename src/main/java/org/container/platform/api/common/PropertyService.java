@@ -400,6 +400,9 @@ public class PropertyService {
     @Value("${cp.provide-as-standalone}")
     private String cpProviderAsStandalone;
 
+    @Value("${vault.path.base}")
+    private String vaultBase;
+
     @Value("${vault.path.cluster-token}")
     private String vaultClusterTokenPath;
 
@@ -412,6 +415,10 @@ public class PropertyService {
     //clusters
     @Value("${vault.path.provider-credential}")
     private String cpVaultPathProviderCredential;
+
+    //ssh key
+    @Value("${vault.path.ssh-key}")
+    private String cpVaultPathSshKey;
 
     @Value("${cpTerraman.template.path}")
     private String cpTerramanTemplatePath;

@@ -209,6 +209,7 @@ public class Constants {
     public static final String URI_CONFIGMAPS = "/container-platform";
     public static final String URI_CONFIGMAPS_DETAIL = "/container-platform/configMaps/{configMapsName:.+}";
 
+    public static final String DIR_SSH_KEY ="ssh-key/";
 
 
     /** 서비스 요청시 처리 메소드 kind 매핑 정보 */

@@ -56,6 +56,10 @@ public class Params {
     //hcl
     public String hclScript = Constants.EMPTY_STRING;
 
+    //ssh key
+    public String sshKey = Constants.EMPTY_STRING;
+    public String privateKey = Constants.EMPTY_STRING;
+
     //cluster
     public Boolean isClusterRegister = false;
     public String clusterApiUrl = Constants.EMPTY_STRING;

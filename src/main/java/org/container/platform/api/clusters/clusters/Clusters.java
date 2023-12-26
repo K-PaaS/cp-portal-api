@@ -32,6 +32,7 @@ public class Clusters {
     private Count NodeCount;
     private Count podCount;
     private String created;
+    private String sshKey;
     private String lastModified;
     private Boolean isActive = false;
     private String status = Constants.ClusterStatus.DISABLED.getInitial();

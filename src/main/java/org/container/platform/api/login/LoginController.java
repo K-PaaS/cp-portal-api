@@ -13,6 +13,7 @@ import org.container.platform.api.common.model.Params;
 import org.container.platform.api.common.model.ResultStatus;
 import org.container.platform.api.config.NoAuth;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -43,7 +44,7 @@ public class LoginController {
     @Autowired
     private CustomUserDetailsService userDetailsService;
 
-    @Autowired
+    @Autowired @Qualifier("jwtUtil")
     private JwtUtil jwtTokenUtil;
 
     /**

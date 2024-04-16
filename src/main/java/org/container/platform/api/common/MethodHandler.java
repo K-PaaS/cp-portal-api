@@ -62,7 +62,9 @@ public class MethodHandler {
     @Around("execution(* org.container.platform.api..*Controller.*create*(..))"
             + "&& !execution(* org.container.platform.api.clusters.cloudAccounts.*.*(..))"
             + "&& !execution(* org.container.platform.api.clusters.clusters.*.*(..))"
-            + "&& !execution(* org.container.platform.api.clusters.hclTemplates.*.*(..))")
+            + "&& !execution(* org.container.platform.api.clusters.hclTemplates.*.*(..))"
+            + "&& !execution(* org.container.platform.api.catalog..*.*(..))"
+    )
     public Object createResourceAspect(ProceedingJoinPoint joinPoint) throws Throwable {
 
         String yaml = "";
@@ -218,7 +220,9 @@ public class MethodHandler {
     @Around("execution(* org.container.platform.api..*Controller.*update*(..))" +
             "&& !execution(* org.container.platform.api.clusters.cloudAccounts.*.*(..))" +
             "&& !execution(* org.container.platform.api.clusters.clusters.*.*(..))" +
-            "&& !execution(* org.container.platform.api.clusters.hclTemplates.*.*(..))")
+            "&& !execution(* org.container.platform.api.clusters.hclTemplates.*.*(..))" +
+            "&& !execution(* org.container.platform.api.catalog..*.*(..))"
+    )
     public Object updateResourceAspect(ProceedingJoinPoint joinPoint) throws Throwable {
 
         String yaml = null;

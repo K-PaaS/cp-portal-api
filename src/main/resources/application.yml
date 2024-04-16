@@ -27,7 +27,7 @@ spring:
 
 aspect:
   enabled: false # for checking Elapsed time
- 
+
 jwt:
   secret: dfa4ad2646d6b4864f2dfa5428249d4eb54dc29bf3f29658fd4676d25706f83c9fc4ef626fa60d2c589a79ebec448ba4d591e2fcb04926fab783fcae50e97c06
   expirationDateInMs: 10800000
@@ -37,7 +37,7 @@ project:
   name: cp-portal-api
   artifactId: cp-portal-api
   description: API of the K-PaaS Container Platform Portal
- 
+
 management:
   security:
     enabled: false
@@ -73,14 +73,14 @@ cpNamespace:
     low: cp-low-limitrange
     medium: cp-medium-limitrange
     high: cp-high-limitrange
- 
+
 cpAnnotations:
   configuration: kubectl.kubernetes.io/, kubernetes.io/, k8s.io/
   last-applied: last-applied
 
 cpResource:
   clusterResource: Namespace, PersistentVolume, StorageClass, Role, ResourceQuota, LimitRange, ConfigMap
- 
+
 cpMaster:
   name:
   api:
@@ -240,12 +240,12 @@ logging:
     ROOT: INFO
   path: classpath:logback-spring.xml
   file: logs/application.log
- 
+
 server:
   port: ${PORT:3333}
   auth:
     valid: N
- 
+
 commonApi:
   url: http://localhost:3334
   authorization:
@@ -262,18 +262,18 @@ spring:
   config:
     activate:
       on-profile: prod
- 
+
 logging:
   level:
     ROOT: INFO
   path: classpath:logback-spring.xml
   file: logs/application.log
- 
+
 server:
   port: ${PORT:3333}
   auth:
     valid: N
- 
+
 commonApi:
   url: ${CP_PORTAL_COMMON_API_URI}
   authorization:

@@ -68,10 +68,38 @@ public class RestTemplateConfig {
                 .build();
     }
 
+    @Bean("apiRestTemplate")
+    public RestTemplate apiRestTemplate() {
+        return new RestTemplateBuilder().setConnectTimeout(Duration.ofSeconds(10))
+                .setReadTimeout(Duration.ofSeconds(10))
+                .additionalInterceptors(apiRequestInterceptor())
+                .requestFactory(() -> {
+                    try {
+                        return httpComponentsClientHttpRequestFactory();
+                    } catch (Throwable throwable) {
+                        throw new RuntimeException(throwable);
+                    }
+                })
+                .build();
+    }
+
+
     public ClientHttpRequestInterceptor clientHttpRequestInterceptor() {
         return (request, body, execution) -> {
             RetryTemplate retryTemplate = new RetryTemplate();
             retryTemplate.setRetryPolicy(new SimpleRetryPolicy(3));
+            try {
+                return retryTemplate.execute(context -> execution.execute(request, body));
+            } catch (Throwable throwable) {
+                throw new RuntimeException(throwable);
+            }
+        };
+    }
+
+    public ClientHttpRequestInterceptor apiRequestInterceptor() {
+        return (request, body, execution) -> {
+            RetryTemplate retryTemplate = new RetryTemplate();
+            retryTemplate.setRetryPolicy(new SimpleRetryPolicy(1));
             try {
                 return retryTemplate.execute(context -> execution.execute(request, body));
             } catch (Throwable throwable) {

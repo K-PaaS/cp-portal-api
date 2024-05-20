@@ -448,50 +448,50 @@ public class PropertyService {
     private String cpMetricCollectorApiClustersKey;
 
     // cp catalog api
-    @Value("${cpCatalog.api.url}")
+    @Value("${cpCatalog.api.url: }")
     private String cpCatalogApiUrl;
 
     // repository
-    @Value("${cpCatalog.api.repositories.list}")
+    @Value("${cpCatalog.api.repositories.list: }")
     private String cpCatalogRepoListUrl;
 
-    @Value("${cpCatalog.api.repositories.get}")
+    @Value("${cpCatalog.api.repositories.get: }")
     private String cpCatalogRepoGetUrl;
 
-    @Value("${cpCatalog.api.repositories.charts}")
+    @Value("${cpCatalog.api.repositories.charts: }")
     private String cpCatalogRepoChartsUrl;
 
     // release
-    @Value("${cpCatalog.api.releases.list}")
+    @Value("${cpCatalog.api.releases.list: }")
     private String cpCatalogReleaseListUrl;
 
-    @Value("${cpCatalog.api.releases.get}")
+    @Value("${cpCatalog.api.releases.get: }")
     private String cpCatalogReleaseGetUrl;
 
-    @Value("${cpCatalog.api.releases.rollback}")
+    @Value("${cpCatalog.api.releases.rollback: }")
     private String cpCatalogReleaseRollbackUrl;
 
-    @Value("${cpCatalog.api.releases.histories}")
+    @Value("${cpCatalog.api.releases.histories: }")
     private String cpCatalogReleaseHistoriesUrl;
 
-    @Value("${cpCatalog.api.releases.resources}")
+    @Value("${cpCatalog.api.releases.resources: }")
     private String cpCatalogReleaseResourcesUrl;
 
-    @Value("${cpCatalog.api.charts.versions}")
+    @Value("${cpCatalog.api.charts.versions: }")
     private String cpCatalogChartVersionsUrl;
 
-    @Value("${cpCatalog.api.charts.info}")
+    @Value("${cpCatalog.api.charts.info: }")
     private String cpCatalogChartInfoUrl;
 
-    @Value("${cpCatalog.api.hub.repositories.list}")
+    @Value("${cpCatalog.api.hub.repositories.list: }")
     private String cpCatalogHubRepoListUrl;
 
-    @Value("${cpCatalog.api.hub.packages.list}")
+    @Value("${cpCatalog.api.hub.packages.list: }")
     private String cpCatalogHubPackagesListUrl;
 
-    @Value("${cpCatalog.api.hub.packages.get}")
+    @Value("${cpCatalog.api.hub.packages.get: }")
     private String cpCatalogHubPackagesGetUrl;
 
-    @Value("${cpCatalog.api.hub.packages.values}")
+    @Value("${cpCatalog.api.hub.packages.values: }")
     private String cpCatalogHubPackagesValueUrl;
 }

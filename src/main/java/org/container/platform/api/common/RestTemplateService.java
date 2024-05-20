@@ -69,8 +69,8 @@ public class RestTemplateService {
                                @Value("${commonApi.authorization.password}") String commonApiAuthorizationPassword,
                                @Value("${cpMetricCollector.api.authorization.id}") String metricCollectorApiAuthorizationId,
                                @Value("${cpMetricCollector.api.authorization.password}") String metricCollectorApiAuthorizationPassword,
-                               @Value("${cpCatalog.api.authorization.id}") String catalogApiAuthorizationId,
-                               @Value("${cpCatalog.api.authorization.password}") String catalogApiAuthorizationPassword) {
+                               @Value("${cpCatalog.api.authorization.id: }") String catalogApiAuthorizationId,
+                               @Value("${cpCatalog.api.authorization.password: }") String catalogApiAuthorizationPassword) {
         this.restTemplate = restTemplate;
         this.shortRestTemplate = shortRestTemplate;
         this.apiRestTemplate = apiRestTemplate;

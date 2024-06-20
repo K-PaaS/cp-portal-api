@@ -70,8 +70,8 @@ public class RestTemplateConfig {
 
     @Bean("apiRestTemplate")
     public RestTemplate apiRestTemplate() {
-        return new RestTemplateBuilder().setConnectTimeout(Duration.ofSeconds(10))
-                .setReadTimeout(Duration.ofSeconds(10))
+        return new RestTemplateBuilder().setConnectTimeout(Duration.ofMinutes(1))
+                .setReadTimeout(Duration.ofMinutes(1))
                 .additionalInterceptors(apiRequestInterceptor())
                 .requestFactory(() -> {
                     try {

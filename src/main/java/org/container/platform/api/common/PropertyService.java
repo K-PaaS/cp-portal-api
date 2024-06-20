@@ -461,6 +461,9 @@ public class PropertyService {
     @Value("${cpCatalog.api.repositories.charts: }")
     private String cpCatalogRepoChartsUrl;
 
+    @Value("${cpCatalog.api.repositories.cache.clear: }")
+    private String cpCatalogRepoCacheClearUrl;
+
     // release
     @Value("${cpCatalog.api.releases.list: }")
     private String cpCatalogReleaseListUrl;

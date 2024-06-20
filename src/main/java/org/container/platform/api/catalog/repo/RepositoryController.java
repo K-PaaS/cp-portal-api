@@ -7,6 +7,7 @@ import io.swagger.annotations.ApiOperation;
 import org.container.platform.api.catalog.CatalogStatus;
 import org.container.platform.api.common.model.Params;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 /**
@@ -117,7 +118,7 @@ public class RepositoryController {
      * @param params the params
      * @return the CatalogStatus
      */
-    @ApiOperation(value = "차트 버전 목록 조회(Get Chart Versions)", nickname = "GetChartVersions")
+    @ApiOperation(value = "차트 버전 목록 조회(Get Chart Versions)", nickname = "getChartVersions")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body")
     })
@@ -131,12 +132,29 @@ public class RepositoryController {
      * @param params the params
      * @return the CatalogStatus
      */
-    @ApiOperation(value = "차트 정보 조회(Get Chart Info)", nickname = "GetChartInfo")
+    @ApiOperation(value = "차트 정보 조회(Get Chart Info)", nickname = "getChartInfo")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body")
     })
     @GetMapping(value = "/{repositories:.+}/charts/{charts:.+}/info")
     public CatalogStatus getChartInfo(Params params) {
         return repositoryService.getChartInfo(params);
+    }
+
+
+    /**
+     * 차트 캐시 삭제 (Clear Repo Cache)
+     *
+     * @param params the params
+     * @return the CatalogStatus
+     */
+    @ApiOperation(value = "차트 캐시 삭제 (Clear Repo Cache)", nickname = "clearChartCache")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body")
+    })
+    @PreAuthorize("@webSecurity.checkisGlobalAdmin()")
+    @DeleteMapping(value = "/cache/clear")
+    public CatalogStatus clearChartCache(Params params) {
+        return repositoryService.clearChartCache(params);
     }
 }

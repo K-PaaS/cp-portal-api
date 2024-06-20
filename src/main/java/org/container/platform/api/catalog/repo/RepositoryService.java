@@ -113,6 +113,19 @@ public class RepositoryService {
     }
 
 
+
+    /**
+     * 차트 캐시 삭제 (Clear Repo Cache)
+     *
+     * @param params the params
+     * @return the CatalogStatus
+     */
+    public CatalogStatus clearChartCache(Params params) {
+        return restTemplateService.sendApi(TARGET_CATALOG_API,propertyService.getCpCatalogRepoCacheClearUrl(),
+                HttpMethod.DELETE, null, CatalogStatus.class, params);
+    }
+
+
     public String replaceUrl(String url, Params params) {
       return url.replace("{repositories}", params.getRepositories()).replace("{charts}", params.getCharts());
     }

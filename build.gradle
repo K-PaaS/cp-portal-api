@@ -50,7 +50,6 @@ ext {
 	gsonVersion = '2.8.6'
 	lombokVersion = '1.18.12'
 	jacocoVersion = '0.8.5'
-	swaggerVersion = '2.9.2'
 	jjwtVersion = '0.9.1'
 	jsonpathVersion = '2.4.0'
 	springCloudVersion = '2021.0.3'
@@ -65,19 +64,13 @@ dependencies {
 	compile "org.springframework.boot:spring-boot-starter-security"
 	compile "org.springframework.boot:spring-boot-starter-web"
 	compile "org.springframework.boot:spring-boot-starter-aop"
+	compile 'org.springframework.boot:spring-boot-starter-actuator'
 	compile "org.apache.httpcomponents:httpclient:${apacheHttpClientVersion}"
 	compile "com.google.code.gson:gson:${gsonVersion}"
 	compileOnly "org.projectlombok:lombok:${lombokVersion}"
 	annotationProcessor "org.projectlombok:lombok:${lombokVersion}"
 	compile('org.springframework.boot:spring-boot-starter-freemarker')
 	compile "io.jsonwebtoken:jjwt:${jjwtVersion}"
-	compile("io.springfox:springfox-swagger2:${swaggerVersion}") {
-		exclude module: 'swagger-annotations'
-		exclude module: 'swagger-models'
-	}
-	compile("io.swagger:swagger-annotations:1.5.21")
-	compile("io.swagger:swagger-models:1.5.21")
-	compile "io.springfox:springfox-swagger-ui:${swaggerVersion}"
 	compile "com.jayway.jsonpath:json-path:${jsonpathVersion}"
 	compile 'com.fasterxml.jackson.core:jackson-core'
 	compile 'com.fasterxml.jackson.core:jackson-databind'
@@ -87,6 +80,8 @@ dependencies {
 	testCompile "org.springframework.boot:spring-boot-starter-test"
 	testImplementation('junit:junit:4.13')
 
+	implementation 'io.springfox:springfox-boot-starter:3.0.0'
+	implementation 'io.springfox:springfox-swagger-ui:3.0.0'
 	implementation 'org.springframework.retry:spring-retry'
 	implementation group: 'ch.qos.logback', name: 'logback-core', version: '1.2.9'
 	implementation group: 'ch.qos.logback', name: 'logback-classic', version: '1.2.9'

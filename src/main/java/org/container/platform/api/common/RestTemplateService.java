@@ -41,6 +41,7 @@ public class RestTemplateService {
     private static final String CONTENT_TYPE = "Content-Type";
     private final String commonApiBase64Authorization;
     private final String metricCollectorApiBase64Authorization;
+    private final String terramanApiBase64Authorization;
     private final String catalogApiBase64Authorization;
     private final RestTemplate restTemplate;
     private final RestTemplate shortRestTemplate;
@@ -70,7 +71,9 @@ public class RestTemplateService {
                                @Value("${cpMetricCollector.api.authorization.id}") String metricCollectorApiAuthorizationId,
                                @Value("${cpMetricCollector.api.authorization.password}") String metricCollectorApiAuthorizationPassword,
                                @Value("${cpCatalog.api.authorization.id: }") String catalogApiAuthorizationId,
-                               @Value("${cpCatalog.api.authorization.password: }") String catalogApiAuthorizationPassword) {
+                               @Value("${cpCatalog.api.authorization.password: }") String catalogApiAuthorizationPassword,
+                               @Value("${cpTerraman.authorization.id}") String terramanApiAuthorizationId,
+                               @Value("${cpTerraman.authorization.password}") String terramanApiAuthorizationPassword) {
         this.restTemplate = restTemplate;
         this.shortRestTemplate = shortRestTemplate;
         this.apiRestTemplate = apiRestTemplate;
@@ -86,6 +89,9 @@ public class RestTemplateService {
         this.catalogApiBase64Authorization =  "Basic "
                 + Base64Utils.encodeToString(
                 (catalogApiAuthorizationId + ":" + catalogApiAuthorizationPassword).getBytes(StandardCharsets.UTF_8));
+        this.terramanApiBase64Authorization = "Basic "
+                + Base64Utils.encodeToString(
+                (terramanApiAuthorizationId + ":" + terramanApiAuthorizationPassword).getBytes(StandardCharsets.UTF_8));
     }
 
 
@@ -359,6 +365,7 @@ public class RestTemplateService {
         // TERRAMAN API
         if (TARGET_TERRAMAN_API.equals(reqApi)) {
             apiUrl = propertyService.getTerramanApiUrl();
+            authorization = terramanApiBase64Authorization;
         }
 
         // METRIC COLLECTOR API

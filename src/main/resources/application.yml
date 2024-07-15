@@ -221,6 +221,9 @@ cpMaster:
 cpTerraman:
   api:
     url: ${CP_PORTAL_TERRAMAN_API_URI}
+  authorization:
+    id: admin
+    password: cpterraman!123
 
 cpMetricCollector:
   api:

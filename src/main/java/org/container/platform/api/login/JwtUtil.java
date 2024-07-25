@@ -36,7 +36,7 @@ import java.util.*;
 @Service
 public class JwtUtil {
 
-    private String secret;
+    private byte[] secret;
     public static int jwtExpirationInMs;
     public static int refreshExpirationDateInMs;
 
@@ -52,8 +52,8 @@ public class JwtUtil {
     private CommonService commonService;
 
     @Value("${jwt.secret}")
-    public void setSecret(String secret) {
-        this.secret = secret;
+    public void setSecret(String secretVal) {
+        this.secret = secretVal.getBytes();
     }
 
     @Value("${jwt.expirationDateInMs}")

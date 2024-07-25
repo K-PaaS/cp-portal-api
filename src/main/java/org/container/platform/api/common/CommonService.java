@@ -1,9 +1,6 @@
 package org.container.platform.api.common;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jwts;
 import lombok.SneakyThrows;
 import org.container.platform.api.clusters.clusters.Clusters;
 import org.container.platform.api.common.model.*;
@@ -11,15 +8,11 @@ import org.container.platform.api.login.support.PortalGrantedAuthority;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
-import org.springframework.util.StringUtils;
-
-import javax.servlet.http.HttpServletRequest;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -40,14 +33,6 @@ public class CommonService {
     private static final Logger LOGGER = LoggerFactory.getLogger(CommonService.class);
     private final Gson gson;
     private final PropertyService propertyService;
-    private final HttpServletRequest request;
-    private String secret;
-
-
-    @Value("${jwt.secret}")
-    public void setSecret(String secret) {
-        this.secret = secret;
-    }
 
     /**
      * Instantiates a new Common service
@@ -55,10 +40,9 @@ public class CommonService {
      * @param gson the gson
      */
     @Autowired
-    public CommonService(Gson gson, PropertyService propertyService, HttpServletRequest request) {
+    public CommonService(Gson gson, PropertyService propertyService) {
         this.gson = gson;
         this.propertyService = propertyService;
-        this.request = request;
     }
 
 
@@ -811,33 +795,6 @@ public class CommonService {
         return clusters;
     }
 
-    /**
-     * API 요청으로부터 JWT 토큰 추출(Extract JWT token from API Request)
-     *
-     * @param request the request
-     * @return the string
-     */
-    public String extractJwtFromRequest(HttpServletRequest request) {
-        RequestWrapper requestWrapper = new RequestWrapper(request);
-
-        String bearerToken = requestWrapper.getHeader("Authorization");
-        if (StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer ")) {
-            return bearerToken.substring(7, bearerToken.length());
-        }
-        return null;
-    }
-
-    /**
-     * 토큰을 통한 사용자 이름 조회(Get User name from token)
-     *
-     * @param token the token
-     * @return the string
-     */
-    public String getUsernameFromToken(String token) {
-        Claims claims = Jwts.parser().setSigningKey(secret).parseClaimsJws(token).getBody();
-
-        return claims.getSubject();
-    }
 
     /**
      *  사용자 이름 조회(Get User name from context)

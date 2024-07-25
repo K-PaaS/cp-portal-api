@@ -41,6 +41,10 @@ project:
 management:
   security:
     enabled: false
+  endpoints:
+    web:
+      exposure:
+        include: health
 
 vault:
   path:

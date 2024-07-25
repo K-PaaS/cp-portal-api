@@ -47,7 +47,7 @@ public class SshKeysController {
      */
     @ApiOperation(value = "SshKeys 목록 조회(Get SshKeys List)", nickname = "getSshKeysList")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body")
+            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
     })
     @GetMapping
     public SshKeysList getSshKeysList(Params params) {
@@ -62,7 +62,7 @@ public class SshKeysController {
      */
     @ApiOperation(value = "SshKeys 상세 조회(Get SshKeys)", nickname = "getSshKeys")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body")
+            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
     })
     @GetMapping(value = "/{resourceUid:.+}")
     public Object getSshKeys(Params params) {
@@ -78,7 +78,7 @@ public class SshKeysController {
      */
     @ApiOperation(value = "SshKeys 삭제(Delete SshKeys)", nickname = "deleteSshKeys")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body")
+            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
     })
     @PreAuthorize("@webSecurity.checkisSuperAdmin()")
     @DeleteMapping(value = "/{resourceUid:.+}")
@@ -95,7 +95,7 @@ public class SshKeysController {
      */
     @ApiOperation(value = "SshKeys 생성(Create SshKeys)", nickname = "initSshKeys")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body")
+            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
     })
     @PostMapping
     public Object initSshKeys(@RequestBody Params params) {
@@ -110,7 +110,7 @@ public class SshKeysController {
      */
     @ApiOperation(value = "SshKeys 수정(Update SshKeys)", nickname = "updateSshKeys")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body")
+            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
     })
     @PreAuthorize("@webSecurity.checkisSuperAdmin()")
     @PutMapping
@@ -127,7 +127,7 @@ public class SshKeysController {
      */
     @ApiOperation(value = "SshKeys 타입 별 목록 조회(Get SshKeys List By Provider)", nickname = "getSshKeysListByProvider")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body")
+            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
     })
     @GetMapping(value = "/provider/{providerType:.+}")
     public SshKeysList getSshKeysListByProvider(Params params) {

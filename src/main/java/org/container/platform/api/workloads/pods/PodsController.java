@@ -45,7 +45,7 @@ public class PodsController {
      */
     @ApiOperation(value = "Pods 목록 조회(Get Pods List)", nickname = "getPodsList")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body")
+            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
     })
     @GetMapping
     @ResponseBody
@@ -63,7 +63,7 @@ public class PodsController {
      */
     @ApiOperation(value = "Selector 값에 따른 Pods 목록 조회(Get Pods By Selector)", nickname = "getPodListBySelector")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body")
+            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
     })
     @GetMapping(value = "/resources")
     @ResponseBody
@@ -80,7 +80,7 @@ public class PodsController {
      */
     @ApiOperation(value = "Node 명에 따른 Pods 목록 조회(Get Pods By Node)", nickname = "getPodListByNode")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body")
+            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
     })
     @GetMapping(value = "/nodes/{nodeName:.+}")
     public PodsList getPodsListByNode(Params params) {
@@ -95,7 +95,7 @@ public class PodsController {
      */
     @ApiOperation(value = "Pods 상세 조회(Get Pods Detail)", nickname = "getPods")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body")
+            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
     })
     @GetMapping(value = "/{resourceName:.+}")
     public Pods getPods(Params params) {
@@ -110,7 +110,7 @@ public class PodsController {
      */
     @ApiOperation(value = "Pods YAML 조회(Get Pods Yaml)", nickname = "getPodsYaml")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body")
+            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
     })
     @GetMapping(value = "/{resourceName:.+}/yaml")
     public CommonResourcesYaml getPodsYaml(Params params) {
@@ -125,7 +125,7 @@ public class PodsController {
      */
     @ApiOperation(value = "Pods 생성(Create Pods)", nickname = "createPods")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body")
+            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
     })
     @PostMapping
     public Object createPods(@RequestBody Params params) throws Exception {
@@ -145,7 +145,7 @@ public class PodsController {
      */
     @ApiOperation(value = "Pods 수정(Update Pods)", nickname = "updatePods")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body")
+            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
     })
     @PutMapping("/{resourceName:.+}")
     public ResultStatus updatePods(@RequestBody Params params) {
@@ -160,7 +160,7 @@ public class PodsController {
      */
     @ApiOperation(value = "Pods 삭제(Delete Pods)", nickname = "deletePods")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body")
+            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
     })
     @DeleteMapping("/{resourceName:.+}")
     public ResultStatus deletePods(Params params) {

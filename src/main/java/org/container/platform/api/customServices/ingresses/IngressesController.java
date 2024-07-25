@@ -50,7 +50,7 @@ public class IngressesController {
      */
     @ApiOperation(value = "Ingresses 목록 조회(Get Ingresses list)", nickname = "getIngressesList")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body")
+            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
     })
     @GetMapping
     public IngressesList getIngressesList(Params params){
@@ -65,7 +65,7 @@ public class IngressesController {
      */
     @ApiOperation(value = "Ingresses 상세 조회(Get Ingresses detail)", nickname = "getIngresses")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body")
+            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
     })
     @GetMapping(value = "/{resourceName:.+}")
     public Ingresses getIngresses(Params params){
@@ -80,7 +80,7 @@ public class IngressesController {
      */
     @ApiOperation(value = "Ingresses YAML 조회(Get Ingresses yaml)", nickname = "getIngressesYaml")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body")
+            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
     })
     @GetMapping(value = "/{resourceName:.+}/yaml")
     public CommonResourcesYaml getIngressesYaml(Params params){
@@ -95,7 +95,7 @@ public class IngressesController {
      */
     @ApiOperation(value = "Ingresses 생성(Create Ingresses)", nickname = "createIngresses")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body")
+            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
     })
     @PostMapping
     public Object createIngresses(@RequestBody Params params) throws Exception {
@@ -114,7 +114,7 @@ public class IngressesController {
      */
     @ApiOperation(value = "Ingresses 삭제(Delete Ingresses)", nickname = "deleteIngresses")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body")
+            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
     })
     @DeleteMapping("/{resourceName:.+}")
     public ResultStatus deleteIngresses(Params params) {
@@ -130,7 +130,7 @@ public class IngressesController {
      */
     @ApiOperation(value = "Ingresses 수정(Update Ingresses)", nickname = "updateIngresses")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body")
+            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
     })
     @PutMapping("/{resourceName:.+}")
     public ResultStatus updateIngresses(@RequestBody Params params) {

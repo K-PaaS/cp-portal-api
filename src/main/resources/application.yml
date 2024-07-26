@@ -228,7 +228,7 @@ cpTerraman:
 cpMetricCollector:
   api:
     authorization:
-      id: paasta
+      id: kpaas
       password: password
     url: ${CP_PORTAL_METRIC_COLLECTOR_API_URI}
     clusters:

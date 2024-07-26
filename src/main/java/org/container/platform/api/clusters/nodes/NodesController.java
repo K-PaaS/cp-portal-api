@@ -42,7 +42,7 @@ public class NodesController {
      */
     @ApiOperation(value = "Nodes 목록 조회(Get Nodes list)", nickname = "getNodesList")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body")
+            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
     })
     @GetMapping
     public NodesList getNodesList(Params params) {
@@ -58,7 +58,7 @@ public class NodesController {
      */
     @ApiOperation(value = "Nodes 상세 조회(Get Nodes detail)", nickname = "getNodes")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body")
+            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
     })
     @GetMapping(value = "/{resourceName:.+}")
     public Nodes getNodes(Params params) {

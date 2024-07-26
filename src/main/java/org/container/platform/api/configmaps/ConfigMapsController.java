@@ -45,7 +45,7 @@ public class ConfigMapsController {
      */
     @ApiOperation(value = "ConfigMaps 목록 조회(Get ConfigMaps List)", nickname = "getConfigMapsList")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body")
+            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
     })
     @GetMapping
     public ConfigMapsList getConfigMapsList(Params params) {
@@ -61,7 +61,7 @@ public class ConfigMapsController {
      */
     @ApiOperation(value = "ConfigMaps 상세 조회(Get ConfigMaps Detail)", nickname = "getConfigMaps")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body")
+            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
     })
     @GetMapping(value = "/{resourceName:.+}")
     public Object getConfigMaps(Params params) {
@@ -77,7 +77,7 @@ public class ConfigMapsController {
      */
     @ApiOperation(value = "ConfigMaps YAML 조회(Get ConfigMaps yaml)", nickname = "getConfigMapsYaml")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body")
+            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
     })
     @GetMapping(value = "/{resourceName:.+}/yaml")
     public CommonResourcesYaml getConfigMapsYaml(Params params) {
@@ -93,7 +93,7 @@ public class ConfigMapsController {
      */
     @ApiOperation(value = "ConfigMaps 생성(Create ConfigMaps)", nickname = "createConfigMaps")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body")
+            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
     })
     @PostMapping
     public Object createConfigMaps(@RequestBody Params params) throws Exception {
@@ -113,7 +113,7 @@ public class ConfigMapsController {
      */
     @ApiOperation(value = "ConfigMaps 삭제(Delete ConfigMaps)", nickname = "deleteConfigMaps")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body")
+            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
     })
     @DeleteMapping("/{resourceName:.+}")
     public ResultStatus deleteConfigMaps(Params params) {
@@ -129,7 +129,7 @@ public class ConfigMapsController {
      */
     @ApiOperation(value = "ConfigMaps 수정(Update ConfigMaps)", nickname = "updateConfigMaps")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body")
+            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
     })
     @PutMapping("/{resourceName:.+}")
     public ResultStatus updateConfigMaps(@RequestBody Params params) {

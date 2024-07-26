@@ -40,7 +40,7 @@ public class ReleaseController {
      */
     @ApiOperation(value = "Release 목록 조회(Get Release list)", nickname = "getReleaseList")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body")
+            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
     })
     @GetMapping
     public CatalogStatus getReleaseList(Params params) {
@@ -56,7 +56,7 @@ public class ReleaseController {
      */
     @ApiOperation(value = "Release 상세 조회(Get Release Info)", nickname = "getReleaseInfo")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body")
+            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
     })
     @GetMapping(value = "/{releases:.+}")
     public CatalogStatus getReleaseInfo(Params params) {
@@ -71,7 +71,7 @@ public class ReleaseController {
      */
     @ApiOperation(value = "Release 생성(Install Release)", nickname = "installRelease")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body")
+            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
     })
     @PostMapping(value = "/{releases:.+}")
     public CatalogStatus installRelease(Params params, @RequestBody Object bodyObject) {
@@ -86,7 +86,7 @@ public class ReleaseController {
      */
     @ApiOperation(value = "Release 업그레이드(Upgrade Release)", nickname = "upgradeRelease")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body")
+            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
     })
     @PutMapping(value = "/{releases:.+}")
     public CatalogStatus upgradeRelease(Params params, @RequestBody Object bodyObject) {
@@ -102,7 +102,7 @@ public class ReleaseController {
      */
     @ApiOperation(value = "Release 롤백(Rollback Release)", nickname = "rollbackRelease")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body")
+            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
     })
     @PutMapping(value = "/{releases:.+}/versions/{reversion:.+}")
     public CatalogStatus rollbackRelease(Params params) {
@@ -117,7 +117,7 @@ public class ReleaseController {
      */
     @ApiOperation(value = "Release 삭제(Uninstall Release)", nickname = "uninstallRelease")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body")
+            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
     })
     @DeleteMapping(value = "/{releases:.+}")
     public CatalogStatus uninstallRelease(Params params) {
@@ -132,7 +132,7 @@ public class ReleaseController {
      */
     @ApiOperation(value = "Release Histories 조회(Get Release Histories)", nickname = "getReleaseHistories")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body")
+            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
     })
     @GetMapping(value = "/{releases:.+}/histories")
     public CatalogStatus getReleaseHistories(Params params) {
@@ -147,7 +147,7 @@ public class ReleaseController {
      */
     @ApiOperation(value = "Release Resources 조회(Get Release Resources)", nickname = "getReleaseResources")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body")
+            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
     })
     @GetMapping(value = "/{releases:.+}/resources")
     public CatalogStatus getReleaseResources(Params params) {

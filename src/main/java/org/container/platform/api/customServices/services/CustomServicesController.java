@@ -41,7 +41,7 @@ public class CustomServicesController {
      */
     @ApiOperation(value = "Services 목록 조회(Get Services list)", nickname = "getCustomServicesList")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body")
+            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
     })
     @GetMapping
     public CustomServicesList getCustomServicesList(Params params) {
@@ -57,7 +57,7 @@ public class CustomServicesController {
      */
     @ApiOperation(value = "Services 상세 조회(Get Services detail)", nickname = "getCustomServices")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body")
+            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
     })
     @GetMapping(value = "/{resourceName:.+}")
     public Object getCustomServices(Params params) {
@@ -73,7 +73,7 @@ public class CustomServicesController {
      */
     @ApiOperation(value = "Services YAML 조회(Get Services yaml)", nickname = "getCustomServicesYaml")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body")
+            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
     })
     @GetMapping(value = "/{resourceName:.+}/yaml")
     public CommonResourcesYaml getCustomServicesYaml(Params params) {
@@ -90,7 +90,7 @@ public class CustomServicesController {
 
     @ApiOperation(value = "Services 생성(Create Services)", nickname = "createServices")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body")
+            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
     })
     @PostMapping
     public Object createServices(@RequestBody Params params) throws Exception {
@@ -111,7 +111,7 @@ public class CustomServicesController {
 
     @ApiOperation(value = "Services 삭제(Delete Services)", nickname = "deleteServices")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body")
+            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
     })
     @DeleteMapping("/{resourceName:.+}")
     public ResultStatus deleteServices(Params params) {
@@ -127,7 +127,7 @@ public class CustomServicesController {
      */
     @ApiOperation(value = "Services 수정(Update Services)", nickname = "updateServices")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body")
+            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
     })
     @PutMapping("/{resourceName:.+}")
     public ResultStatus updateServices(@RequestBody Params params) {

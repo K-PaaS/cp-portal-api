@@ -43,7 +43,7 @@ public class CloudAccountsController {
      */
     @ApiOperation(value = "CloudAccounts 목록 조회(Get CloudAccounts list)", nickname = "getCloudAccountsList")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body")
+            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
     })
     @GetMapping
     public CloudAccountsList getCloudAccountsList(Params params) {
@@ -59,7 +59,7 @@ public class CloudAccountsController {
      */
     @ApiOperation(value = "CloudAccounts 타입 별 목록 조회(Get CloudAccounts list By Provider)", nickname = "getCloudAccountsListByProvider")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body")
+            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
     })
     @GetMapping(value = "/provider/{providerType:.+}")
     public CloudAccountsList getCloudAccountsListByProvider(Params params) {
@@ -74,7 +74,7 @@ public class CloudAccountsController {
      */
     @ApiOperation(value = "CloudAccounts 상세 조회(Get CloudAccounts detail)", nickname = "getCloudAccounts")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body")
+            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
     })
     @GetMapping(value = "/{resourceUid:.+}")
     public Object getCloudAccounts(Params params) {
@@ -91,7 +91,7 @@ public class CloudAccountsController {
     @PreAuthorize("@webSecurity.checkisSuperAdmin()")
     @ApiOperation(value = "CloudAccounts 생성(Create CloudAccounts)", nickname = "createCloudAccounts")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body")
+            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
     })
     @PostMapping
     public Object createCloudAccounts(@RequestBody Params params) {
@@ -108,7 +108,7 @@ public class CloudAccountsController {
      */
     @ApiOperation(value = "CloudAccounts 수정(Update CloudAccounts)", nickname = "updateCloudAccounts")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body")
+            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
     })
     @PreAuthorize("@webSecurity.checkisSuperAdmin()")
     @PatchMapping
@@ -125,7 +125,7 @@ public class CloudAccountsController {
      */
     @ApiOperation(value = "CloudAccounts 삭제(Delete CloudAccounts)", nickname = "deleteCloudAccounts")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body")
+            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
     })
     @PreAuthorize("@webSecurity.checkisSuperAdmin()")
     @DeleteMapping(value = "/{resourceUid:.+}")
@@ -142,7 +142,7 @@ public class CloudAccountsController {
      */
     @ApiOperation(value = "ProviderInfo 조회(Get ProviderInfo)", nickname = "getProviderInfo")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body")
+            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
     })
 
     @GetMapping(value = "/provider/info")

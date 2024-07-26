@@ -45,7 +45,7 @@ public class RolesController {
      */
     @ApiOperation(value = "Roles 목록 조회(Get Roles list)", nickname = "getRolesList")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body")
+            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
     })
     @GetMapping
     public RolesList getRolesList(Params params) {
@@ -61,7 +61,7 @@ public class RolesController {
      */
     @ApiOperation(value = "Roles 상세 조회(Get Roles detail)", nickname = "getRoles")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body")
+            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
     })
     @GetMapping(value = "/{resourceName:.+}")
     public Roles getRoles(Params params) {
@@ -77,7 +77,7 @@ public class RolesController {
      */
     @ApiOperation(value = "Roles YAML 조회(Get Roles yaml)", nickname = "getRolesYaml")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body")
+            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
     })
     @GetMapping(value = "/{resourceName:.+}/yaml")
     public CommonResourcesYaml getRolesYaml(Params params) {
@@ -93,7 +93,7 @@ public class RolesController {
      */
     @ApiOperation(value = "Roles 생성(Create Roles)", nickname = "createRoles")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body")
+            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
     })
     @PostMapping
     public Object createRoles(@RequestBody Params params) throws Exception {
@@ -113,7 +113,7 @@ public class RolesController {
      */
     @ApiOperation(value = "Roles 삭제(Delete Roles)", nickname = "deleteRoles")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body")
+            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
     })
     @DeleteMapping("/{resourceName:.+}")
     public ResultStatus deleteRoles(Params params) {
@@ -130,7 +130,7 @@ public class RolesController {
      */
     @ApiOperation(value = "Roles 수정(Update Roles)", nickname = "updateRoles")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body")
+            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
     })
     @PutMapping("/{resourceName:.+}")
     public ResultStatus updateRoles(@RequestBody Params params) {

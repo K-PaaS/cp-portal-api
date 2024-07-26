@@ -42,7 +42,7 @@ public class OverviewController {
      */
     @ApiOperation(value = "Overview 조회(Get Overview)", nickname = "getOverview")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body")
+            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
     })
     @GetMapping("/clusters/{cluster:.+}/namespaces/{namespace:.+}/overview")
     public Overview getOverview(Params params) {
@@ -59,7 +59,7 @@ public class OverviewController {
      */
     @ApiOperation(value = "Global Overview 조회(Get Global Overview)", nickname = "getGlobalOverview")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body")
+            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
     })
     @GetMapping("/global/overview")
     public GlobalOverview getGlobalOverview(Params params) {

@@ -41,7 +41,7 @@ public class ChartController {
      */
     @ApiOperation(value = "차트 버전 목록 조회(Get Chart Versions)", nickname = "GetChartVersions")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body")
+            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
     })
     @GetMapping(value = "/{charts:.+}/versions")
     public CatalogStatus getChartVersions(Params params) {

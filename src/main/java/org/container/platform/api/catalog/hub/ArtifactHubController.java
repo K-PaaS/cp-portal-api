@@ -42,7 +42,7 @@ public class ArtifactHubController {
      */
     @ApiOperation(value = "ArtifactHub Repository 목록 조회(Get ArtifactHub Repository List)", nickname = "getRepoListHub")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "query")
+            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "query", dataTypeClass = Params.class)
     })
     @GetMapping("/repositories")
     public CatalogStatus getRepoListHub(Params params) {
@@ -58,7 +58,7 @@ public class ArtifactHubController {
      */
     @ApiOperation(value = "ArtifactHub Packages 목록 조회(Get ArtifactHub Packages List)", nickname = "getPackageListHub")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "query")
+            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "query", dataTypeClass = Params.class)
     })
     @GetMapping("/packages")
     public CatalogStatus getPackageListHub(Params params) {
@@ -74,7 +74,7 @@ public class ArtifactHubController {
      */
     @ApiOperation(value = "ArtifactHub Helm Packages 정보 조회(Get ArtifactHub Helm Packages Info)", nickname = "getHelmPackageInfo")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "query")
+            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "query", dataTypeClass = Params.class)
     })
     @GetMapping("/packages/{repositories:.+}/{packages:.+}")
     public CatalogStatus getHelmPackageInfo(Params params) {
@@ -89,7 +89,7 @@ public class ArtifactHubController {
      */
     @ApiOperation(value = "ArtifactHub Helm Packages Values 조회(Get ArtifactHub Helm Packages Values)", nickname = "getHelmPackageValues")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "query")
+            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "query", dataTypeClass = Params.class)
     })
     @GetMapping("/packages/{packageID:.+}/{version:.+}/values")
     public CatalogStatus getHelmPackageValues(Params params) {

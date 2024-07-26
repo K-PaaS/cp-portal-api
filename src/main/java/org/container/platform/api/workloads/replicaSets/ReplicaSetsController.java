@@ -43,7 +43,7 @@ public class ReplicaSetsController {
      */
     @ApiOperation(value = "ReplicaSets 목록 조회(Get ReplicaSets List)", nickname = "getReplicaSetsList")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body")
+            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
     })
     @GetMapping
     public ReplicaSetsList getReplicaSetsList(Params params) {
@@ -59,7 +59,7 @@ public class ReplicaSetsController {
      */
     @ApiOperation(value = "ReplicaSets 상세 조회(Get ReplicaSets Detail)", nickname = "getReplicaSets")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body")
+            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
     })
     @GetMapping(value = "/{resourceName:.+}")
     public ReplicaSets getReplicaSets(Params params) {
@@ -75,7 +75,7 @@ public class ReplicaSetsController {
      */
     @ApiOperation(value = "Selector 값에 따른 ReplicaSets 목록 조회(Get ReplicaSets By Selector)", nickname = "getReplicaSetsListLabelSelector")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body")
+            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
     })
     @GetMapping(value = "/resources")
     public ReplicaSetsList getReplicaSetsListLabelSelector(Params params) {
@@ -91,7 +91,7 @@ public class ReplicaSetsController {
      */
     @ApiOperation(value = "ReplicaSets YAML 조회(Get ReplicaSets Yaml)", nickname = "getReplicaSetsYaml")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body")
+            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
     })
     @GetMapping(value = "/{resourceName:.+}/yaml")
     public CommonResourcesYaml getReplicaSetsYaml(Params params) {
@@ -107,7 +107,7 @@ public class ReplicaSetsController {
      */
     @ApiOperation(value = "ReplicaSets 생성(Create ReplicaSets)", nickname = "createReplicaSets")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body")
+            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
     })
     @PostMapping
     public Object createReplicaSets(@RequestBody Params params) throws Exception {
@@ -127,7 +127,7 @@ public class ReplicaSetsController {
      */
     @ApiOperation(value = "ReplicaSets 수정(Update ReplicaSets)", nickname = "updateReplicaSets")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body")
+            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
     })
     @PutMapping(value = "/{resourceName:.+}")
     public ResultStatus updateReplicaSets(@RequestBody Params params) {
@@ -142,7 +142,7 @@ public class ReplicaSetsController {
      */
     @ApiOperation(value = "ReplicaSets 삭제(Delete ReplicaSets)", nickname = "deleteReplicaSets")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body")
+            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
     })
     @DeleteMapping(value = "/{resourceName:.+}")
     public ResultStatus deleteReplicaSets(Params params) {

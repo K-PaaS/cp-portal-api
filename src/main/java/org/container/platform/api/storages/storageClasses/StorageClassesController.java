@@ -45,7 +45,7 @@ public class StorageClassesController {
      */
     @ApiOperation(value = "StorageClasses 목록 조회(Get StorageClasses list)", nickname = "getStorageClassesList")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body")
+            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
     })
     @GetMapping
     public StorageClassesList getStorageClassesList(Params params) {
@@ -60,7 +60,7 @@ public class StorageClassesController {
      */
     @ApiOperation(value = "StorageClasses 상세 조회(Get StorageClasses detail)", nickname = "getStorageClasses")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body")
+            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
     })
     @GetMapping(value = "/{resourceName:.+}")
     public StorageClasses getStorageClasses(Params params) {
@@ -75,7 +75,7 @@ public class StorageClassesController {
      */
     @ApiOperation(value = "StorageClasses YAML 조회(Get StorageClasses yaml)", nickname = "getStorageClassesYaml")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body")
+            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
     })
     @GetMapping(value = "/{resourceName:.+}/yaml")
     public CommonResourcesYaml getStorageClassesYaml(Params params) {
@@ -90,7 +90,7 @@ public class StorageClassesController {
      */
     @ApiOperation(value = "StorageClasses 생성(Create StorageClasses)", nickname = "createStorageClasses")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body")
+            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
     })
     @PostMapping
     public Object createStorageClasses(@RequestBody Params params) throws Exception {
@@ -109,7 +109,7 @@ public class StorageClassesController {
      */
     @ApiOperation(value = "StorageClasses 삭제(Delete StorageClasses)", nickname = "deleteStorageClasses")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body")
+            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
     })
     @DeleteMapping("/{resourceName:.+}")
     public ResultStatus deleteStorageClasses(Params params) {
@@ -124,7 +124,7 @@ public class StorageClassesController {
      */
     @ApiOperation(value = "StorageClasses 수정(Update StorageClasses)", nickname = "updateStorageClasses")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body")
+            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
     })
     @PutMapping("/{resourceName:.+}")
     public ResultStatus updateStorageClasses(@RequestBody Params params) {

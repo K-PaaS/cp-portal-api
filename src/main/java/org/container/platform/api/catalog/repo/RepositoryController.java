@@ -42,7 +42,7 @@ public class RepositoryController {
      */
     @ApiOperation(value = "Repository 목록 조회(Get Repository list)", nickname = "getRepoList")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body")
+            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
     })
     @GetMapping
     public CatalogStatus getRepoList(Params params) {
@@ -58,7 +58,7 @@ public class RepositoryController {
      */
     @ApiOperation(value = "Repository 추가(Add Repository)", nickname = "addRepo")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body")
+            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
     })
     @PostMapping
     public CatalogStatus addRepo(Params params, @RequestBody Object bodyObject) {
@@ -73,7 +73,7 @@ public class RepositoryController {
      */
     @ApiOperation(value = "Repository 제거(Remove Repository)", nickname = "removeRepo")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body")
+            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
     })
     @DeleteMapping(value = "/{repositories:.+}")
     public CatalogStatus removeRepo(Params params) {
@@ -88,7 +88,7 @@ public class RepositoryController {
      */
     @ApiOperation(value = "Repository 업데이트(Update Repository)", nickname = "updateRepo")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body")
+            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
     })
     @PutMapping(value = "/{repositories:.+}")
     public CatalogStatus updateRepo(Params params) {
@@ -104,7 +104,7 @@ public class RepositoryController {
      */
     @ApiOperation(value = "Repository 차트 목록(Get Repository Chart List)", nickname = "getRepoChartsList")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body")
+            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
     })
     @GetMapping(value = "/{repositories:.+}/charts")
     public CatalogStatus getRepoChartsList(Params params) {
@@ -120,7 +120,7 @@ public class RepositoryController {
      */
     @ApiOperation(value = "차트 버전 목록 조회(Get Chart Versions)", nickname = "getChartVersions")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body")
+            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
     })
     @GetMapping(value = "/{repositories:.+}/charts/{charts:.+}/versions")
     public CatalogStatus getChartVersions(Params params) {
@@ -134,7 +134,7 @@ public class RepositoryController {
      */
     @ApiOperation(value = "차트 정보 조회(Get Chart Info)", nickname = "getChartInfo")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body")
+            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
     })
     @GetMapping(value = "/{repositories:.+}/charts/{charts:.+}/info")
     public CatalogStatus getChartInfo(Params params) {
@@ -150,7 +150,7 @@ public class RepositoryController {
      */
     @ApiOperation(value = "차트 캐시 삭제 (Clear Repo Cache)", nickname = "clearChartCache")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body")
+            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
     })
     @PreAuthorize("@webSecurity.checkisGlobalAdmin()")
     @DeleteMapping(value = "/cache/clear")

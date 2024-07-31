@@ -182,8 +182,12 @@ cpMaster:
         update: "/api/v1/namespaces/{namespace}/resourcequotas/{name}"
         listAllNamespaces: "/api/v1/resourcequotas"
       secrets:
+        list: "/api/v1/namespaces/{namespace}/secrets"
         get: "/api/v1/namespaces/{namespace}/secrets/{name}"
         create: "/api/v1/namespaces/{namespace}/secrets"
+        delete: "/api/v1/namespaces/{namespace}/secrets/{name}"
+        update: "/api/v1/namespaces/{namespace}/secrets/{name}"
+        listAllNamespaces: "/api/v1/secrets"
       tokens:
         create: "/api/v1/namespaces/{namespace}/serviceaccounts/{name}/token"
       clusterRoleBindings:

@@ -320,11 +320,23 @@ public class PropertyService {
     private String cpMasterApiListResourceQuotasListAllNamespacesUrl;
 
     //secret
+    @Value("${cpMaster.api.list.secrets.list}")
+    private String cpMasterApiListSecretsListUrl;
+
     @Value("${cpMaster.api.list.secrets.get}")
     private String cpMasterApiListSecretsGetUrl;
 
     @Value("${cpMaster.api.list.secrets.create}")
     private String cpMasterApiListSecretsCreateUrl;
+
+    @Value("${cpMaster.api.list.secrets.delete}")
+    private String cpMasterApiListSecretsDeleteUrl;
+
+    @Value("${cpMaster.api.list.secrets.update}")
+    private String cpMasterApiListSecretsUpdateUrl;
+
+    @Value("${cpMaster.api.list.secrets.listAllNamespaces}")
+    private String cpMasterApiListSecretsListAllNamespacesUrl;
 
     // token
     @Value("${cpMaster.api.list.tokens.create}")

@@ -44,7 +44,7 @@ public class SecretsController {
      */
     @ApiOperation(value = "Secrets 목록 조회(Get Secrets List)", nickname = "getSecretsList")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body")
+            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
     })
     @GetMapping
     public SecretsList getSecretsList(Params params) {
@@ -61,7 +61,7 @@ public class SecretsController {
      */
     @ApiOperation(value = "Secrets 상세 조회(Get Secrets Detail)", nickname = "getSecrets")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body")
+            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
     })
     @GetMapping(value = "/{resourceName:.+}")
     public Object getSecrets(Params params) {
@@ -77,7 +77,7 @@ public class SecretsController {
      */
     @ApiOperation(value = "Secrets YAML 조회(Get Secrets yaml)", nickname = "getSecretsYaml")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body")
+            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
     })
     @GetMapping(value = "/{resourceName:.+}/yaml")
     public CommonResourcesYaml getSecretsYaml(Params params) {
@@ -93,7 +93,7 @@ public class SecretsController {
      */
     @ApiOperation(value = "Secrets 생성(Create Secrets)", nickname = "createSecrets")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body")
+            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
     })
     @PostMapping
     public Object createSecrets(@RequestBody Params params) throws Exception {
@@ -113,7 +113,7 @@ public class SecretsController {
      */
     @ApiOperation(value = "Secrets 삭제(Delete Secrets)", nickname = "deleteSecrets")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body")
+            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
     })
     @DeleteMapping("/{resourceName:.+}")
     public ResultStatus deleteSecrets(Params params) {
@@ -129,7 +129,7 @@ public class SecretsController {
      */
     @ApiOperation(value = "Secrets 수정(Update Secrets)", nickname = "updateSecrets")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body")
+            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
     })
     @PutMapping("/{resourceName:.+}")
     public ResultStatus updateSecrets(@RequestBody Params params) {

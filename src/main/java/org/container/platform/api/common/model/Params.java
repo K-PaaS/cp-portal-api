@@ -86,21 +86,9 @@ public class Params {
     private String clientIp = Constants.EMPTY_STRING;
 
     private Boolean isGlobal = false;
-
-    // catalog
-    private String repositories = Constants.EMPTY_STRING;
-    private String releases = Constants.EMPTY_STRING;
-    private String reversion = Constants.EMPTY_STRING;
-    private String charts = Constants.EMPTY_STRING;
     private String info = Constants.EMPTY_STRING;
     private String version = Constants.EMPTY_STRING;
-    private String repoName = Constants.EMPTY_STRING;
-    private String repoUrl = Constants.EMPTY_STRING;
-    private String packages = Constants.EMPTY_STRING;
-    private String packageID = Constants.EMPTY_STRING;
-    private String query = Constants.EMPTY_STRING;
-    private String userDefined = "1";
-    private String preview = "0";
+
     public Params(){
         this.cluster = Constants.EMPTY_STRING;
         this.namespace = Constants.EMPTY_STRING;

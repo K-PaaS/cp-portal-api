@@ -75,6 +75,14 @@ public class Params {
     //ingress
     public List rules;
 
+    //secrets
+    public String storageBackend = Constants.EMPTY_STRING;
+    public String serviceAccountName = Constants.EMPTY_STRING;
+    public String dbType = Constants.EMPTY_STRING;
+    public String defaultTtl = Constants.EMPTY_STRING;
+    public String dataType = Constants.EMPTY_STRING;
+    public Object data = null;
+
     // rest send type
     public Boolean isClusterToken = false;
 
@@ -118,6 +126,11 @@ public class Params {
         this.rs_lr = Constants.EMPTY_STRING;
         this.isSuperAdmin = false;
         this.rules = Collections.emptyList();
+        this.storageBackend = Constants.EMPTY_STRING;
+        this.serviceAccountName = Constants.EMPTY_STRING;
+        this.dbType = Constants.EMPTY_STRING;
+        this.defaultTtl = Constants.EMPTY_STRING;
+        this.dataType = Constants.EMPTY_STRING;
     }
 
     // sa, rb 관련 생성자

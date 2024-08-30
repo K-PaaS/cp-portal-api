@@ -52,7 +52,7 @@ public class LimitRangesController {
      */
     @ApiOperation(value = "LimitRanges 목록 조회(Get LimitRanges list)", nickname = "getLimitRangesList")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body")
+            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
     })
     @GetMapping
     public LimitRangesList getLimitRangesList(Params params) {
@@ -72,7 +72,7 @@ public class LimitRangesController {
      */
     @ApiOperation(value = "LimitRanges 상세 조회(Get LimitRanges detail)", nickname = "getLimitRanges")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body")
+            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
     })
     @GetMapping(value = "/{resourceName:.+}")
     public LimitRanges getLimitRanges(Params params) {
@@ -87,7 +87,7 @@ public class LimitRangesController {
      */
     @ApiOperation(value = "LimitRanges YAML 조회(Get LimitRanges yaml)", nickname = "getLimitRangesYaml")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body")
+            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
     })
     @GetMapping(value = "{resourceName:.+}/yaml")
     public Object getLimitRangesYaml(Params params) {
@@ -102,7 +102,7 @@ public class LimitRangesController {
      */
     @ApiOperation(value = "LimitRanges 생성(Create LimitRanges)", nickname = "createLimitRanges")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body")
+            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
     })
     @PostMapping
     public Object createLimitRanges(@RequestBody Params params) throws Exception {
@@ -122,7 +122,7 @@ public class LimitRangesController {
      */
     @ApiOperation(value = "LimitRanges 삭제(Delete LimitRanges)", nickname = "deleteLimitRanges")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body")
+            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
     })
     @DeleteMapping("/{resourceName:.+}")
     public ResultStatus deleteLimitRanges(Params params) {
@@ -138,7 +138,7 @@ public class LimitRangesController {
      */
     @ApiOperation(value = "LimitRanges 수정(Update LimitRanges)", nickname = "updateLimitRanges")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body")
+            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
     })
     @PutMapping("/{resourceName:.+}")
     public ResultStatus updateLimitRanges(@RequestBody Params params) {
@@ -154,7 +154,7 @@ public class LimitRangesController {
      */
     @ApiOperation(value = "LimitRanges Template 목록 조회(Get LimitRanges Template list)", nickname = "getLimitRangesTemplateList")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body")
+            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
     })
     @GetMapping(value = "/template")
     public Object getLimitRangesTemplateList(Params params) {

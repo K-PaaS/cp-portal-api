@@ -47,7 +47,7 @@ public class NamespacesController {
      */
     @ApiOperation(value = "Namespaces 목록 조회(Get Namespaces List)", nickname = "getNamespacesList")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body")
+            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
     })
     @GetMapping
     public NamespacesList getNamespacesList(Params params) {
@@ -64,7 +64,7 @@ public class NamespacesController {
      */
     @ApiOperation(value = "Namespaces 상세 조회(Get Namespaces Detail)", nickname = "getNamespaces")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body")
+            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
     })
     @GetMapping("/{namespace:.+}")
     public Object getNamespaces(Params params) {
@@ -79,7 +79,7 @@ public class NamespacesController {
      */
     @ApiOperation(value = "Namespaces Yaml 조회(Get Namespaces yaml)", nickname = "getNamespacesYaml")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body")
+            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
     })
     @GetMapping(value = "/{namespace:.+}/yaml")
     public Object getNamespacesYaml(Params params) {
@@ -94,7 +94,7 @@ public class NamespacesController {
      */
     @ApiOperation(value = "Namespaces 삭제(Delete Namespaces)", nickname = "deleteNamespaces")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body")
+            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
     })
     @DeleteMapping(value = "/{namespace:.+}")
     public ResultStatus deleteNamespaces(Params params) {
@@ -111,8 +111,8 @@ public class NamespacesController {
      */
     @ApiOperation(value = "Namespaces 생성(Create Namespaces)", nickname = "initNamespaces")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body"),
-            @ApiImplicitParam(name = "initTemplate", value = "Namespace 생성 정보", required = true, dataType = "NamespacesInitTemplate", paramType = "body")
+            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class),
+            @ApiImplicitParam(name = "initTemplate", value = "Namespace 생성 정보", required = true, dataType = "NamespacesInitTemplate", paramType = "body", dataTypeClass = NamespacesInitTemplate.class)
     })
     @PostMapping
     public ResultStatus initNamespaces(Params params, @RequestBody NamespacesInitTemplate initTemplate) {
@@ -130,8 +130,8 @@ public class NamespacesController {
      */
     @ApiOperation(value = "Namespaces 수정(modify Namespaces)", nickname = "modifyInitNamespaces")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body"),
-            @ApiImplicitParam(name = "initTemplate", value = "Namespace 생성 정보", required = true, dataType = "NamespacesInitTemplate", paramType = "body")
+            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class),
+            @ApiImplicitParam(name = "initTemplate", value = "Namespace 생성 정보", required = true, dataType = "NamespacesInitTemplate", paramType = "body", dataTypeClass = NamespacesInitTemplate.class)
     })
     @PutMapping(value = "/{namespace:.+}")
     public ResultStatus modifyInitNamespaces(Params params, @RequestBody NamespacesInitTemplate initTemplate) {
@@ -147,7 +147,7 @@ public class NamespacesController {
      */
     @ApiOperation(value = "Namespaces selectbox를 위한 Namespace 목록 조회(Get Namespaces list for SelectBox)", nickname = "getNamespacesListForSelectBox")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body")
+            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
     })
     @GetMapping("/selectbox")
     public Object getNamespacesListForSelectBox(Params params) {

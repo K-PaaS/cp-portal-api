@@ -42,7 +42,7 @@ public class PrivateRegistryController {
      */
     @ApiOperation(value = " Private Registry 조회(Get Private Registry)", nickname = "getPrivateRegistry")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "imageName", value = "이미지 명", required = true, dataType = "string", paramType = "path"),
+            @ApiImplicitParam(name = "imageName", value = "이미지 명", required = true, dataType = "string", paramType = "path" , dataTypeClass = String.class),
     })
     @GetMapping(value = "/{imageName:.+}")
     public Object getPrivateRegistry(@PathVariable("imageName") String imageName) {

@@ -41,7 +41,7 @@ public class ClustersController {
      */
     @ApiOperation(value = "Clusters 목록 조회(Get Clusters list)", nickname = "getClustersList")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body")
+            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
     })
     @GetMapping
     public ClustersList getClustersList(Params params){
@@ -57,7 +57,7 @@ public class ClustersController {
      */
     @ApiOperation(value = "Clusters 조회(Get Clusters Detail)", nickname = "getClusters")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body")
+            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
     })
     @GetMapping(value = "/{cluster:.+}")
     public Clusters getClusters(Params params) {
@@ -73,7 +73,7 @@ public class ClustersController {
      */
     @ApiOperation(value = "Clusters 생성(Create Clusters)", nickname = "createClusters")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body")
+            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
     })
     @PreAuthorize("@webSecurity.checkisSuperAdmin()")
     @PostMapping
@@ -90,7 +90,7 @@ public class ClustersController {
      */
     @ApiOperation(value = "Clusters 수정(Update Clusters)", nickname = "updateClusters")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body")
+            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
     })
     @PreAuthorize("@webSecurity.checkisSuperAdmin()")
     @PatchMapping
@@ -107,7 +107,7 @@ public class ClustersController {
      */
     @ApiOperation(value = "Clusters 삭제(Delete Clusters)", nickname = "deleteClusters")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body")
+            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
     })
     @PreAuthorize("@webSecurity.checkisSuperAdmin()")
     @DeleteMapping(value = "/{cluster:.+}")

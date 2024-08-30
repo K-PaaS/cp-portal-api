@@ -48,7 +48,7 @@ public class SignUpController {
      */
     @ApiOperation(value = "회원가입(Sign Up)", nickname = "signUpUsers")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body")
+            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
     })
     @NoAuth
     @PostMapping(value = Constants.URI_SIGN_UP)

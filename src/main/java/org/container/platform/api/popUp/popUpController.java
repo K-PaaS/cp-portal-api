@@ -47,7 +47,7 @@ public class popUpController {
      */
     @ApiOperation(value = "ResourceQuotas Default Template 목록 조회 (Get ResourceQuotas Default Template list)", nickname = "getResourceQuotasDefaultList")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body")
+            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
     })
     @GetMapping(value = "/resourceQuotas/template")
     public Object getResourceQuotasDefaultList(Params params) throws JsonProcessingException {
@@ -66,7 +66,7 @@ public class popUpController {
      */
     @ApiOperation(value = "LimitRanges Template 목록 조회(Get LimitRanges Template list)", nickname = "getLimitRangesTemplateList")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body")
+            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
     })
     @GetMapping(value = "/limitRanges/template")
     public Object getLimitRangesTemplateList(Params params) {
@@ -84,7 +84,7 @@ public class popUpController {
      */
     @ApiOperation(value = "User 가 속해 있는 Namespace 와 Role 목록 조회(Get Namespace and Roles List to which User belongs)", nickname = "getRolesListAllNamespacesAdminByUserId")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body")
+            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
     })
     @GetMapping("/users/{userAuthId:.+}/namespacesRolesList")
     public Object getNamespacesRolesTemplateList(Params params) {

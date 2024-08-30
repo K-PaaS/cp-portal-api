@@ -1,28 +1,14 @@
 include:
   - project: '$MANAGED_PROJECT'
     ref: '$MANAGED_PROJECT_REF'
-    file: '/values/.ci-api-values.yml'
-  - project: '$MANAGED_PROJECT'
-    ref: '$MANAGED_PROJECT_REF'
-    file: '/.gitlab-ci/.build-gradle-template.yml'
-  - project: '$MANAGED_PROJECT'
-    ref: '$MANAGED_PROJECT_REF'
-    file: '/.gitlab-ci/.check-sonarqube-api-template.yml'
-  - project: '$MANAGED_PROJECT'
-    ref: '$MANAGED_PROJECT_REF'
-    file: '/.gitlab-ci/.build-image-template.yml'
-  - project: '$MANAGED_PROJECT'
-    ref: '$MANAGED_PROJECT_REF'
-    file: '/.gitlab-ci/.deploy-configmap-template.yml'
-  - project: '$MANAGED_PROJECT'
-    ref: '$MANAGED_PROJECT_REF'
-    file: '/.gitlab-ci/.deploy-secret-template.yml'
-  - project: '$MANAGED_PROJECT'
-    ref: '$MANAGED_PROJECT_REF'
-    file: '/.gitlab-ci/.deploy-helm-template.yml'
+    file: '/.gitlab-ci/.build-template.yml'
+
+workflow:
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "web"'
+      when: always
+    - when: never
 
 stages:
   - build
-  - docker
-  - pre-deploy
-  - deploy
+  - image_build

@@ -49,7 +49,7 @@ public class UsersController {
      */
     @ApiOperation(value = "Users 전체 목록 조회(Get Users list)", nickname = "getUsersList")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body")
+            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
     })
     @GetMapping(value = "/clusters/{cluster:.+}/namespaces/{namespace:.+}/usersList")
     public Object getUsersList(Params params) {
@@ -68,7 +68,7 @@ public class UsersController {
      */
     @ApiOperation(value = "하나의 Cluster 내 여러 Namespace 에 속한 User 에 대한 상세 조회(Get Users cluster namespace)", nickname = "getUsers")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body")
+            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
     })
     @GetMapping(value = "/clusters/{cluster:.+}/users/{userAuthId:.+}")
     public UsersDetails getUsers(Params params) throws Exception {
@@ -84,7 +84,7 @@ public class UsersController {
      */
     @ApiOperation(value = "하나의 Cluster 내 여러 Namespace 에 속한 User 에 대한 상세 조회(Get Users Access Info)", nickname = "getUsersAccessInfo")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body")
+            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
     })
     @GetMapping(value = "/clusters/{cluster:.+}/namespaces/{namespace:.+}/accessesInfo")
     public Object getUsersAccessInfo(Params params) throws Exception {
@@ -100,7 +100,7 @@ public class UsersController {
      */
     @ApiOperation(value = "Users 수정(Update Users)", nickname = "modifyUsers")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body")
+            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
     })
     @PutMapping(value = "/clusters/{cluster:.+}/users/{userAuthId:.+}")
     public Object modifyUsers(Params params, @RequestBody Users users) throws Exception {
@@ -119,7 +119,7 @@ public class UsersController {
      */
     @ApiOperation(value = "Users 와 맵핑된 Clusters 목록 조회(Get Clusters List Used By User)", nickname = "getClustersListByUserOwns")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body")
+            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
     })
     @GetMapping(value = "/users/clustersList")
     public UsersList getClustersListByUserOwns(Params params) {
@@ -134,7 +134,7 @@ public class UsersController {
      */
     @ApiOperation(value = "Users 와 맵핑된 Namespaces 목록 조회(Get Namespaces List Used By User)", nickname = "getNamespacesListByUserOwns")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body")
+            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
     })
     @GetMapping(value = "/clusters/{cluster:.+}/users/namespacesList")
     public UsersList getNamespacesListByUserOwns(Params params) {

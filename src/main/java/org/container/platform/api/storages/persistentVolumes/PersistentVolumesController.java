@@ -47,7 +47,7 @@ public class PersistentVolumesController {
      */
     @ApiOperation(value = "PersistentVolumes 목록 조회(Get PersistentVolumes list)", nickname = "getPersistentVolumesList")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body")
+            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
     })
     @GetMapping
     public PersistentVolumesList getPersistentVolumesList(Params params) {
@@ -63,7 +63,7 @@ public class PersistentVolumesController {
      */
     @ApiOperation(value = "PersistentVolumes 상세 조회(Get PersistentVolumes detail)", nickname = "getPersistentVolumes")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body")
+            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
     })
     @GetMapping(value = "/{resourceName:.+}")
     public PersistentVolumes getPersistentVolumes(Params params) {
@@ -79,7 +79,7 @@ public class PersistentVolumesController {
      */
     @ApiOperation(value = "PersistentVolumes YAML 조회(Get PersistentVolumes yaml)", nickname = "getPersistentVolumesYaml")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body")
+            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
     })
     @GetMapping(value = "{resourceName:.+}/yaml")
     public CommonResourcesYaml getPersistentVolumesYaml(Params params) {
@@ -94,7 +94,7 @@ public class PersistentVolumesController {
      */
     @ApiOperation(value = "PersistentVolumes 생성(Create PersistentVolumes)", nickname = "createPersistentVolumes")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body")
+            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
     })
     @PostMapping
     public Object createPersistentVolumes(@RequestBody Params params) throws Exception {
@@ -113,7 +113,7 @@ public class PersistentVolumesController {
      */
     @ApiOperation(value = "PersistentVolumes 삭제(Delete PersistentVolumes)", nickname = "deletePersistentVolumes")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body")
+            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
     })
     @DeleteMapping("/{resourceName:.+}")
     public ResultStatus deletePersistentVolumes(Params params) {
@@ -128,7 +128,7 @@ public class PersistentVolumesController {
      */
     @ApiOperation(value = "PersistentVolumes 수정(Update PersistentVolumes)", nickname = "updatePersistentVolumes")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body")
+            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
     })
     @PutMapping("/{resourceName:.+}")
     public ResultStatus updatePersistentVolumes(@RequestBody Params params) {

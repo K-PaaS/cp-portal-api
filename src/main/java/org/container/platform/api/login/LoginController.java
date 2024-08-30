@@ -55,7 +55,7 @@ public class LoginController {
      */
     @ApiOperation(value = "사용자 로그인(User login)", nickname = "userLogin")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "authRequest", value = "로그인을 위한 사용자 정보", required = true, dataType = "object", paramType = "body")
+            @ApiImplicitParam(name = "authRequest", value = "로그인을 위한 사용자 정보", required = true, dataType = "object", paramType = "body", dataTypeClass = Params.class)
     })
     @NoAuth
     @PostMapping("/login")

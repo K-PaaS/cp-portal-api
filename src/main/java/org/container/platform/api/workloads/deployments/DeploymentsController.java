@@ -43,7 +43,7 @@ public class DeploymentsController {
      */
     @ApiOperation(value = "Deployments 목록 조회(Get Deployments List)", nickname = "getDeploymentsList")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body")
+            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
     })
     @GetMapping
     public DeploymentsList getDeploymentsList(Params params) {
@@ -58,7 +58,7 @@ public class DeploymentsController {
      */
     @ApiOperation(value = "Deployments 상세 조회(Get Deployments Detail)", nickname = "getDeployments")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body")
+            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
     })
     @GetMapping(value = "/{resourceName:.+}")
     public Deployments getDeployments(Params params) {
@@ -74,7 +74,7 @@ public class DeploymentsController {
      */
     @ApiOperation(value = "Deployments YAML 조회(Get Deployments Yaml)", nickname = "getDeploymentsYaml")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body")
+            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
     })
     @GetMapping(value = "/{resourceName:.+}/yaml")
     public CommonResourcesYaml getDeploymentsYaml(Params params) {
@@ -90,7 +90,7 @@ public class DeploymentsController {
      */
     @ApiOperation(value = "Deployments 생성(Create Deployments)", nickname = "createDeployments")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body")
+            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
     })
     @PostMapping
     public Object createDeployments(@RequestBody Params params) throws Exception {
@@ -110,7 +110,7 @@ public class DeploymentsController {
      */
     @ApiOperation(value = "Deployments 수정(Update Deployments)", nickname = "updateDeployments")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body")
+            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
     })
     @PutMapping("/{resourceName:.+}")
     public ResultStatus updateDeployments(@RequestBody Params params) {
@@ -126,7 +126,7 @@ public class DeploymentsController {
      */
     @ApiOperation(value = "Deployments 삭제(Delete Deployments)", nickname = "deleteDeployments")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body")
+            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
     })
     @DeleteMapping("/{resourceName:.+}")
     public ResultStatus deleteDeployments(Params params) {

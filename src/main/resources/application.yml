@@ -41,6 +41,10 @@ project:
 management:
   security:
     enabled: false
+  endpoints:
+    web:
+      exposure:
+        include: health
 
 vault:
   path:
@@ -221,7 +225,7 @@ cpTerraman:
 cpMetricCollector:
   api:
     authorization:
-      id: paasta
+      id: kpaas
       password: password
     url: ${CP_PORTAL_METRIC_COLLECTOR_API_URI}
     clusters:

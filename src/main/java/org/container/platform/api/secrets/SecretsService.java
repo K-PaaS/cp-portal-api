@@ -1,9 +1,6 @@
 package org.container.platform.api.secrets;
 
-import org.container.platform.api.common.CommonService;
-import org.container.platform.api.common.Constants;
-import org.container.platform.api.common.PropertyService;
-import org.container.platform.api.common.RestTemplateService;
+import org.container.platform.api.common.*;
 import org.container.platform.api.common.model.CommonResourcesYaml;
 import org.container.platform.api.common.model.Params;
 import org.container.platform.api.common.model.ResultStatus;
@@ -28,19 +25,22 @@ public class SecretsService {
     private final RestTemplateService restTemplateService;
     private final CommonService commonService;
     private final PropertyService propertyService;
+    private final ResourceYamlService resourceYamlService;
 
     /**
      * Instantiates a new Secrets service
      *
-     * @param restTemplateService the rest template service
-     * @param commonService       the common service
-     * @param propertyService     the property service
+     * @param restTemplateService  the rest template service
+     * @param commonService        the common service
+     * @param propertyService      the property service
+     * @param resourceYamlService  the resource yaml service
      */
     @Autowired
-    public SecretsService(RestTemplateService restTemplateService, CommonService commonService, PropertyService propertyService) {
+    public SecretsService(RestTemplateService restTemplateService, CommonService commonService, PropertyService propertyService, ResourceYamlService resourceYamlService, ResourceYamlService resourceYamlService1) {
         this.restTemplateService = restTemplateService;
         this.commonService = commonService;
         this.propertyService = propertyService;
+        this.resourceYamlService = resourceYamlService;
     }
 
     /**
@@ -91,6 +91,11 @@ public class SecretsService {
      * @return the resultStatus
      */
     public ResultStatus createSecrets(Params params) {
+
+        if(params.getResourceName().equals("secrets")) {
+            resourceYamlService.createSecrets(params);
+        }
+
         ResultStatus resultStatus = restTemplateService.sendYaml(Constants.TARGET_CP_MASTER_API,
                 propertyService.getCpMasterApiListSecretsCreateUrl(), HttpMethod.POST, ResultStatus.class, params);
         return (ResultStatus) commonService.setResultModel(resultStatus, Constants.RESULT_STATUS_SUCCESS);
@@ -117,6 +122,11 @@ public class SecretsService {
      * @return the resultStatus
      */
     public ResultStatus updateSecrets(Params params) {
+
+        /*if(params.getResourceName().equals("secrets")) {
+            resourceYamlService.updateSecrets(params);
+        }*/
+
         ResultStatus resultStatus = restTemplateService.sendYaml(Constants.TARGET_CP_MASTER_API,
                 propertyService.getCpMasterApiListSecretsUpdateUrl(), HttpMethod.PUT, ResultStatus.class, params);
         return (ResultStatus) commonService.setResultModel(resultStatus, Constants.RESULT_STATUS_SUCCESS);

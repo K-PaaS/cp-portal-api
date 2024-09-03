@@ -78,7 +78,12 @@ public enum MessageConstant {
     NO_CHANGED("변경된 사항이 없습니다.","There's no change."),
     RESOURCE_CREATION_FAILED("리소스 생성에 실패했습니다.","Resource creation failed."),
     CLUSTER_REGISTRATION_FAILED("클러스터 등록에 실패했습니다.","Cluster registration failed."),
-    DO_NOT_DISCONNECTED_HOST_CLUSTER("Host 클러스터는 연결 해제가 불가합니다.", "Host clusters cannot be disconnected.");
+    DO_NOT_DISCONNECTED_HOST_CLUSTER("Host 클러스터는 연결 해제가 불가합니다.", "Host clusters cannot be disconnected."),
+    NOT_PRIVATE_KEY_FILE("key 파일 형식이 아닙니다.", "This is not a key file."),
+
+    NOT_CERTIFICATE_FILE("crt 파일 형식이 아닙니다.", "This is not a crt file."),
+    NOT_DOCKER_CONFIG_FILE("Docker config 파일 형식이 아닙니다.", "This is not a docker config file.");
+
 
     private String ko_msg;
     private String eng_msg;

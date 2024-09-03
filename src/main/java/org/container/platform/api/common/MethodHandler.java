@@ -196,13 +196,15 @@ public class MethodHandler {
                 }
             }
 
-            Object dryRunResult = InspectionUtil.resourceDryRunCheck("CreateUrl", HttpMethod.POST, namespace, resourceKind, temp, Constants.NULL_REPLACE_TEXT, params);
-            ObjectMapper oMapper = new ObjectMapper();
-            ResultStatus createdRs = oMapper.convertValue(dryRunResult, ResultStatus.class);
+            if (!requestResource.equals(Constants.RESOURCE_SECRET.toLowerCase())) {
+                Object dryRunResult = InspectionUtil.resourceDryRunCheck("CreateUrl", HttpMethod.POST, namespace, resourceKind, temp, Constants.NULL_REPLACE_TEXT, params);
+                ObjectMapper oMapper = new ObjectMapper();
+                ResultStatus createdRs = oMapper.convertValue(dryRunResult, ResultStatus.class);
 
-            if (Constants.RESULT_STATUS_FAIL.equals(createdRs.getResultCode())) {
-                LOGGER.info("DryRun :: Not valid yaml ");
-                return createdRs;
+                if (Constants.RESULT_STATUS_FAIL.equals(createdRs.getResultCode())) {
+                    LOGGER.info("DryRun :: Not valid yaml ");
+                    return createdRs;
+                }
             }
 
         }

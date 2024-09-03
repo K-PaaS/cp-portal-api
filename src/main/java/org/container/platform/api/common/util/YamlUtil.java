@@ -155,6 +155,10 @@ public class YamlUtil {
                    }
                }
                yaml = topYaml;
+           //secret
+           } else if (InspectionUtil.makeResourceName(params.getResource()).equals(Constants.RESOURCE_SECRET.toLowerCase())) {
+               String topYaml = "apiVersion: v1\nkind: Secret\nmetadata:\n  name: " + params.getMetadataName() + "\n  namespace: " + params.getNamespace() + "\ntype: " + params.getDataType();
+               yaml = topYaml;
            }
            if (params.getYaml().isEmpty()) {
                params.setYaml(yaml);

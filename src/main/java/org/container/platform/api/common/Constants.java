@@ -235,6 +235,31 @@ public class Constants {
     public static final String RESOURCE_PERSISTENTVOLUME = "PersistentVolume";
     public static final String RESOURCE_STORAGECLASS = "StorageClass";
 
+    //config
+    public static final String RESOURCE_SECRET = "Secret";
+
+    //data type
+    public static final String DATA_TYPE_OPAQUE = "Opaque";
+    public static final String DATA_TYPE_SERVICE_ACCOUNT_TOKEN = "kubernetes.io/service-account-token";
+    public static final String DATA_TYPE_DOCKER_CFG = "kubernetes.io/dockercfg";
+    public static final String DATA_TYPE_DOCKER_CONFIG_JSON = "kubernetes.io/dockerconfigjson";
+    public static final String DATA_TYPE_BASIC_AUTH = "kubernetes.io/basic-auth";
+    public static final String DATA_TYPE_SSH_AUTH = "kubernetes.io/ssh-auth";
+    public static final String DATA_TYPE_TLS = "kubernetes.io/tls";
+    public static final String DATA_TYPE_BOOTSTRAP_TOKEN_DATA = "bootstrap.kubernetes.io/token";
+    public static final String NEW_LINE = "\r\n";
+    public static final String MAP_KEY = "key";
+    public static final String MAP_VALUE = "value";
+    public static final String TLS_CRT = "tls.crt";
+    public static final String TLS_KEY = "tls.key";
+    public static final String SSH_PRIVATE_KEY = "ssh-privatekey";
+    public static final String PEM_HEADER = "BEGIN";
+    public static final String PEM_FOOTER = "END";
+    public static final String DATA_LABEL_CERTIFICATE = "CERTIFICATE";
+    public static final String DATA_LABEL_PRIVATE_KEY ="PRIVATE KEY";
+    public static final String DOCKER_CONFIG_AUTHS ="auths";
+    public static final String DOCKER_CONFIG_AUTH ="auth";
+
     //management
     public static final String RESOURCE_LIMITRANGE = "LimitRange";
     public static final String RESOURCE_RESOURCEQUOTA = "ResourceQuota";

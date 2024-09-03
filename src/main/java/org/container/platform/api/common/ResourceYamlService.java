@@ -1,5 +1,6 @@
 package org.container.platform.api.common;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
@@ -25,6 +26,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
 
 
+import java.io.IOException;
 import java.util.*;
 
 import static org.container.platform.api.common.Constants.*;
@@ -627,12 +629,12 @@ public class ResourceYamlService {
 
 
     /**
-     * ftl 파일로 Secret 생성(Create Secret)
+     * ftl 파일로 Secret Service Account Token 생성(Create Secret Service Account Token)
      *
      * @param params the params
      * @return the resultStatus
      */
-    public ResultStatus createSecret(Params params) {
+    public ResultStatus createSecretServiceAccountToken(Params params) {
         Map map = new HashMap();
 
         params.setSaSecret(Constants.SA_TOKEN_NAME.replace("{username}", params.getRs_sa()));
@@ -640,13 +642,117 @@ public class ResourceYamlService {
         map.put("userName", params.getRs_sa());
         map.put("tokenName", params.getSaSecret());
         map.put("spaceName", params.getNamespace());
-        params.setYaml(templateService.convert("create_secret.ftl", map));
+        params.setYaml(templateService.convert("create_secret_service_account_token.ftl", map));
 
         ResultStatus resultStatus = restTemplateService.sendYaml(Constants.TARGET_CP_MASTER_API,
                 propertyService.getCpMasterApiListSecretsCreateUrl(), HttpMethod.POST, ResultStatus.class, params);
         return (ResultStatus) commonService.setResultModel(resultStatus, Constants.RESULT_STATUS_SUCCESS);
     }
 
+
+    /**
+     * ftl 파일로 Secret 생성(Create Secret)
+     *
+     * @param params the params
+     * @return the null
+     */
+    public ResultStatus createSecrets(Params params) {
+        Map map = new HashMap();
+        String line = "";
+        StringBuilder stringBuilder = new StringBuilder();
+        ObjectMapper objectMapper = new ObjectMapper();
+
+        map.put("metadataName", params.getMetadataName());
+        map.put("namespace", params.getNamespace());
+        map.put("dataType", params.getDataType());
+        stringBuilder.append(templateService.convert("create_secret.ftl", map));
+        stringBuilder.append(Constants.NEW_LINE);
+
+        Map<String, Map> mapData = objectMapper.convertValue(params.getData(), Map.class);
+
+        if (params.getDataType().equals(Constants.DATA_TYPE_SERVICE_ACCOUNT_TOKEN)) {
+            map.put("tokenName", params.getMetadataName());
+            map.put("spaceName", params.getNamespace());
+            map.put("userName", params.getServiceAccountName());
+            params.setYaml(templateService.convert("create_secret_service_account_token.ftl", map));
+        } else if (params.getDataType().equals(Constants.DATA_TYPE_DOCKER_CFG) || params.getDataType().equals(Constants.DATA_TYPE_DOCKER_CONFIG_JSON)) {
+            for (Map.Entry<String, Map> entry : mapData.entrySet()) {
+                Map data = entry.getValue();
+                String key = data.get(MAP_KEY).toString();
+                String value = data.get(MAP_VALUE).toString();
+                String encodedValue = "";
+
+                if (value.contains(DOCKER_CONFIG_AUTHS) && value.contains(DOCKER_CONFIG_AUTH)) {
+                    encodedValue = Base64.getEncoder().encodeToString(value.getBytes());
+                } else {
+                    return new ResultStatus(Constants.RESULT_STATUS_FAIL, MessageConstant.NOT_DOCKER_CONFIG_FILE.getMsg(), CommonStatusCode.UNPROCESSABLE_ENTITY.getCode(), MessageConstant.NOT_DOCKER_CONFIG_FILE.getMsg());
+                }
+
+                if (isJSONValid(value)) {
+
+                    if (key.contains(".")) {
+                        line = "  " + key + ": |";
+                    } else {
+                        line = "  ." + key + ": |";
+                    }
+
+                    stringBuilder.append(line);
+                    stringBuilder.append(Constants.NEW_LINE);
+                    line = "    " + encodedValue;
+                    stringBuilder.append(line);
+                }
+            }
+        } else if (params.getDataType().equals(Constants.DATA_TYPE_SSH_AUTH) || params.getDataType().equals(Constants.DATA_TYPE_TLS)) {
+
+            for (Map.Entry<String, Map> entry : mapData.entrySet()) {
+                Map data = entry.getValue();
+                String key = data.get(MAP_KEY).toString();
+                String value = data.get(MAP_VALUE).toString();
+                String encodedValue = "";
+
+                if (key.equals(TLS_KEY) || key.equals(SSH_PRIVATE_KEY)) {
+                    if (value.contains(PEM_HEADER) && value.contains(PEM_FOOTER) && value.contains(DATA_LABEL_PRIVATE_KEY)) {
+                        encodedValue = Base64.getEncoder().encodeToString(value.getBytes());
+                    } else {
+                        return new ResultStatus(Constants.RESULT_STATUS_FAIL, MessageConstant.NOT_PRIVATE_KEY_FILE.getMsg(), CommonStatusCode.UNPROCESSABLE_ENTITY.getCode(), MessageConstant.NOT_PRIVATE_KEY_FILE.getMsg());
+                    }
+                } else if (key.equals(TLS_CRT)) {
+                    if (value.contains(PEM_HEADER) && value.contains(PEM_FOOTER) && value.contains(DATA_LABEL_CERTIFICATE)) {
+                        encodedValue = Base64.getEncoder().encodeToString(value.getBytes());
+                    } else {
+                        return new ResultStatus(Constants.RESULT_STATUS_FAIL, MessageConstant.NOT_CERTIFICATE_FILE.getMsg(), CommonStatusCode.UNPROCESSABLE_ENTITY.getCode(), MessageConstant.NOT_CERTIFICATE_FILE.getMsg());
+                    }
+                }
+
+                line = "  " + key + ": |";
+                stringBuilder.append(line);
+                stringBuilder.append(Constants.NEW_LINE);
+
+                line = "    " + encodedValue;
+                stringBuilder.append(line);
+                stringBuilder.append(Constants.NEW_LINE);
+            }
+
+        } else if (params.getDataType().equals(Constants.DATA_TYPE_BOOTSTRAP_TOKEN_DATA) || params.getDataType().equals(Constants.DATA_TYPE_OPAQUE)) {
+
+            for (Map.Entry<String, Map> entry : mapData.entrySet()) {
+
+                Map data = entry.getValue();
+                String key = data.get(MAP_KEY).toString();
+                String value = data.get(MAP_VALUE).toString();
+
+                String encodedValue = Base64.getEncoder().encodeToString(value.getBytes());
+
+                line = "  " + key + ": " + encodedValue;
+                stringBuilder.append(line);
+                stringBuilder.append(Constants.NEW_LINE);
+            }
+
+        }
+
+        params.setYaml(String.valueOf(stringBuilder));
+        return null;
+    }
 
     /**
      * json 파일로 Token 생성(Create Token)
@@ -663,6 +769,23 @@ public class ResourceYamlService {
 
         TokenRequest tokenRequest = commonService.setResultObject(responseMap, TokenRequest.class);
         params.setSaToken(tokenRequest.getToken());
+    }
+
+    /**
+     * json 형태 확인(Check Json Type)
+     *
+     * @string jsonInString the string
+     * @return the boolean
+     */
+    public boolean isJSONValid(String jsonInString) {
+        try {
+            final ObjectMapper mapper = new ObjectMapper();
+            mapper.readTree(jsonInString);
+            return true;
+        } catch (IOException e) {
+            return false;
+        }
+
     }
 
 }

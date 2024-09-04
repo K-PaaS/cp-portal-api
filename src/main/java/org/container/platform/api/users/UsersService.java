@@ -7,7 +7,10 @@ import org.container.platform.api.common.model.CommonStatusCode;
 import org.container.platform.api.common.model.Params;
 import org.container.platform.api.common.model.ResultStatus;
 import org.container.platform.api.exception.ResultStatusException;
+import org.container.platform.api.secrets.SecretsList;
+import org.container.platform.api.users.serviceAccount.ServiceAccountList;
 import org.container.platform.api.users.support.NamespaceRole;
+import org.container.platform.api.workloads.deployments.DeploymentsList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,7 +19,9 @@ import org.springframework.stereotype.Service;
 
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import static org.container.platform.api.common.Constants.*;
@@ -383,4 +388,11 @@ public class UsersService {
                 .replace("{cluster:.+}", params.getCluster()), HttpMethod.GET, null, UsersList.class, params);
     }
 
+    public ServiceAccountList getServiceAccountsList(Params params) {
+        HashMap responseMap = (HashMap) restTemplateService.send(Constants.TARGET_CP_MASTER_API,
+                propertyService.getCpMasterApiListUsersListUrl(), HttpMethod.GET, null, Map.class, params);
+        ServiceAccountList serviceAccountList = commonService.setResultObject(responseMap, ServiceAccountList.class);
+        serviceAccountList = commonService.resourceListProcessing(serviceAccountList, params, ServiceAccountList.class);
+        return (ServiceAccountList) commonService.setResultModel(serviceAccountList, RESULT_STATUS_SUCCESS);
+    }
 }

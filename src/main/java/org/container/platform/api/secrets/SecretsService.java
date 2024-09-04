@@ -123,9 +123,12 @@ public class SecretsService {
      */
     public ResultStatus updateSecrets(Params params) {
 
-        /*if(params.getResourceName().equals("secrets")) {
-            resourceYamlService.updateSecrets(params);
-        }*/
+        HashMap responseMap = (HashMap) restTemplateService.send(Constants.TARGET_CP_MASTER_API,
+                propertyService.getCpMasterApiListSecretsGetUrl(), HttpMethod.GET, null, Map.class, params);
+        Secrets secrets = commonService.setResultObject(responseMap, Secrets.class);
+        secrets = commonService.annotationsProcessing(secrets, Secrets.class);
+
+        resourceYamlService.updateSecrets(params, secrets);
 
         ResultStatus resultStatus = restTemplateService.sendYaml(Constants.TARGET_CP_MASTER_API,
                 propertyService.getCpMasterApiListSecretsUpdateUrl(), HttpMethod.PUT, ResultStatus.class, params);

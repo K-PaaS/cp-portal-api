@@ -256,9 +256,14 @@ public class Constants {
     public static final String PEM_HEADER = "BEGIN";
     public static final String PEM_FOOTER = "END";
     public static final String DATA_LABEL_CERTIFICATE = "CERTIFICATE";
-    public static final String DATA_LABEL_PRIVATE_KEY ="PRIVATE KEY";
-    public static final String DOCKER_CONFIG_AUTHS ="auths";
-    public static final String DOCKER_CONFIG_AUTH ="auth";
+    public static final String DATA_LABEL_PRIVATE_KEY = "PRIVATE KEY";
+    public static final String DOCKER_CONFIG_AUTHS = "auths";
+    public static final String DOCKER_CONFIG_AUTH = "auth";
+
+    public static final String TAG_BR = "<br>";
+    public static final String TAG_DIV_BEGIN = "<div>";
+    public static final String TAG_DIV_END = "</div>";
+
 
     //management
     public static final String RESOURCE_LIMITRANGE = "LimitRange";

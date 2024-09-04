@@ -164,6 +164,7 @@ cpMaster:
         update: "/apis/rbac.authorization.k8s.io/v1/namespaces/{namespace}/rolebindings/{name}"
         listAllNamespaces: "/apis/rbac.authorization.k8s.io/v1/rolebindings"
       users:
+        list: "/api/v1/namespaces/{namespace}/serviceaccounts"
         get: "/api/v1/namespaces/{namespace}/serviceaccounts/{name}"
         create: "/api/v1/namespaces/{namespace}/serviceaccounts"
         delete: "/api/v1/namespaces/{namespace}/serviceaccounts/{name}"

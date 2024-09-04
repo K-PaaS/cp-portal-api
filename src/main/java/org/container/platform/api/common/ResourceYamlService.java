@@ -626,8 +626,6 @@ public class ResourceYamlService {
                 .replace("{userType:.+}", params.getUserType()), HttpMethod.DELETE, null, ResultStatus.class, params);
     }
 
-
-
     /**
      * ftl 파일로 Secret Service Account Token 생성(Create Secret Service Account Token)
      *
@@ -654,13 +652,14 @@ public class ResourceYamlService {
      * ftl 파일로 Secret 생성(Create Secret)
      *
      * @param params the params
-     * @return the null
+     * @return the ResultStatus
      */
     public ResultStatus createSecrets(Params params) {
         Map map = new HashMap();
         String line = "";
         StringBuilder stringBuilder = new StringBuilder();
         ObjectMapper objectMapper = new ObjectMapper();
+        String encodedValue = "";
 
         map.put("metadataName", params.getMetadataName());
         map.put("namespace", params.getNamespace());
@@ -680,7 +679,6 @@ public class ResourceYamlService {
                 Map data = entry.getValue();
                 String key = data.get(MAP_KEY).toString();
                 String value = data.get(MAP_VALUE).toString();
-                String encodedValue = "";
 
                 if (value.contains(DOCKER_CONFIG_AUTHS) && value.contains(DOCKER_CONFIG_AUTH)) {
                     encodedValue = Base64.getEncoder().encodeToString(value.getBytes());
@@ -700,6 +698,8 @@ public class ResourceYamlService {
                     stringBuilder.append(Constants.NEW_LINE);
                     line = "    " + encodedValue;
                     stringBuilder.append(line);
+                } else {
+                    return new ResultStatus(Constants.RESULT_STATUS_FAIL, MessageConstant.NOT_DOCKER_CONFIG_FILE.getMsg(), CommonStatusCode.UNPROCESSABLE_ENTITY.getCode(), MessageConstant.NOT_DOCKER_CONFIG_FILE.getMsg());
                 }
             }
         } else if (params.getDataType().equals(Constants.DATA_TYPE_SSH_AUTH) || params.getDataType().equals(Constants.DATA_TYPE_TLS)) {
@@ -708,7 +708,6 @@ public class ResourceYamlService {
                 Map data = entry.getValue();
                 String key = data.get(MAP_KEY).toString();
                 String value = data.get(MAP_VALUE).toString();
-                String encodedValue = "";
 
                 if (key.equals(TLS_KEY) || key.equals(SSH_PRIVATE_KEY)) {
                     if (value.contains(PEM_HEADER) && value.contains(PEM_FOOTER) && value.contains(DATA_LABEL_PRIVATE_KEY)) {
@@ -741,7 +740,152 @@ public class ResourceYamlService {
                 String key = data.get(MAP_KEY).toString();
                 String value = data.get(MAP_VALUE).toString();
 
-                String encodedValue = Base64.getEncoder().encodeToString(value.getBytes());
+                encodedValue = Base64.getEncoder().encodeToString(value.getBytes());
+
+                line = "  " + key + ": " + encodedValue;
+                stringBuilder.append(line);
+                stringBuilder.append(Constants.NEW_LINE);
+            }
+
+        }
+
+        params.setYaml(String.valueOf(stringBuilder));
+        return null;
+    }
+
+    /**
+     * Secret 수정(Update Secret)
+     *
+     * @param params the params
+     * @return the ResultStatus
+     */
+    public ResultStatus updateSecrets(Params params, org.container.platform.api.secrets.Secrets secrets) {
+        String line = "";
+        Map map = new HashMap();
+        StringBuilder stringBuilder = new StringBuilder();
+        ObjectMapper objectMapper = new ObjectMapper();
+        Map<String, Map> mapData = objectMapper.convertValue(params.getData(), Map.class);
+        String encodedValue = "";
+        String decodedValue = "";
+
+        map.put("metadataName", params.getMetadataName());
+        map.put("namespace", params.getNamespace());
+        map.put("dataType", params.getDataType());
+        stringBuilder.append(templateService.convert("create_secret.ftl", map));
+        stringBuilder.append(Constants.NEW_LINE);
+
+        if (params.getDataType().equals(Constants.DATA_TYPE_SERVICE_ACCOUNT_TOKEN)) {
+
+        } else if (params.getDataType().equals(Constants.DATA_TYPE_DOCKER_CFG) || params.getDataType().equals(Constants.DATA_TYPE_DOCKER_CONFIG_JSON)) {
+            for (Map.Entry<String, Map> entry : mapData.entrySet()) {
+                Map data = entry.getValue();
+                String key = data.get(MAP_KEY).toString();
+                String value = data.get(MAP_VALUE).toString();
+
+                if (value.contains(DOCKER_CONFIG_AUTHS) && value.contains(DOCKER_CONFIG_AUTH)) {
+                    encodedValue = Base64.getEncoder().encodeToString(value.getBytes());
+                } else {
+                    return new ResultStatus(Constants.RESULT_STATUS_FAIL, MessageConstant.NOT_DOCKER_CONFIG_FILE.getMsg(), CommonStatusCode.UNPROCESSABLE_ENTITY.getCode(), MessageConstant.NOT_DOCKER_CONFIG_FILE.getMsg());
+                }
+
+                if (value.isEmpty()) {
+                    for (Map.Entry<String, String> OriginEntry: secrets.getData().entrySet()) {
+                        String OriginKey = OriginEntry.getKey();
+                        String OriginValue = OriginEntry.getKey();
+
+                        if (OriginKey.equals(key)) {
+                            value = OriginValue;
+                        }
+                    }
+                }
+
+                if (isJSONValid(value)) {
+
+                    if (key.contains(".")) {
+                        line = "  " + key + ": |";
+                    } else {
+                        line = "  ." + key + ": |";
+                    }
+
+                    stringBuilder.append(line);
+                    stringBuilder.append(Constants.NEW_LINE);
+                    line = "    " + encodedValue;
+                    stringBuilder.append(line);
+                } else {
+                    return new ResultStatus(Constants.RESULT_STATUS_FAIL, MessageConstant.NOT_DOCKER_CONFIG_FILE.getMsg(), CommonStatusCode.UNPROCESSABLE_ENTITY.getCode(), MessageConstant.NOT_DOCKER_CONFIG_FILE.getMsg());
+                }
+            }
+        } else if (params.getDataType().equals(Constants.DATA_TYPE_SSH_AUTH) || params.getDataType().equals(Constants.DATA_TYPE_TLS)) {
+            for (Map.Entry<String, Map> entry : mapData.entrySet()) {
+                Map data = entry.getValue();
+                String key = data.get(MAP_KEY).toString();
+                String value = data.get(MAP_VALUE).toString();
+
+                if (value.isEmpty()) {
+                    for (Map.Entry<String, String> OriginEntry: secrets.getData().entrySet()) {
+                        String OriginKey = OriginEntry.getKey();
+                        String OriginValue = OriginEntry.getValue();
+
+                        if (OriginKey.equals(key)) {
+                            value = OriginValue;
+                            byte[] decodedByte = Base64.getDecoder().decode(value);
+                            decodedValue = new String(decodedByte);
+                            value = decodedValue;
+                        }
+                    }
+
+                } else {
+                    if (value.contains(TAG_BR)) {
+                        value = value.replaceAll(TAG_BR, "\r\n");
+                    } else if (value.contains(TAG_DIV_END)) {
+                        value = value.replaceAll(TAG_DIV_END, "\r\n");
+                        value = value.replaceAll(TAG_DIV_BEGIN, "");
+                    }
+                }
+
+                if (key.equals(TLS_KEY) || key.equals(SSH_PRIVATE_KEY)) {
+                    if (value.contains(PEM_HEADER) && value.contains(PEM_FOOTER) && value.contains(DATA_LABEL_PRIVATE_KEY)) {
+                        encodedValue = Base64.getEncoder().encodeToString(value.getBytes());
+                    } else {
+                        return new ResultStatus(Constants.RESULT_STATUS_FAIL, MessageConstant.NOT_PRIVATE_KEY_FILE.getMsg(), CommonStatusCode.UNPROCESSABLE_ENTITY.getCode(), MessageConstant.NOT_PRIVATE_KEY_FILE.getMsg());
+                    }
+                } else if (key.equals(TLS_CRT)) {
+                    if (value.contains(PEM_HEADER) && value.contains(PEM_FOOTER) && value.contains(DATA_LABEL_CERTIFICATE)) {
+                        encodedValue = Base64.getEncoder().encodeToString(value.getBytes());
+                    } else {
+                        return new ResultStatus(Constants.RESULT_STATUS_FAIL, MessageConstant.NOT_CERTIFICATE_FILE.getMsg(), CommonStatusCode.UNPROCESSABLE_ENTITY.getCode(), MessageConstant.NOT_CERTIFICATE_FILE.getMsg());
+                    }
+                }
+
+                line = "  " + key + ": |";
+                stringBuilder.append(line);
+                stringBuilder.append(Constants.NEW_LINE);
+
+                line = "    " + encodedValue;
+                stringBuilder.append(line);
+                stringBuilder.append(Constants.NEW_LINE);
+
+            }
+
+        } else if (params.getDataType().equals(Constants.DATA_TYPE_BOOTSTRAP_TOKEN_DATA) || params.getDataType().equals(Constants.DATA_TYPE_OPAQUE)) {
+            for (Map.Entry<String, Map> entry : mapData.entrySet()) {
+                Map data = entry.getValue();
+                String key = data.get(MAP_KEY).toString();
+                String value = data.get(MAP_VALUE).toString();
+
+                if (value.isEmpty()) {
+                    for (Map.Entry<String, String> OriginEntry : secrets.getData().entrySet()) {
+                        String OriginKey = OriginEntry.getKey();
+                        String OriginValue = OriginEntry.getKey();
+
+                        if (OriginKey.equals(key)) {
+                            value = OriginValue;
+                        }
+                    }
+
+                }
+
+                encodedValue = Base64.getEncoder().encodeToString(value.getBytes());
 
                 line = "  " + key + ": " + encodedValue;
                 stringBuilder.append(line);

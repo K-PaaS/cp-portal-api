@@ -37,6 +37,7 @@ public class Secrets {
     private boolean immutable;
     private Map<String, String> data = new HashMap<>();
     private Map<String, Byte[]> binaryData = new HashMap<>();
+    private String type;
 
 
 

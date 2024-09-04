@@ -340,13 +340,15 @@ public class MethodHandler {
 
         resourceKind = YamlUtil.parsingYaml(yaml, KIND_KEY);
 
-        if (StringUtils.isNotEmpty(resourceKind) && StringUtils.isNotEmpty(yaml)) {
-            Object dryRunResult = InspectionUtil.resourceDryRunCheck("UpdateUrl", HttpMethod.PUT, namespace, resourceKind, yaml, resourceName, params);
-            ObjectMapper oMapper = new ObjectMapper();
-            ResultStatus updatedRs = oMapper.convertValue(dryRunResult, ResultStatus.class);
-            if (Constants.RESULT_STATUS_FAIL.equals(updatedRs.getResultCode())) {
-                LOGGER.info("DryRun :: Not valid yaml ");
-                return updatedRs;
+        if (!requestResource.equals(Constants.RESOURCE_SECRET.toLowerCase())) {
+            if (StringUtils.isNotEmpty(resourceKind) && StringUtils.isNotEmpty(yaml)) {
+                Object dryRunResult = InspectionUtil.resourceDryRunCheck("UpdateUrl", HttpMethod.PUT, namespace, resourceKind, yaml, resourceName, params);
+                ObjectMapper oMapper = new ObjectMapper();
+                ResultStatus updatedRs = oMapper.convertValue(dryRunResult, ResultStatus.class);
+                if (Constants.RESULT_STATUS_FAIL.equals(updatedRs.getResultCode())) {
+                    LOGGER.info("DryRun :: Not valid yaml ");
+                    return updatedRs;
+                }
             }
         }
 

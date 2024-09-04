@@ -9,6 +9,8 @@ import org.container.platform.api.common.*;
 import org.container.platform.api.common.model.Params;
 import org.container.platform.api.common.model.ResultStatus;
 import org.container.platform.api.exception.ResultStatusException;
+import org.container.platform.api.secrets.SecretsList;
+import org.container.platform.api.users.serviceAccount.ServiceAccountList;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
@@ -153,7 +155,19 @@ public class UsersController {
         return usersService.getMappingNamespacesListByUser(params);
     }
 
+    /**
+     * Service Accounts 목록 조회(Get Service Accounts List)
+     *
+     * @param params the params
+     * @return the Service Accounts list
+     */
+    @ApiOperation(value = "Service Accounts 목록 조회(Get Service Accounts List)", nickname = "getServiceAccountsList")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
+    })
+    @GetMapping(value = "/clusters/{cluster:.+}/namespaces/{namespace:.+}/serviceAccountsList")
+    public ServiceAccountList getServiceAccountsList(Params params) {
 
-
-
+        return usersService.getServiceAccountsList(params);
+    }
 }

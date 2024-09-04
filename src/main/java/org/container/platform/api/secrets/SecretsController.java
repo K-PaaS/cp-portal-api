@@ -40,7 +40,7 @@ public class SecretsController {
      * Secrets 리스트 조회(Get Secrets List)
      *
      * @param params the params
-     * @return the Secrets detail
+     * @return the Secrets list
      */
     @ApiOperation(value = "Secrets 목록 조회(Get Secrets List)", nickname = "getSecretsList")
     @ApiImplicitParams({

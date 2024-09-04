@@ -1,8 +1,10 @@
 package org.container.platform.api.users.serviceAccount;
 
 import lombok.Data;
+import org.container.platform.api.common.model.CommonItemMetaData;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * Service Account List Model 클래스
@@ -13,7 +15,14 @@ import java.util.List;
  **/
 @Data
 public class ServiceAccountList {
+    private String resultCode;
+    private String resultMessage;
+    private Integer httpStatusCode;
+    private String detailMessage;
+
     private String apiVersion;
     private String kind;
+    private Map metadata;
     private List<ServiceAccount> items;
+    private CommonItemMetaData itemMetaData;
 }

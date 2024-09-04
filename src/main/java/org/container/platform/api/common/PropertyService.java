@@ -272,6 +272,9 @@ public class PropertyService {
     private String cpMasterApiListRoleBindingsListAllNamespacesUrl;
 
     //user
+    @Value("${cpMaster.api.list.users.list}")
+    private String cpMasterApiListUsersListUrl;
+
     @Value("${cpMaster.api.list.users.get}")
     private String cpMasterApiListUsersGetUrl;
 

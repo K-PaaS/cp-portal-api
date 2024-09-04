@@ -22,5 +22,5 @@ public class SecretsList {
     private String detailMessage;
     private Map metadata;
     private CommonItemMetaData itemMetaData;
-    private List<ConfigMaps> items;
+    private List<Secrets> items;
 }

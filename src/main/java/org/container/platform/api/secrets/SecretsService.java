@@ -92,7 +92,7 @@ public class SecretsService {
      */
     public ResultStatus createSecrets(Params params) {
 
-        if(params.getResourceName().equals("secrets")) {
+        if (params.getStorageBackend().equals(Constants.STORAGE_BACK_END_KUBERNETES)) {
             resourceYamlService.createSecrets(params);
         }
 

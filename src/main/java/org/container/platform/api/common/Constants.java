@@ -259,6 +259,8 @@ public class Constants {
     public static final String DATA_LABEL_PRIVATE_KEY = "PRIVATE KEY";
     public static final String DOCKER_CONFIG_AUTHS = "auths";
     public static final String DOCKER_CONFIG_AUTH = "auth";
+    public static final String STORAGE_BACK_END_KUBERNETES = "kubernetes";
+    public static final String STORAGE_BACK_END_VAULT = "vault";
 
     public static final String TAG_BR = "<br>";
     public static final String TAG_DIV_BEGIN = "<div>";

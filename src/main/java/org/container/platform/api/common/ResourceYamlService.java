@@ -660,21 +660,22 @@ public class ResourceYamlService {
         StringBuilder stringBuilder = new StringBuilder();
         ObjectMapper objectMapper = new ObjectMapper();
         String encodedValue = "";
-
-        map.put("metadataName", params.getMetadataName());
-        map.put("namespace", params.getNamespace());
-        map.put("dataType", params.getDataType());
-        stringBuilder.append(templateService.convert("create_secret.ftl", map));
-        stringBuilder.append(Constants.NEW_LINE);
-
         Map<String, Map> mapData = objectMapper.convertValue(params.getData(), Map.class);
 
         if (params.getDataType().equals(Constants.DATA_TYPE_SERVICE_ACCOUNT_TOKEN)) {
             map.put("tokenName", params.getMetadataName());
             map.put("spaceName", params.getNamespace());
             map.put("userName", params.getServiceAccountName());
-            params.setYaml(templateService.convert("create_secret_service_account_token.ftl", map));
-        } else if (params.getDataType().equals(Constants.DATA_TYPE_DOCKER_CFG) || params.getDataType().equals(Constants.DATA_TYPE_DOCKER_CONFIG_JSON)) {
+            stringBuilder.append(templateService.convert("create_secret_service_account_token.ftl", map));
+        } else {
+            map.put("metadataName", params.getMetadataName());
+            map.put("namespace", params.getNamespace());
+            map.put("dataType", params.getDataType());
+            stringBuilder.append(templateService.convert("create_secret.ftl", map));
+            stringBuilder.append(Constants.NEW_LINE);
+        }
+
+        if (params.getDataType().equals(Constants.DATA_TYPE_DOCKER_CFG) || params.getDataType().equals(Constants.DATA_TYPE_DOCKER_CONFIG_JSON)) {
             for (Map.Entry<String, Map> entry : mapData.entrySet()) {
                 Map data = entry.getValue();
                 String key = data.get(MAP_KEY).toString();
@@ -768,11 +769,18 @@ public class ResourceYamlService {
         String encodedValue = "";
         String decodedValue = "";
 
-        map.put("metadataName", params.getMetadataName());
-        map.put("namespace", params.getNamespace());
-        map.put("dataType", params.getDataType());
-        stringBuilder.append(templateService.convert("create_secret.ftl", map));
-        stringBuilder.append(Constants.NEW_LINE);
+        if (params.getDataType().equals(Constants.DATA_TYPE_SERVICE_ACCOUNT_TOKEN)) {
+            map.put("tokenName", params.getMetadataName());
+            map.put("spaceName", params.getNamespace());
+            map.put("userName", params.getServiceAccountName());
+            stringBuilder.append(templateService.convert("create_secret_service_account_token.ftl", map));
+        } else {
+            map.put("metadataName", params.getMetadataName());
+            map.put("namespace", params.getNamespace());
+            map.put("dataType", params.getDataType());
+            stringBuilder.append(templateService.convert("create_secret.ftl", map));
+            stringBuilder.append(Constants.NEW_LINE);
+        }
 
         if (params.getDataType().equals(Constants.DATA_TYPE_SERVICE_ACCOUNT_TOKEN)) {
 
@@ -791,7 +799,7 @@ public class ResourceYamlService {
                 if (value.isEmpty()) {
                     for (Map.Entry<String, String> OriginEntry: secrets.getData().entrySet()) {
                         String OriginKey = OriginEntry.getKey();
-                        String OriginValue = OriginEntry.getKey();
+                        String OriginValue = OriginEntry.getValue();
 
                         if (OriginKey.equals(key)) {
                             value = OriginValue;
@@ -876,18 +884,18 @@ public class ResourceYamlService {
                 if (value.isEmpty()) {
                     for (Map.Entry<String, String> OriginEntry : secrets.getData().entrySet()) {
                         String OriginKey = OriginEntry.getKey();
-                        String OriginValue = OriginEntry.getKey();
+                        String OriginValue = OriginEntry.getValue();
 
                         if (OriginKey.equals(key)) {
-                            value = OriginValue;
+                            line = "  " + key + ": " + OriginValue;
                         }
                     }
 
+                } else {
+                    encodedValue = Base64.getEncoder().encodeToString(value.getBytes());
+                    line = "  " + key + ": " + encodedValue;
                 }
 
-                encodedValue = Base64.getEncoder().encodeToString(value.getBytes());
-
-                line = "  " + key + ": " + encodedValue;
                 stringBuilder.append(line);
                 stringBuilder.append(Constants.NEW_LINE);
             }

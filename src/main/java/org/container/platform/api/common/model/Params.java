@@ -82,6 +82,7 @@ public class Params {
     public String defaultTtl = Constants.EMPTY_STRING;
     public String dataType = Constants.EMPTY_STRING;
     public Object data = null;
+    public Object annotations = null;
 
     // rest send type
     public Boolean isClusterToken = false;

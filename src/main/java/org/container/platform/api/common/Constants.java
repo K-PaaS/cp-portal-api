@@ -247,6 +247,7 @@ public class Constants {
     public static final String DATA_TYPE_SSH_AUTH = "kubernetes.io/ssh-auth";
     public static final String DATA_TYPE_TLS = "kubernetes.io/tls";
     public static final String DATA_TYPE_BOOTSTRAP_TOKEN_DATA = "bootstrap.kubernetes.io/token";
+
     public static final String NEW_LINE = "\r\n";
     public static final String MAP_KEY = "key";
     public static final String MAP_VALUE = "value";
@@ -261,6 +262,8 @@ public class Constants {
     public static final String DOCKER_CONFIG_AUTH = "auth";
     public static final String STORAGE_BACK_END_KUBERNETES = "kubernetes";
     public static final String STORAGE_BACK_END_VAULT = "vault";
+    public static final String DATA_BYTES = "bytes";
+    public static final String SERVICE_ACCOUNT_TOKEN_CA_CRT = "ca.crt";
 
     public static final String TAG_BR = "<br>";
     public static final String TAG_DIV_BEGIN = "<div>";

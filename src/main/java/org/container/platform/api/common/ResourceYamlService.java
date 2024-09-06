@@ -766,6 +766,7 @@ public class ResourceYamlService {
         StringBuilder stringBuilder = new StringBuilder();
         ObjectMapper objectMapper = new ObjectMapper();
         Map<String, Map> mapData = objectMapper.convertValue(params.getData(), Map.class);
+        Map<String, Map> mapAnnotations = objectMapper.convertValue(params.getAnnotations(), Map.class);
         String encodedValue = "";
         String decodedValue = "";
 
@@ -774,6 +775,21 @@ public class ResourceYamlService {
             map.put("spaceName", params.getNamespace());
             map.put("userName", params.getServiceAccountName());
             stringBuilder.append(templateService.convert("create_secret_service_account_token.ftl", map));
+            stringBuilder.append(Constants.NEW_LINE);
+
+            for (Map.Entry<String, Map> entry : mapAnnotations.entrySet()) {
+                Map annotaions = entry.getValue();
+                String key = annotaions.get(MAP_KEY).toString();
+                String value = annotaions.get(MAP_VALUE).toString();
+
+                line = "    " + key + ": " + value;
+                stringBuilder.append(line);
+            }
+
+            stringBuilder.append(Constants.NEW_LINE);
+            line = "data:";
+            stringBuilder.append(line);
+            stringBuilder.append(Constants.NEW_LINE);
         } else {
             map.put("metadataName", params.getMetadataName());
             map.put("namespace", params.getNamespace());
@@ -783,28 +799,65 @@ public class ResourceYamlService {
         }
 
         if (params.getDataType().equals(Constants.DATA_TYPE_SERVICE_ACCOUNT_TOKEN)) {
-
-        } else if (params.getDataType().equals(Constants.DATA_TYPE_DOCKER_CFG) || params.getDataType().equals(Constants.DATA_TYPE_DOCKER_CONFIG_JSON)) {
             for (Map.Entry<String, Map> entry : mapData.entrySet()) {
                 Map data = entry.getValue();
                 String key = data.get(MAP_KEY).toString();
                 String value = data.get(MAP_VALUE).toString();
 
-                if (value.contains(DOCKER_CONFIG_AUTHS) && value.contains(DOCKER_CONFIG_AUTH)) {
-                    encodedValue = Base64.getEncoder().encodeToString(value.getBytes());
-                } else {
-                    return new ResultStatus(Constants.RESULT_STATUS_FAIL, MessageConstant.NOT_DOCKER_CONFIG_FILE.getMsg(), CommonStatusCode.UNPROCESSABLE_ENTITY.getCode(), MessageConstant.NOT_DOCKER_CONFIG_FILE.getMsg());
-                }
-
-                if (value.isEmpty()) {
+                if (value.contains(DATA_BYTES)) {
                     for (Map.Entry<String, String> OriginEntry: secrets.getData().entrySet()) {
                         String OriginKey = OriginEntry.getKey();
                         String OriginValue = OriginEntry.getValue();
 
                         if (OriginKey.equals(key)) {
                             value = OriginValue;
+                            byte[] decodedByte = Base64.getDecoder().decode(value);
+                            decodedValue = new String(decodedByte);
+                            value = decodedValue;
                         }
                     }
+                }
+
+                if (key.equals(SERVICE_ACCOUNT_TOKEN_CA_CRT)) {
+                    if (value.contains(PEM_HEADER) && value.contains(PEM_FOOTER) && value.contains(DATA_LABEL_CERTIFICATE)) {
+                        encodedValue = Base64.getEncoder().encodeToString(value.getBytes());
+                    } else {
+                        return new ResultStatus(Constants.RESULT_STATUS_FAIL, MessageConstant.NOT_CERTIFICATE_FILE.getMsg(), CommonStatusCode.UNPROCESSABLE_ENTITY.getCode(), MessageConstant.NOT_CERTIFICATE_FILE.getMsg());
+                    }
+                } else {
+                    encodedValue = Base64.getEncoder().encodeToString(value.getBytes());
+                }
+
+                line = "  " + key + ": " + encodedValue;
+
+                stringBuilder.append(line);
+                stringBuilder.append(Constants.NEW_LINE);
+
+            }
+        } else if (params.getDataType().equals(Constants.DATA_TYPE_DOCKER_CFG) || params.getDataType().equals(Constants.DATA_TYPE_DOCKER_CONFIG_JSON)) {
+            for (Map.Entry<String, Map> entry : mapData.entrySet()) {
+                Map data = entry.getValue();
+                String key = data.get(MAP_KEY).toString();
+                String value = data.get(MAP_VALUE).toString();
+
+                if (value.contains(DATA_BYTES)) {
+                    for (Map.Entry<String, String> OriginEntry: secrets.getData().entrySet()) {
+                        String OriginKey = OriginEntry.getKey();
+                        String OriginValue = OriginEntry.getValue();
+
+                        if (OriginKey.equals(key)) {
+                            value = OriginValue;
+                            byte[] decodedByte = Base64.getDecoder().decode(value);
+                            decodedValue = new String(decodedByte);
+                            value = decodedValue;
+                        }
+                    }
+                }
+
+                if (value.contains(DOCKER_CONFIG_AUTHS) && value.contains(DOCKER_CONFIG_AUTH)) {
+                    encodedValue = Base64.getEncoder().encodeToString(value.getBytes());
+                } else {
+                    return new ResultStatus(Constants.RESULT_STATUS_FAIL, MessageConstant.NOT_DOCKER_CONFIG_FILE.getMsg(), CommonStatusCode.UNPROCESSABLE_ENTITY.getCode(), MessageConstant.NOT_DOCKER_CONFIG_FILE.getMsg());
                 }
 
                 if (isJSONValid(value)) {
@@ -829,7 +882,7 @@ public class ResourceYamlService {
                 String key = data.get(MAP_KEY).toString();
                 String value = data.get(MAP_VALUE).toString();
 
-                if (value.isEmpty()) {
+                if (value.contains(DATA_BYTES)) {
                     for (Map.Entry<String, String> OriginEntry: secrets.getData().entrySet()) {
                         String OriginKey = OriginEntry.getKey();
                         String OriginValue = OriginEntry.getValue();
@@ -881,7 +934,7 @@ public class ResourceYamlService {
                 String key = data.get(MAP_KEY).toString();
                 String value = data.get(MAP_VALUE).toString();
 
-                if (value.isEmpty()) {
+                if (value.contains(DATA_BYTES)) {
                     for (Map.Entry<String, String> OriginEntry : secrets.getData().entrySet()) {
                         String OriginKey = OriginEntry.getKey();
                         String OriginValue = OriginEntry.getValue();
@@ -899,7 +952,6 @@ public class ResourceYamlService {
                 stringBuilder.append(line);
                 stringBuilder.append(Constants.NEW_LINE);
             }
-
         }
 
         params.setYaml(String.valueOf(stringBuilder));

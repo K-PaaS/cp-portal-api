@@ -55,7 +55,7 @@ public class SshKeysService {
         SshKeys sshKeys = restTemplateService.sendGlobal(Constants.TARGET_COMMON_API, "/sshKeys/{id:.+}"
                 .replace("{id:.+}", params.getResourceUid()), HttpMethod.GET, null, SshKeys.class, params);
 
-        String path = propertyService.getVaultBase();
+        String path = propertyService.getVaultSecretsEnginesKvBasePath();
         path =  path + Constants.DIR_SSH_KEY + params.getResourceUid();
         HashMap<String, Object> res = vaultService.read(path, HashMap.class);
 
@@ -131,7 +131,7 @@ public class SshKeysService {
             SshKeys ret = new SshKeys();
             try {
                 ret = restTemplateService.sendGlobal(Constants.TARGET_COMMON_API, "/sshKeys", HttpMethod.POST, sshKeys, SshKeys.class, params);
-                vaultService.write(propertyService.getCpVaultPathSshKey().replace("{id}", "" + ret.getId()), sshKeysInfo);
+                vaultService.write(propertyService.getVaultSecretsEnginesKvSshKeyPath().replace("{id}", "" + ret.getId()), sshKeysInfo);
             } catch (Exception e) {
                 LOGGER.info("vault write failed");
                 if(ret != null) {
@@ -170,7 +170,7 @@ public class SshKeysService {
                 .replace("{id:.+}", params.getResourceUid()), HttpMethod.GET, null, SshKeys.class, params);
 
         if(getSK != null) {
-            skPath = propertyService.getCpVaultPathSshKey().replace("{id}", params.getResourceUid());
+            skPath = propertyService.getVaultSecretsEnginesKvSshKeyPath().replace("{id}", params.getResourceUid());
         }
 
         vaultService.delete(skPath);

@@ -47,13 +47,22 @@ management:
         include: health
 
 vault:
-  path:
-    base: "secret/"
-    super-admin-token: "secret/cluster/{clusterId}"
-    user-token: "secret/user/{userAuthId}/{clusterId}/{namespace}"
-    provider-credential: "secret/{iaas}/{id}"
-    cluster-token: "secret/cluster/{id}"
-    ssh-key: "secret/ssh-key/{id}"
+  secretsEngines:
+    kv:
+      base: "secret/"
+      super-admin-token: "secret/cluster/{clusterId}"
+      user-token: "secret/user/{userAuthId}/{clusterId}/{namespace}"
+      provider-credential: "secret/{iaas}/{id}"
+      cluster-token: "secret/cluster/{id}"
+      ssh-key: "secret/ssh-key/{id}"
+    database:
+      connections: "/v1/database-secret/config/{name}-db"
+      roles: "/v1/database-secret/roles/{name}-role"
+      credentials: "/v1/database-secret/creds/{name}-role"
+  policies: "/v1/sys/policies/acl/{name}-policy"
+  access:
+    auth-kubernetes:
+      roles: "/auth/k8s-auth-mount/role/k8s-auth-role"
 
 cp:
   provide-as-service: cp-portal-service

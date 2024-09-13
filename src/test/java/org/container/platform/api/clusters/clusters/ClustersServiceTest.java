@@ -152,7 +152,7 @@ public class ClustersServiceTest {
 
 
         when(vaultService.getClusterDetails(gParams.getCluster())).thenReturn(null);
-        when(propertyService.getVaultClusterTokenPath()).thenReturn("secret/cluster/cp-cluster");
+        when(propertyService.getVaultSecretsEnginesKvClusterTokenPath()).thenReturn("secret/cluster/cp-cluster");
         when(vaultService.write("secret/cluster/cp-cluster", clusterInfo)).thenReturn(null);
         when(propertyService.getCpTerramanTemplatePath()).thenReturn("/tmp/terraform/cp-cluster/cp-cluster.tf");
 //        when(restTemplateService.sendGlobal(Constants.TARGET_COMMON_API, "/clusters", HttpMethod.POST, clusters, Clusters.class, gParams)).thenReturn(gFinalResultModel);
@@ -296,7 +296,7 @@ public class ClustersServiceTest {
         ClusterInfo clusterInfo = new ClusterInfo();
         clusterInfo.setClusterId(gParams.getCluster());
         clusterInfo.setClusterApiUrl(vaultClusterModel.getClusterApiUrl());
-        when(propertyService.getVaultClusterTokenPath()).thenReturn("secret/cluster/cp-cluster");
+        when(propertyService.getVaultSecretsEnginesKvClusterTokenPath()).thenReturn("secret/cluster/cp-cluster");
         when(vaultService.write("secret/cluster/cp-cluster", clusterInfo)).thenReturn(null);
 
 

@@ -298,7 +298,7 @@ public class ClustersService {
             restTemplateService.send(Constants.TARGET_COMMON_API, "/clusters/{id}".replace("{id}", params.getCluster()),
                     HttpMethod.DELETE, null, ResultStatus.class, params);
 
-            vaultService.delete(propertyService.getVaultClusterTokenPath().replace("{id}", params.getCluster()));
+            vaultService.delete(propertyService.getVaultSecretsEnginesKvClusterTokenPath().replace("{id}", params.getCluster()));
 
             for (Users users : usersList.getItems()) {
                 Params deleteUser = new Params(users.getClusterId(), users.getUserAuthId(), users.getUserType(), users.getCpNamespace());
@@ -351,7 +351,7 @@ public class ClustersService {
         clusterInfo.setClusterToken(params.getClusterToken());
 
         try {
-            vaultService.write(propertyService.getVaultClusterTokenPath().replace("{id}", params.getCluster()), clusterInfo);
+            vaultService.write(propertyService.getVaultSecretsEnginesKvClusterTokenPath().replace("{id}", params.getCluster()), clusterInfo);
         } catch (Exception e) {
             LOGGER.info("Vault Write failed in createClusterInfoToVault");
             return false;

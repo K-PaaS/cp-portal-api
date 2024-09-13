@@ -28,6 +28,9 @@ public class VaultService {
     @Autowired
     CommonService commonService;
 
+    @Autowired
+    TemplateService templateService;
+
     /**
      * Vault read를 위한 method
      *
@@ -75,7 +78,7 @@ public class VaultService {
     }
 
     /**
-     * Vault path 처리 를 위한 method
+     * Vault path 처리를 위한 method
      *
      * @param path the path
      * @return the String
@@ -93,7 +96,7 @@ public class VaultService {
      */
     public Clusters getClusterDetails(String clusterId) {
         Assert.hasText(clusterId);
-        return read(propertyService.getVaultClusterTokenPath().replace("{id}", clusterId), Clusters.class);
+        return read(propertyService.getVaultSecretsEnginesKvClusterTokenPath().replace("{id}", clusterId), Clusters.class);
     }
 
 
@@ -132,11 +135,11 @@ public class VaultService {
 
         switch (userType) {
             case Constants.AUTH_SUPER_ADMIN:
-                tokenPath = propertyService.getVaultSuperAdminTokenPath().replace("{clusterId}", params.getCluster());
+                tokenPath = propertyService.getVaultSecretsEnginesKvSuperAdminTokenPath().replace("{clusterId}", params.getCluster());
                 break;
             case Constants.AUTH_CLUSTER_ADMIN:
             case Constants.AUTH_USER:
-                tokenPath = propertyService.getVaultUserTokenPath()
+                tokenPath = propertyService.getVaultSecretsEnginesKvUserTokenPath()
                         .replace("{userAuthId}", params.getUserAuthId())
                         .replace("{clusterId}", params.getCluster());
                 tokenPath = params.getUserType().equalsIgnoreCase(Constants.AUTH_CLUSTER_ADMIN) ?
@@ -148,5 +151,49 @@ public class VaultService {
         }
 
         return tokenPath;
+    }
+
+    /**
+     * Vault를 통한 SecretsEngines Database 생성
+     *
+     * @param params the params
+     * @return the String
+     */
+    public void createVaultSecretsEnginesDatabase(Params params) {
+        Map map = new HashMap();
+        StringBuilder stringBuilder = new StringBuilder();
+
+        map.put("name", params.getMetadataName());
+
+        if (params.getDataType().equals(Constants.VAULT_DATABASE_POSTGRES)) {
+
+            stringBuilder.append(templateService.convert("create_vault_secret_engine_database_postgres_config.ftl", map));
+            //write(propertyService.getVaultSecretsEnginesDatabaseConnectionsPath().replace("{name}", params.getMetadataName()), );
+
+            write(propertyService.getVaultSecretsEnginesDatabaseRolesPath().replace("{name}", params.getMetadataName()),
+                    templateService.convert("create_vault_secret_engine_database_postgres_role.ftl", map));
+        }
+
+        write(propertyService.getVaultPolicies().replace("{name}", params.getMetadataName()),
+            templateService.convert("create_vault_policy.ftl", map));
+
+        stringBuilder.append(templateService.convert("create_vault_access_authentication_method_role.ftl", map));
+        //write(propertyService.getVaultAccessAuthKubernetesRolesPath().replace("{name}", params.getMetadataName()), );
+
+        stringBuilder.append(templateService.convert("create_vault_dynamic_secret.ftl", map));
+
+    }
+
+    /**
+     * Vault를 통한 SecretsEngines Database 삭제
+     *
+     * @param params the params
+     * @return the String
+     */
+    public void deleteVaultSecretsEnginesDatabase(Params params) {
+        delete(propertyService.getVaultSecretsEnginesDatabaseConnectionsPath().replace("{name}", params.getMetadataName()));
+        delete(propertyService.getVaultSecretsEnginesDatabaseRolesPath().replace("{name}", params.getMetadataName()));
+        delete(propertyService.getVaultSecretsEnginesDatabaseCredentialsPath().replace("{name}", params.getMetadataName()));
+        delete(propertyService.getVaultPolicies().replace("{name}", params.getMetadataName()));
     }
 }

@@ -26,6 +26,7 @@ public class SecretsService {
     private final CommonService commonService;
     private final PropertyService propertyService;
     private final ResourceYamlService resourceYamlService;
+    private final VaultService vaultService;
 
     /**
      * Instantiates a new Secrets service
@@ -36,11 +37,12 @@ public class SecretsService {
      * @param resourceYamlService  the resource yaml service
      */
     @Autowired
-    public SecretsService(RestTemplateService restTemplateService, CommonService commonService, PropertyService propertyService, ResourceYamlService resourceYamlService, ResourceYamlService resourceYamlService1) {
+    public SecretsService(RestTemplateService restTemplateService, CommonService commonService, PropertyService propertyService, ResourceYamlService resourceYamlService, VaultService vaultService) {
         this.restTemplateService = restTemplateService;
         this.commonService = commonService;
         this.propertyService = propertyService;
         this.resourceYamlService = resourceYamlService;
+        this.vaultService = vaultService;
     }
 
     /**
@@ -94,6 +96,8 @@ public class SecretsService {
 
         if (params.getStorageBackend().equals(Constants.STORAGE_BACK_END_KUBERNETES)) {
             resourceYamlService.createSecrets(params);
+        } else if (params.getStorageBackend().equals(Constants.STORAGE_BACK_END_VAULT)) {
+            vaultService.createVaultSecretsEnginesDatabase(params);
         }
 
         ResultStatus resultStatus = restTemplateService.sendYaml(Constants.TARGET_CP_MASTER_API,

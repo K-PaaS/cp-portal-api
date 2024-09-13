@@ -415,25 +415,40 @@ public class PropertyService {
     @Value("${cp.provide-as-standalone}")
     private String cpProviderAsStandalone;
 
-    @Value("${vault.path.base}")
-    private String vaultBase;
+    @Value("${vault.secretsEngines.kv.base}")
+    private String vaultSecretsEnginesKvBasePath;
 
-    @Value("${vault.path.cluster-token}")
-    private String vaultClusterTokenPath;
+    @Value("${vault.secretsEngines.kv.cluster-token}")
+    private String vaultSecretsEnginesKvClusterTokenPath;
 
-    @Value("${vault.path.super-admin-token}")
-    private String vaultSuperAdminTokenPath;
+    @Value("${vault.secretsEngines.kv.super-admin-token}")
+    private String vaultSecretsEnginesKvSuperAdminTokenPath;
 
-    @Value("${vault.path.user-token}")
-    private String vaultUserTokenPath;
+    @Value("${vault.secretsEngines.kv.user-token}")
+    private String vaultSecretsEnginesKvUserTokenPath;
 
     //clusters
-    @Value("${vault.path.provider-credential}")
-    private String cpVaultPathProviderCredential;
+    @Value("${vault.secretsEngines.kv.provider-credential}")
+    private String vaultSecretsEnginesKvProviderCredentialPath;
 
     //ssh key
-    @Value("${vault.path.ssh-key}")
-    private String cpVaultPathSshKey;
+    @Value("${vault.secretsEngines.kv.ssh-key}")
+    private String vaultSecretsEnginesKvSshKeyPath;
+
+    @Value("${vault.secretsEngines.database.connections}")
+    private String vaultSecretsEnginesDatabaseConnectionsPath;
+
+    @Value("${vault.secretsEngines.database.credentials}")
+    private String vaultSecretsEnginesDatabaseCredentialsPath;
+
+    @Value("${vault.secretsEngines.database.roles}")
+    private String vaultSecretsEnginesDatabaseRolesPath;
+
+    @Value("${vault.policies}")
+    private String vaultPolicies;
+
+    @Value("${vault.access.auth-kubernetes.roles}")
+    private String vaultAccessAuthKubernetesRolesPath;
 
     @Value("${cpTerraman.template.path}")
     private String cpTerramanTemplatePath;

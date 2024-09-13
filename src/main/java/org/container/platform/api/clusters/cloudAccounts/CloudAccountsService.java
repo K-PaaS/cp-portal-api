@@ -63,7 +63,7 @@ public class CloudAccountsService {
         CloudAccounts ret = new CloudAccounts();
         try {
             ret = restTemplateService.sendGlobal(Constants.TARGET_COMMON_API, "/cloudAccounts", HttpMethod.POST, cloudAccounts, CloudAccounts.class, params);
-            vaultService.write(propertyService.getCpVaultPathProviderCredential()
+            vaultService.write(propertyService.getVaultSecretsEnginesKvProviderCredentialPath()
                             .replace("{iaas}", cloudAccounts.getProvider())
                             .replace("{id}", "" + ret.getId()),
                     getProviderInfo(params));
@@ -157,7 +157,7 @@ public class CloudAccountsService {
                 .replace("{id:.+}", params.getResourceUid()), HttpMethod.GET, null, CloudAccounts.class, params);
 
         if(getCA != null) {
-            caPath = propertyService.getCpVaultPathProviderCredential()
+            caPath = propertyService.getVaultSecretsEnginesKvProviderCredentialPath()
                     .replace("{iaas}", getCA.getProvider()).replace("{id}", params.getResourceUid());
         }
 
@@ -218,7 +218,7 @@ public class CloudAccountsService {
      */
     public Object getProviderInfoFromVault(Params params) {
         Object ret;
-        String path = propertyService.getCpVaultPathProviderCredential()
+        String path = propertyService.getVaultSecretsEnginesKvProviderCredentialPath()
                 .replace("{iaas}", params.getProviderType().name()).replace("{id}", params.getResourceUid());
         try {
             ret = vaultService.read(path, ((Map) (getProviderInfoList(params))).get(params.getProviderType().name()).getClass());

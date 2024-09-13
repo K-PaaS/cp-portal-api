@@ -647,9 +647,8 @@ public class ResourceYamlService {
         return (ResultStatus) commonService.setResultModel(resultStatus, Constants.RESULT_STATUS_SUCCESS);
     }
 
-
     /**
-     * ftl 파일로 Secret 생성(Create Secret)
+     * ftl 파일로 Secrets 생성(Create Secrets)
      *
      * @param params the params
      * @return the ResultStatus
@@ -755,7 +754,7 @@ public class ResourceYamlService {
     }
 
     /**
-     * Secret 수정(Update Secret)
+     * Secret 수정(Update Secrets)
      *
      * @param params the params
      * @return the ResultStatus

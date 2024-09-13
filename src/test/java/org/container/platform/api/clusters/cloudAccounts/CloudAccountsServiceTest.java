@@ -109,7 +109,7 @@ public class CloudAccountsServiceTest {
         cloudAccounts.setRegion(REGION);
         cloudAccounts.setId(Long.parseLong(RESOURCE_ID));
 
-        when(propertyService.getCpVaultPathProviderCredential()).thenReturn("secret/AWS/1");
+        when(propertyService.getVaultSecretsEnginesKvProviderCredentialPath()).thenReturn("secret/AWS/1");
         when(restTemplateService.sendGlobal(Constants.TARGET_COMMON_API, "/cloudAccounts", HttpMethod.POST, cloudAccounts, CloudAccounts.class, gParams)).thenReturn(gResultModel);
         when(commonService.setResultObject(gParams.getProviderInfo(), AWSInfo.class)).thenReturn(gAWSInfo);
         when(vaultService.write("secret/AWS/1", gAWSInfo)).thenReturn(new VaultResponse());
@@ -128,7 +128,7 @@ public class CloudAccountsServiceTest {
     public void getCloudAccounts_Valid() {
         when(restTemplateService.sendGlobal(Constants.TARGET_COMMON_API, "/cloudAccounts/{id:.+}"
                 .replace("{id:.+}", gParams.getResourceUid()), HttpMethod.GET, null, CloudAccounts.class, gParams)).thenReturn(gResultModel);
-        when(propertyService.getCpVaultPathProviderCredential()).thenReturn("test");
+        when(propertyService.getVaultSecretsEnginesKvProviderCredentialPath()).thenReturn("test");
         when(vaultService.read("test", AWSInfo.class)).thenReturn(gAWSInfo);
         when(commonService.setResultModel(gResultModel, Constants.RESULT_STATUS_SUCCESS)).thenReturn(gFinalResultModel);
 

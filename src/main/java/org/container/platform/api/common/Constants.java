@@ -264,6 +264,8 @@ public class Constants {
     public static final String STORAGE_BACK_END_VAULT = "vault";
     public static final String DATA_BYTES = "bytes";
     public static final String SERVICE_ACCOUNT_TOKEN_CA_CRT = "ca.crt";
+    public static final String VAULT_DATABASE_POSTGRES = "psql";
+
 
     public static final String TAG_BR = "<br>";
     public static final String TAG_DIV_BEGIN = "<div>";

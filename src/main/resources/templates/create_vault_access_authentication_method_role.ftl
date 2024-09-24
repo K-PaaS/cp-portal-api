@@ -10,3 +10,5 @@
     "token_period": 120,
     "token_policies": [
         "${name}-policy"
+    ]
+}

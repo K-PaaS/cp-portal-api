@@ -80,6 +80,7 @@ public class Params {
     public String serviceAccountName = Constants.EMPTY_STRING;
     public String dbType = Constants.EMPTY_STRING;
     public String defaultTtl = Constants.EMPTY_STRING;
+    public String maxTtl = Constants.EMPTY_STRING;
     public String dataType = Constants.EMPTY_STRING;
     public Object data = null;
     public Object annotations = null;
@@ -131,6 +132,7 @@ public class Params {
         this.serviceAccountName = Constants.EMPTY_STRING;
         this.dbType = Constants.EMPTY_STRING;
         this.defaultTtl = Constants.EMPTY_STRING;
+        this.maxTtl = Constants.EMPTY_STRING;
         this.dataType = Constants.EMPTY_STRING;
     }
 

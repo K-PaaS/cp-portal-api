@@ -5,3 +5,5 @@
     "plugin_name": "postgresql-database-plugin",
     "allowed_roles": [
         "${name}-role"
+    ]
+}

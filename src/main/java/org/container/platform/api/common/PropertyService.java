@@ -450,6 +450,24 @@ public class PropertyService {
     @Value("${vault.access.auth-kubernetes.roles}")
     private String vaultAccessAuthKubernetesRolesPath;
 
+    @Value("${vault.vaultDynamicSecret.list}")
+    private String vaultVaultDynamicSecretListUrl;
+
+    @Value("${vault.vaultDynamicSecret.get}")
+    private String vaultVaultDynamicSecretGetUrl;
+
+    @Value("${vault.vaultDynamicSecret.create}")
+    private String vaultVaultDynamicSecretCreateUrl;
+
+    @Value("${vault.vaultDynamicSecret.delete}")
+    private String vaultVaultDynamicSecretDeleteUrl;
+
+    @Value("${vault.vaultDynamicSecret.update}")
+    private String vaultVaultDynamicSecretUpdateUrl;
+
+    @Value("${vault.vaultDynamicSecret.listAllNamespaces}")
+    private String vaultVaultDynamicSecretListAllNamespacesUrl;
+
     @Value("${cpTerraman.template.path}")
     private String cpTerramanTemplatePath;
 

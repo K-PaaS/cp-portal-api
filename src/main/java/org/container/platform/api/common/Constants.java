@@ -32,6 +32,7 @@ public class Constants {
     //FIXME!!
     public static final String TARGET_TERRAMAN_API = "terramanApi";
     public static final String TARGET_METRIC_COLLECTOR_API = "metricCollectorApi";
+    public static final String TARGET_VAULT_URL = "vaultUrl";
     public static final String CLUSTER_TYPE_HOST = "host";
     public static final String CLUSTER_TYPE_SUB = "sub";
     public static final String ACCEPT_TYPE_YAML = "application/yaml";

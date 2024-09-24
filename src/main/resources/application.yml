@@ -62,7 +62,14 @@ vault:
   policies: "/v1/sys/policies/acl/{name}-policy"
   access:
     auth-kubernetes:
-      roles: "/auth/k8s-auth-mount/role/k8s-auth-role"
+      roles: "/v1/auth/k8s-auth-mount/role/k8s-auth-role"
+  vaultDynamicSecret:
+    list: "/apis/secrets.hashicorp.com/v1beta1/namespaces/vso-dynamic/vaultdynamicsecrets"
+    get: "/apis/secrets.hashicorp.com/v1beta1/namespaces/vso-dynamic/vaultdynamicsecrets/{name}-dynamic-secret"
+    create: "/apis/secrets.hashicorp.com/v1beta1/namespaces/vso-dynamic/vaultdynamicsecrets"
+    delete: "/apis/secrets.hashicorp.com/v1beta1/namespaces/vso-dynamic/vaultdynamicsecrets/{name}-dynamic-secret"
+    update: "/apis/secrets.hashicorp.com/v1beta1/namespaces/vso-dynamic/vaultdynamicsecrets/{name}-dynamic-secret"
+    listAllNamespaces: "/apis/secrets.hashicorp.com/v1beta1/vaultdynamicsecrets"
 
 cp:
   provide-as-service: cp-portal-service

@@ -107,6 +107,10 @@ public class RestTemplateService {
         return sendAdmin(reqApi, reqUrl, httpMethod, bodyObject, responseType, Constants.ACCEPT_TYPE_JSON, MediaType.APPLICATION_JSON_VALUE, params);
     }
 
+    public <T> T sendVault(String reqApi, String reqUrl, HttpMethod httpMethod, Object bodyObject, Class<T> responseType, Params params) {
+        return sendVault(reqApi, reqUrl, httpMethod, bodyObject, responseType, Constants.ACCEPT_TYPE_JSON, MediaType.APPLICATION_JSON_VALUE, params);
+    }
+
     @TrackExecutionTime
     public <T> T sendGlobal(String reqApi, String reqUrl, HttpMethod httpMethod, Object bodyObject, Class<T> responseType, Params params) {
         return send(reqApi, reqUrl, httpMethod, bodyObject, responseType, Constants.ACCEPT_TYPE_JSON, MediaType.APPLICATION_JSON_VALUE, params);
@@ -278,7 +282,54 @@ public class RestTemplateService {
     }
 
 
+    /**
+     * t 전송(SendVault t)
+     * <p></p>
+     *
+     * @param <T>          the type parameter
+     * @param reqApi       the req api
+     * @param reqUrl       the req url
+     * @param httpMethod   the http method
+     * @param bodyObject   the body object
+     * @param responseType the response type
+     * @param acceptType   the accept type
+     * @param contentType  the content type
+     * @return the t
+     */
+    public <T> T sendVault(String reqApi, String reqUrl, HttpMethod httpMethod, Object bodyObject, Class<T> responseType, String acceptType, String contentType, Params params) {
+        //reqUrl = setRequestParameter(reqApi, reqUrl, httpMethod, params);
+        setApiUrlAuthorization(reqApi, params);
+        reqUrl = baseUrl + reqUrl;
 
+        HttpHeaders reqHeaders = new HttpHeaders();
+        reqHeaders.add(AUTHORIZATION_HEADER_KEY, base64Authorization);
+        reqHeaders.add(CONTENT_TYPE, contentType);
+        reqHeaders.add("ACCEPT", acceptType);
+
+        HttpEntity<Object> reqEntity;
+        if (bodyObject == null) {
+            reqEntity = new HttpEntity<>(reqHeaders);
+        } else {
+            reqEntity = new HttpEntity<>(bodyObject, reqHeaders);
+        }
+
+        LOGGER.info("<T> T SEND :: REQUEST: {} BASE-URL: {}, CONTENT-TYPE: {}", CommonUtils.loggerReplace(httpMethod), CommonUtils.loggerReplace(reqUrl), CommonUtils.loggerReplace(reqHeaders.get(CONTENT_TYPE)));
+
+        ResponseEntity<T> resEntity = null;
+
+        try {
+            resEntity = restTemplate.exchange(reqUrl, httpMethod, reqEntity, responseType);
+        } catch (HttpStatusCodeException exception) {
+            LOGGER.info("HttpStatusCodeException API Call URL : {}, errorCode : {}, errorMessage : {}", CommonUtils.loggerReplace(reqUrl), CommonUtils.loggerReplace(exception.getRawStatusCode()), CommonUtils.loggerReplace(exception.getMessage()));
+            throw new CommonStatusCodeException(Integer.toString(exception.getRawStatusCode()));
+        }
+
+        if (resEntity.getBody() == null) {
+            LOGGER.error("RESPONSE-TYPE: RESPONSE BODY IS NULL");
+        }
+
+        return resEntity.getBody();
+    }
 
 
     /**
@@ -359,6 +410,12 @@ public class RestTemplateService {
             apiUrl = propertyService.getCpMetricCollectorApiUrl();
             authorization = metricCollectorApiBase64Authorization;
         }
+
+        // Vault URL
+        if(TARGET_VAULT_URL.equals(reqApi)) {
+            //apiUrl = propertyService.getSpringCloudVaultUri();
+        }
+
 
         this.base64Authorization = authorization;
         this.baseUrl = apiUrl;

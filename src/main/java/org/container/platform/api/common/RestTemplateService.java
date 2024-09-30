@@ -406,15 +406,15 @@ public class RestTemplateService {
         }
 
         // METRIC COLLECTOR API
-        if(TARGET_METRIC_COLLECTOR_API.equals(reqApi)) {
+        if (TARGET_METRIC_COLLECTOR_API.equals(reqApi)) {
             apiUrl = propertyService.getCpMetricCollectorApiUrl();
             authorization = metricCollectorApiBase64Authorization;
         }
 
-        // Vault URL
+       /* // Vault URL
         if(TARGET_VAULT_URL.equals(reqApi)) {
             //apiUrl = propertyService.getSpringCloudVaultUri();
-        }
+        }*/
 
 
         this.base64Authorization = authorization;

@@ -8,6 +8,7 @@ import org.container.platform.api.common.model.CommonResourcesYaml;
 import org.container.platform.api.common.model.Params;
 import org.container.platform.api.common.model.ResultStatus;
 import org.container.platform.api.common.util.ResourceExecuteManager;
+import org.container.platform.api.secrets.vaultSecrets.DatabaseConnections;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -52,6 +53,22 @@ public class SecretsController {
         return secretsService.getSecretsList(params);
     }
 
+    /**
+     * Vault Secrets 리스트 조회(Get Vault Secrets List)
+     *
+     * @param params the params
+     * @return the Vault Secrets list
+     */
+    @ApiOperation(value = "Vault Secrets 목록 조회(Get Vault Secrets List)", nickname = "getVaultSecretsList")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
+    })
+    @GetMapping(value = "/vault")
+    public DatabaseConnections getVaultSecretsList(Params params) {
+
+        return secretsService.getVaultSecretsList(params);
+    }
+
 
     /**
      * Secrets 상세 조회(Get Secrets Detail)
@@ -67,6 +84,21 @@ public class SecretsController {
     public Object getSecrets(Params params) {
         return secretsService.getSecrets(params);
     }
+
+    /**
+     * Secrets 상세 조회(Get Vault Secrets Detail)
+     *
+     * @param params the params
+     * @return the Vault Secrets detail
+     */
+    /*@ApiOperation(value = "Vault Secrets 상세 조회(Get Vault Secrets Detail)", nickname = "getVaultSecrets")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
+    })
+    @GetMapping(value = "/vault/{resourceName:.+}")
+    public Object getVaultSecrets(Params params) {
+        return secretsService.getVaultSecrets(params);
+    }*/
 
 
     /**
@@ -119,6 +151,21 @@ public class SecretsController {
     public ResultStatus deleteSecrets(Params params) {
         return secretsService.deleteSecrets(params);
     }
+
+    /**
+     * Secrets 삭제(Delete Vault Secrets)
+     *
+     * @param params the params
+     * @return the resultStatus
+     */
+    /*@ApiOperation(value = "Secrets 삭제(Delete Vault Secrets)", nickname = "deleteVaultSecrets")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
+    })
+    @DeleteMapping("/{resourceName:.+}")
+    public ResultStatus deleteVaultSecrets(Params params) {
+        return secretsService.deleteVaultSecrets(params);
+    }*/
 
 
     /**

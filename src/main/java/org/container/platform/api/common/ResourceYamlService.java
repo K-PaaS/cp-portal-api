@@ -660,6 +660,7 @@ public class ResourceYamlService {
         ObjectMapper objectMapper = new ObjectMapper();
         String encodedValue = "";
         Map<String, Map> mapData = objectMapper.convertValue(params.getData(), Map.class);
+        String auth = "";
 
         if (params.getDataType().equals(Constants.DATA_TYPE_SERVICE_ACCOUNT_TOKEN)) {
             map.put("tokenName", params.getMetadataName());
@@ -674,34 +675,61 @@ public class ResourceYamlService {
             stringBuilder.append(Constants.NEW_LINE);
         }
 
-        if (params.getDataType().equals(Constants.DATA_TYPE_DOCKER_CFG) || params.getDataType().equals(Constants.DATA_TYPE_DOCKER_CONFIG_JSON)) {
+        if (params.getDataType().equals(Constants.DATA_TYPE_DOCKER_CONFIG_JSON)) {
             for (Map.Entry<String, Map> entry : mapData.entrySet()) {
                 Map data = entry.getValue();
                 String key = data.get(MAP_KEY).toString();
                 String value = data.get(MAP_VALUE).toString();
 
-                if (value.contains(DOCKER_CONFIG_AUTHS) && value.contains(DOCKER_CONFIG_AUTH)) {
-                    encodedValue = Base64.getEncoder().encodeToString(value.getBytes());
-                } else {
-                    return new ResultStatus(Constants.RESULT_STATUS_FAIL, MessageConstant.NOT_DOCKER_CONFIG_FILE.getMsg(), CommonStatusCode.UNPROCESSABLE_ENTITY.getCode(), MessageConstant.NOT_DOCKER_CONFIG_FILE.getMsg());
-                }
-
-                if (isJSONValid(value)) {
-
-                    if (key.contains(".")) {
-                        line = "  " + key + ": |";
+                if (DOCKER_CONFIG_SERVER.equals(key)) {
+                    if (!value.isEmpty()) {
+                        map.put("dockerServer", value);
                     } else {
-                        line = "  ." + key + ": |";
+                        return new ResultStatus(Constants.RESULT_STATUS_FAIL, MessageConstant.NOT_DOCKER_CONFIG_FILE.getMsg(), CommonStatusCode.UNPROCESSABLE_ENTITY.getCode(), MessageConstant.NOT_DOCKER_CONFIG_FILE.getMsg());
                     }
-
-                    stringBuilder.append(line);
-                    stringBuilder.append(Constants.NEW_LINE);
-                    line = "    " + encodedValue;
-                    stringBuilder.append(line);
-                } else {
-                    return new ResultStatus(Constants.RESULT_STATUS_FAIL, MessageConstant.NOT_DOCKER_CONFIG_FILE.getMsg(), CommonStatusCode.UNPROCESSABLE_ENTITY.getCode(), MessageConstant.NOT_DOCKER_CONFIG_FILE.getMsg());
+                } else if (DOCKER_CONFIG_USERNAME.equals(key)) {
+                    if (!value.isEmpty()) {
+                        map.put("dockerUsername", value);
+                    } else {
+                        return new ResultStatus(Constants.RESULT_STATUS_FAIL, MessageConstant.NOT_DOCKER_CONFIG_FILE.getMsg(), CommonStatusCode.UNPROCESSABLE_ENTITY.getCode(), MessageConstant.NOT_DOCKER_CONFIG_FILE.getMsg());
+                    }
+                } else if (DOCKER_CONFIG_PASSWORD.equals(key)) {
+                    if (!value.isEmpty()) {
+                        map.put("dockerPassword", value);
+                    } else {
+                        return new ResultStatus(Constants.RESULT_STATUS_FAIL, MessageConstant.NOT_DOCKER_CONFIG_FILE.getMsg(), CommonStatusCode.UNPROCESSABLE_ENTITY.getCode(), MessageConstant.NOT_DOCKER_CONFIG_FILE.getMsg());
+                    }
+                } else if (DOCKER_CONFIG_EMAIL.equals(key)) {
+                    if (!value.isEmpty()) {
+                        map.put("dockerEmail", value);
+                    } else {
+                        map.put("dockerEmail", "");
+                    }
                 }
             }
+
+            if (map.get("dockerUsername") != null && map.get("dockerPassword") != null) {
+                auth = map.get("dockerUsername") + ":" + map.get("dockerPassword");
+                auth = Base64.getEncoder().encodeToString(auth.getBytes());
+                map.put("dockerAuth", auth);
+            }
+
+            String dockerConfigJson = templateService.convert("docker_config_json.ftl", map);
+
+            if (isJSONValid(dockerConfigJson)) {
+
+                encodedValue = Base64.getEncoder().encodeToString(dockerConfigJson.getBytes());
+                line = "  " + DOCKER_CONFIG_JSON + ": |";
+                stringBuilder.append(line);
+                stringBuilder.append(Constants.NEW_LINE);
+
+                line = "    " + encodedValue;
+                stringBuilder.append(line);
+
+            } else {
+                return new ResultStatus(Constants.RESULT_STATUS_FAIL, MessageConstant.NOT_DOCKER_CONFIG_FILE.getMsg(), CommonStatusCode.UNPROCESSABLE_ENTITY.getCode(), MessageConstant.NOT_DOCKER_CONFIG_FILE.getMsg());
+            }
+
         } else if (params.getDataType().equals(Constants.DATA_TYPE_SSH_AUTH) || params.getDataType().equals(Constants.DATA_TYPE_TLS)) {
 
             for (Map.Entry<String, Map> entry : mapData.entrySet()) {
@@ -833,7 +861,7 @@ public class ResourceYamlService {
                 stringBuilder.append(Constants.NEW_LINE);
 
             }
-        } else if (params.getDataType().equals(Constants.DATA_TYPE_DOCKER_CFG) || params.getDataType().equals(Constants.DATA_TYPE_DOCKER_CONFIG_JSON)) {
+        } else if (params.getDataType().equals(Constants.DATA_TYPE_DOCKER_CONFIG_JSON)) {
             for (Map.Entry<String, Map> entry : mapData.entrySet()) {
                 Map data = entry.getValue();
                 String key = data.get(MAP_KEY).toString();
@@ -853,7 +881,7 @@ public class ResourceYamlService {
                     }
                 }
 
-                if (value.contains(DOCKER_CONFIG_AUTHS) && value.contains(DOCKER_CONFIG_AUTH)) {
+               if (value.contains(DOCKER_CONFIG_AUTHS) && value.contains(DOCKER_CONFIG_AUTH)) {
                     encodedValue = Base64.getEncoder().encodeToString(value.getBytes());
                 } else {
                     return new ResultStatus(Constants.RESULT_STATUS_FAIL, MessageConstant.NOT_DOCKER_CONFIG_FILE.getMsg(), CommonStatusCode.UNPROCESSABLE_ENTITY.getCode(), MessageConstant.NOT_DOCKER_CONFIG_FILE.getMsg());

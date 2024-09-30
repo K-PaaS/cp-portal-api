@@ -261,6 +261,12 @@ public class Constants {
     public static final String DATA_LABEL_PRIVATE_KEY = "PRIVATE KEY";
     public static final String DOCKER_CONFIG_AUTHS = "auths";
     public static final String DOCKER_CONFIG_AUTH = "auth";
+    public static final String DOCKER_CONFIG_SERVER = "docker-server";
+    public static final String DOCKER_CONFIG_USERNAME = "docker-username";
+    public static final String DOCKER_CONFIG_PASSWORD = "docker-password";
+    public static final String DOCKER_CONFIG_EMAIL = "docker-email";
+    public static final String DOCKER_CONFIG_JSON = ".dockerconfigjson";
+
     public static final String STORAGE_BACK_END_KUBERNETES = "kubernetes";
     public static final String STORAGE_BACK_END_VAULT = "vault";
     public static final String DATA_BYTES = "bytes";

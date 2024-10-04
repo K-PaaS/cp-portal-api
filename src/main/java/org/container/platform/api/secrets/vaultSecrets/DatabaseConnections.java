@@ -1,7 +1,6 @@
 package org.container.platform.api.secrets.vaultSecrets;
 
 import lombok.Data;
-import lombok.Getter;
 
 /**
  * DatabaseConnections 클래스
@@ -12,12 +11,7 @@ import lombok.Getter;
  **/
 @Data
 public class DatabaseConnections {
-    private String resultCode;
-    private String resultMessage;
-    private Integer httpStatusCode;
-    private String detailMessage;
-
-    @Getter
-    private Object data;
-
+    private String dbType;
+    private String name;
+    private String createdTime;
 }

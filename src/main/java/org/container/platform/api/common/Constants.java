@@ -248,6 +248,11 @@ public class Constants {
     public static final String DATA_TYPE_SSH_AUTH = "kubernetes.io/ssh-auth";
     public static final String DATA_TYPE_TLS = "kubernetes.io/tls";
     public static final String DATA_TYPE_BOOTSTRAP_TOKEN_DATA = "bootstrap.kubernetes.io/token";
+    public static final String DATA = "data";
+    public static final String PLUGIN_NAME = "plugin_name";
+    public static final String SUB_STRING_ROLE = "-role";
+    public static final String POSTGRESQL_DATABASE_PLUGIN = "postgresql-database-plugin";
+    public static final String POSTGRESQL_DATABASE = "postgresql";
 
     public static final String NEW_LINE = "\r\n";
     public static final String MAP_KEY = "key";

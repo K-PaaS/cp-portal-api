@@ -1,18 +1,24 @@
 package org.container.platform.api.secrets;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.container.platform.api.common.*;
 import org.container.platform.api.common.model.CommonResourcesYaml;
 import org.container.platform.api.common.model.Params;
 import org.container.platform.api.common.model.ResultStatus;
 import org.container.platform.api.secrets.vaultSecrets.DatabaseConnections;
+import org.container.platform.api.secrets.vaultSecrets.DatabaseConnectionsList;
 import org.container.platform.api.secrets.vaultSecrets.VaultDynamicSecretsList;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+
+import static org.container.platform.api.common.Constants.*;
 
 
 /**
@@ -66,26 +72,62 @@ public class SecretsService {
      * @param params the params
      * @return the Secrets list
      */
-    public DatabaseConnections getVaultSecretsList(Params params) {
+    public DatabaseConnectionsList getVaultSecretsList(Params params) {
+        DatabaseConnections databaseConnections = new DatabaseConnections();
+        DatabaseConnectionsList databaseConnectionsList = new DatabaseConnectionsList();
+
+        ArrayList list = new ArrayList<Object>();
+        Map<String, Object> map = new HashMap<String, Object>();
+
         HashMap responseMap = (HashMap) restTemplateService.send(Constants.TARGET_CP_MASTER_API,
                 propertyService.getVaultVaultDynamicSecretListUrl(), HttpMethod.GET, null, Map.class, params);
         VaultDynamicSecretsList vaultDynamicSecretsList = commonService.setResultObject(responseMap, VaultDynamicSecretsList.class);
 
         for (int i=0; i < vaultDynamicSecretsList.getItems().size(); i++) {
             String path = vaultDynamicSecretsList.getItems().get(i).getSpec().getPath();
+            String createdTime = vaultDynamicSecretsList.getItems().get(i).getMetadata().getCreationTimestamp();
+
+            //databaseConnections.setCreatedTime(createdTime);
+
+
             int idx = path.indexOf("/");
             String name = path.substring(idx+1);
-            int idx2 = name.indexOf("-role");
+            int idx2 = name.indexOf(SUB_STRING_ROLE);
             name = name.substring(0, idx2);
-            System.out.println(name);
+
+            //databaseConnections.setName(name);
+
+
+            HashMap dbType = (HashMap) restTemplateService.sendVault(Constants.TARGET_VAULT_URL, propertyService.getVaultSecretsEnginesDatabaseConnectionsPath().replace("{name}", name),
+                    HttpMethod.GET, null, Map.class, params);
+
+            ObjectMapper objectMapper = new ObjectMapper();
+            Map<String, Map> mapData = objectMapper.convertValue(dbType, Map.class);
+
+            for (Map.Entry<String, Map> entry : mapData.entrySet()) {
+                if (entry.getKey().equals(DATA)) {
+                    Map data = entry.getValue();
+
+                    Map<String, String> mapData2 = objectMapper.convertValue(data, Map.class);
+                    for (Map.Entry<String, String> entry2 : mapData2.entrySet()) {
+                        if (entry2.getKey().equals(PLUGIN_NAME)) {
+                            String pluginName = entry2.getValue();
+                            if (pluginName.equals(POSTGRESQL_DATABASE_PLUGIN)) {
+                                pluginName = POSTGRESQL_DATABASE;
+                                //databaseConnections.setDbType(pluginName);
+                                map.put("pluginName", pluginName);
+                            }
+                        }
+                    }
+                }
+            }
+
+            map.put("createdTime", createdTime);
+            map.put("name", name);
+            list.add(i, map);
         }
 
-        DatabaseConnections databaseConnections = restTemplateService.sendVault(Constants.TARGET_VAULT_URL, propertyService.getVaultSecretsEnginesDatabaseConnectionsPath().replace("{name}", params.getMetadataName()),
-                HttpMethod.GET, null, DatabaseConnections.class, params);
-
-        //DatabaseConnections databaseConnections = commonService.setResultObject(responseMap, DatabaseConnections.class);
-
-        return (DatabaseConnections) commonService.setResultModel(databaseConnections, Constants.RESULT_STATUS_SUCCESS);
+        return (DatabaseConnectionsList) commonService.setResultModel(databaseConnectionsList, Constants.RESULT_STATUS_SUCCESS);
     }
 
     /**
@@ -177,16 +219,16 @@ public class SecretsService {
             map.put("defaultTtl", params.getDefaultTtl());
             map.put("maxTtl", params.getMaxTtl());
 
-            resultStatus = restTemplateService.sendVault(Constants.TARGET_VAULT_URL, propertyService.getVaultSecretsEnginesDatabaseConnectionsPath().replace("{name}", params.getMetadataName()),
+            restTemplateService.sendVault(Constants.TARGET_VAULT_URL, propertyService.getVaultSecretsEnginesDatabaseConnectionsPath().replace("{name}", params.getMetadataName()),
                     HttpMethod.POST, templateService.convert("create_vault_secret_engine_database_postgres_config.ftl", map) , ResultStatus.class, params);
 
-            resultStatus = restTemplateService.sendVault(Constants.TARGET_VAULT_URL, propertyService.getVaultSecretsEnginesDatabaseRolesPath().replace("{name}", params.getMetadataName()),
+            restTemplateService.sendVault(Constants.TARGET_VAULT_URL, propertyService.getVaultSecretsEnginesDatabaseRolesPath().replace("{name}", params.getMetadataName()),
                     HttpMethod.POST, templateService.convert("create_vault_secret_engine_database_postgres_role.ftl", map) , ResultStatus.class, params);
 
-            resultStatus = restTemplateService.sendVault(Constants.TARGET_VAULT_URL, propertyService.getVaultPolicies().replace("{name}", params.getMetadataName()),
+            restTemplateService.sendVault(Constants.TARGET_VAULT_URL, propertyService.getVaultPolicies().replace("{name}", params.getMetadataName()),
                     HttpMethod.POST, templateService.convert("create_vault_policy.ftl", map) , ResultStatus.class, params);
 
-            resultStatus = restTemplateService.sendVault(Constants.TARGET_VAULT_URL, propertyService.getVaultAccessAuthKubernetesRolesPath().replace("{name}", params.getMetadataName()),
+            restTemplateService.sendVault(Constants.TARGET_VAULT_URL, propertyService.getVaultAccessAuthKubernetesRolesPath().replace("{name}", params.getMetadataName()),
                     HttpMethod.POST, templateService.convert("create_vault_access_authentication_method_role.ftl", map) , ResultStatus.class, params);
 
             params.setYaml(templateService.convert("create_vault_dynamic_secret.ftl", map));

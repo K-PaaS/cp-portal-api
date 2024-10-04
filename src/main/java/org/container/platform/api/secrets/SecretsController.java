@@ -9,6 +9,7 @@ import org.container.platform.api.common.model.Params;
 import org.container.platform.api.common.model.ResultStatus;
 import org.container.platform.api.common.util.ResourceExecuteManager;
 import org.container.platform.api.secrets.vaultSecrets.DatabaseConnections;
+import org.container.platform.api.secrets.vaultSecrets.DatabaseConnectionsList;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -64,7 +65,7 @@ public class SecretsController {
             @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
     })
     @GetMapping(value = "/vault")
-    public DatabaseConnections getVaultSecretsList(Params params) {
+    public DatabaseConnectionsList getVaultSecretsList(Params params) {
 
         return secretsService.getVaultSecretsList(params);
     }

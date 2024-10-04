@@ -7,10 +7,10 @@ import lombok.Data;
  *
  * @author jjy
  * @version 1.0
- * @since 2024.10.04
+ * @since 2024.09.27
  **/
 @Data
-public class VaultDynamicSecretsSpec {
-    private String path;
+public class VaultDynamicSecretsMetadata {
+    private String creationTimestamp;
 
 }

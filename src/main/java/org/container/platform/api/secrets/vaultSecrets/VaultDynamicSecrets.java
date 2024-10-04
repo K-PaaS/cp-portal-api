@@ -20,4 +20,7 @@ public class VaultDynamicSecrets {
     @JsonIgnore
     private  VaultDynamicSecretsSpec spec;
 
+    @JsonIgnore
+    private  VaultDynamicSecretsMetadata metadata;
+
 }

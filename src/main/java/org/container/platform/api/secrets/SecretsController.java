@@ -8,8 +8,8 @@ import org.container.platform.api.common.model.CommonResourcesYaml;
 import org.container.platform.api.common.model.Params;
 import org.container.platform.api.common.model.ResultStatus;
 import org.container.platform.api.common.util.ResourceExecuteManager;
-import org.container.platform.api.secrets.vaultSecrets.DatabaseConnections;
 import org.container.platform.api.secrets.vaultSecrets.DatabaseConnectionsList;
+import org.container.platform.api.secrets.vaultSecrets.DatabaseCredentials;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -87,19 +87,19 @@ public class SecretsController {
     }
 
     /**
-     * Secrets 상세 조회(Get Vault Secrets Detail)
+     * Vault Secrets 상세 조회(Get Vault Secrets Detail)
      *
      * @param params the params
      * @return the Vault Secrets detail
      */
-    /*@ApiOperation(value = "Vault Secrets 상세 조회(Get Vault Secrets Detail)", nickname = "getVaultSecrets")
+    @ApiOperation(value = "Vault Secrets 상세 조회(Get Vault Secrets Detail)", nickname = "getVaultSecrets")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
     })
     @GetMapping(value = "/vault/{resourceName:.+}")
-    public Object getVaultSecrets(Params params) {
+    public DatabaseCredentials getVaultSecrets(Params params) {
         return secretsService.getVaultSecrets(params);
-    }*/
+    }
 
 
     /**
@@ -154,7 +154,7 @@ public class SecretsController {
     }
 
     /**
-     * Secrets 삭제(Delete Vault Secrets)
+     * Vault Secrets 삭제(Delete Vault Secrets)
      *
      * @param params the params
      * @return the resultStatus

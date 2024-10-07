@@ -7,6 +7,7 @@ import org.container.platform.api.common.model.Params;
 import org.container.platform.api.common.model.ResultStatus;
 import org.container.platform.api.secrets.vaultSecrets.DatabaseConnections;
 import org.container.platform.api.secrets.vaultSecrets.DatabaseConnectionsList;
+import org.container.platform.api.secrets.vaultSecrets.DatabaseCredentials;
 import org.container.platform.api.secrets.vaultSecrets.VaultDynamicSecretsList;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpMethod;
@@ -14,7 +15,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -86,17 +86,15 @@ public class SecretsService {
         for (int i=0; i < vaultDynamicSecretsList.getItems().size(); i++) {
             String path = vaultDynamicSecretsList.getItems().get(i).getSpec().getPath();
             String createdTime = vaultDynamicSecretsList.getItems().get(i).getMetadata().getCreationTimestamp();
-
+            map.put("createdTime", createdTime);
             //databaseConnections.setCreatedTime(createdTime);
-
 
             int idx = path.indexOf("/");
             String name = path.substring(idx+1);
             int idx2 = name.indexOf(SUB_STRING_ROLE);
             name = name.substring(0, idx2);
-
+            map.put("name", name);
             //databaseConnections.setName(name);
-
 
             HashMap dbType = (HashMap) restTemplateService.sendVault(Constants.TARGET_VAULT_URL, propertyService.getVaultSecretsEnginesDatabaseConnectionsPath().replace("{name}", name),
                     HttpMethod.GET, null, Map.class, params);
@@ -122,9 +120,9 @@ public class SecretsService {
                 }
             }
 
-            map.put("createdTime", createdTime);
-            map.put("name", name);
             list.add(i, map);
+
+            databaseConnectionsList.setItems(list);
         }
 
         return (DatabaseConnectionsList) commonService.setResultModel(databaseConnectionsList, Constants.RESULT_STATUS_SUCCESS);
@@ -154,16 +152,11 @@ public class SecretsService {
      * @param params the params
      * @return the Secrets detail
      */
-    public Secrets getVaultSecrets(Params params) {
-        HashMap responseMap = (HashMap) restTemplateService.send(Constants.TARGET_CP_MASTER_API,
-                propertyService.getCpMasterApiListSecretsGetUrl(), HttpMethod.GET, null, Map.class, params);
-        Secrets secrets = commonService.setResultObject(responseMap, Secrets.class);
-        secrets = commonService.annotationsProcessing(secrets, Secrets.class);
+    public DatabaseCredentials getVaultSecrets(Params params) {
+        DatabaseCredentials databaseCredentials = restTemplateService.sendVault(Constants.TARGET_VAULT_URL, propertyService.getVaultSecretsEnginesDatabaseCredentialsPath().replace("{name}", params.getResourceName()),
+                HttpMethod.GET, null, DatabaseCredentials.class, params);
 
-        /*restTemplateService.sendVault(Constants.TARGET_VAULT_URL, propertyService.getVaultSecretsEnginesDatabaseCredentialsPath().replace("{name}", params.getMetadataName()),
-                HttpMethod.GET, null, Object.class, params);*/
-
-        return (Secrets) commonService.setResultModel(secrets, Constants.RESULT_STATUS_SUCCESS);
+        return (DatabaseCredentials) commonService.setResultModel(databaseCredentials, Constants.RESULT_STATUS_SUCCESS);
     }
 
 

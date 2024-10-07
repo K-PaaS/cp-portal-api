@@ -18,9 +18,9 @@ public class VaultDynamicSecrets {
     private String detailMessage;
 
     @JsonIgnore
-    private  VaultDynamicSecretsSpec spec;
+    private VaultDynamicSecretsSpec spec;
 
     @JsonIgnore
-    private  VaultDynamicSecretsMetadata metadata;
+    private VaultDynamicSecretsMetadata metadata;
 
 }

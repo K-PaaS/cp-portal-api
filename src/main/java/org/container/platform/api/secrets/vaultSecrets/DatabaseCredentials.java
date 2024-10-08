@@ -18,5 +18,7 @@ public class DatabaseCredentials {
 
     private String lease_id;
     private String lease_duration;
+    private String default_ttl;
+    private String max_ttl;
     private DatabaseCredentialsData data;
 }

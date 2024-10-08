@@ -8,8 +8,8 @@ import org.container.platform.api.common.model.CommonResourcesYaml;
 import org.container.platform.api.common.model.Params;
 import org.container.platform.api.common.model.ResultStatus;
 import org.container.platform.api.common.util.ResourceExecuteManager;
-import org.container.platform.api.secrets.vaultSecrets.DatabaseConnectionsList;
 import org.container.platform.api.secrets.vaultSecrets.DatabaseCredentials;
+import org.container.platform.api.secrets.vaultSecrets.DatabaseInfoList;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -65,7 +65,7 @@ public class SecretsController {
             @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
     })
     @GetMapping(value = "/vault")
-    public DatabaseConnectionsList getVaultSecretsList(Params params) {
+    public DatabaseInfoList getVaultSecretsList(Params params) {
 
         return secretsService.getVaultSecretsList(params);
     }
@@ -159,14 +159,14 @@ public class SecretsController {
      * @param params the params
      * @return the resultStatus
      */
-    /*@ApiOperation(value = "Secrets 삭제(Delete Vault Secrets)", nickname = "deleteVaultSecrets")
+    @ApiOperation(value = "Vault Secrets 삭제(Delete Vault Secrets)", nickname = "deleteVaultSecrets")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
     })
-    @DeleteMapping("/{resourceName:.+}")
+    @DeleteMapping("/vault/{resourceName:.+}")
     public ResultStatus deleteVaultSecrets(Params params) {
         return secretsService.deleteVaultSecrets(params);
-    }*/
+    }
 
 
     /**
@@ -182,5 +182,20 @@ public class SecretsController {
     @PutMapping("/{resourceName:.+}")
     public ResultStatus updateSecrets(@RequestBody Params params) {
         return secretsService.updateSecrets(params);
+    }
+
+    /**
+     * Vault Secrets 수정(Update Vault Secrets)
+     *
+     * @param params the params
+     * @return the resultStatus
+     */
+    @ApiOperation(value = "Vault Secrets 수정(Update Vault Secrets)", nickname = "updateVaultSecrets")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
+    })
+    @PutMapping("/vault/{resourceName:.+}")
+    public ResultStatus updateVaultSecrets(@RequestBody Params params) {
+        return secretsService.updateVaultSecrets(params);
     }
 }

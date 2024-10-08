@@ -12,11 +12,11 @@ import java.util.List;
  * @since 2024.10.04
  **/
 @Data
-public class DatabaseConnections {
+public class DatabaseConnectionsData {
     private String resultCode;
     private String resultMessage;
     private Integer httpStatusCode;
     private String detailMessage;
 
-    private DatabaseConnectionsData data;
+    private List data;
 }

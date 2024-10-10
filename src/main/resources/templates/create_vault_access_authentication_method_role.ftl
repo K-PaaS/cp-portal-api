@@ -9,6 +9,3 @@
     "token_ttl": 0,
     "token_period": 120,
     "token_policies": [
-        "${name}-policy"
-    ]
-}

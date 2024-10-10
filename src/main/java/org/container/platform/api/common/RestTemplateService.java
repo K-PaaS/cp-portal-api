@@ -297,7 +297,7 @@ public class RestTemplateService {
      * @return the t
      */
     public <T> T sendVault(String reqApi, String reqUrl, HttpMethod httpMethod, Object bodyObject, Class<T> responseType, String acceptType, String contentType, Params params) {
-        //reqUrl = setRequestParameter(reqApi, reqUrl, httpMethod, params);
+        reqUrl = setRequestParameter(reqApi, reqUrl, httpMethod, params);
         setApiUrlAuthorization(reqApi, params);
         reqUrl = baseUrl + reqUrl;
 
@@ -325,7 +325,7 @@ public class RestTemplateService {
         }
 
         if (resEntity.getBody() == null) {
-            LOGGER.error("RESPONSE-TYPE: RESPONSE BODY IS NULL");
+            return statusCodeDiscriminate(reqApi, resEntity, httpMethod);
         }
 
         return resEntity.getBody();
@@ -341,8 +341,8 @@ public class RestTemplateService {
      * @return the t
      */
     public <T> T statusCodeDiscriminate(String reqApi, ResponseEntity<T> res, HttpMethod httpMethod) {
-        // 200, 201, 202일때 결과 코드 동일하게(Same Result Code = 200, 201, 202)
-        Integer[] RESULT_STATUS_SUCCESS_CODE = {200, 201, 202};
+        // 200, 201, 202, 204일때 결과 코드 동일하게(Same Result Code = 200, 201, 202, 204)
+        Integer[] RESULT_STATUS_SUCCESS_CODE = {200, 201, 202, 204};
         ResultStatus resultStatus;
 
         List<Integer> intList = new ArrayList<>(RESULT_STATUS_SUCCESS_CODE.length);

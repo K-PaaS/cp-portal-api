@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -70,28 +71,28 @@ public class SecretsService {
      * @return the Secrets list
      */
     public DatabaseInfoList getVaultSecretsList(Params params) {
-        DatabaseInfo databaseInfo = new DatabaseInfo();
         DatabaseInfoList databaseInfoList = new DatabaseInfoList();
 
-        ArrayList list = new ArrayList<Object>();
-        Map<String, Object> map = new HashMap<String, Object>();
+        List<Map<String,String>> list = null;
+        list = new ArrayList<>();
+
+        Map<String, String> map = null;
 
         HashMap responseMap = (HashMap) restTemplateService.send(Constants.TARGET_CP_MASTER_API,
                 propertyService.getVaultVaultDynamicSecretListUrl(), HttpMethod.GET, null, Map.class, params);
         VaultDynamicSecretsList vaultDynamicSecretsList = commonService.setResultObject(responseMap, VaultDynamicSecretsList.class);
 
         for (int i=0; i < vaultDynamicSecretsList.getItems().size(); i++) {
+            map = new HashMap<>();
             String path = vaultDynamicSecretsList.getItems().get(i).getSpec().getPath();
             String createdTime = vaultDynamicSecretsList.getItems().get(i).getMetadata().getCreationTimestamp();
             map.put("createdTime", createdTime);
-            //databaseConnections.setCreatedTime(createdTime);
 
             int idx = path.indexOf("/");
             String name = path.substring(idx+1);
             int idx2 = name.indexOf(SUB_STRING_ROLE);
             name = name.substring(0, idx2);
             map.put("name", name);
-            //databaseConnections.setName(name);
 
             HashMap dbType = (HashMap) restTemplateService.sendVault(Constants.TARGET_VAULT_URL, propertyService.getVaultSecretsEnginesDatabaseConnectionsPath().replace("{name}", name),
                     HttpMethod.GET, null, Map.class, params);
@@ -109,7 +110,6 @@ public class SecretsService {
                             String pluginName = entry2.getValue();
                             if (pluginName.equals(POSTGRESQL_DATABASE_PLUGIN)) {
                                 pluginName = POSTGRESQL_DATABASE;
-                                //databaseConnections.setDbType(pluginName);
                                 map.put("pluginName", pluginName);
                             }
                         }
@@ -117,8 +117,7 @@ public class SecretsService {
                 }
             }
 
-            list.add(i, map);
-
+            list.add(map);
             databaseInfoList.setItems(list);
         }
 
@@ -156,6 +155,29 @@ public class SecretsService {
         DatabaseCredentials databaseCredentials = restTemplateService.sendVault(Constants.TARGET_VAULT_URL, propertyService.getVaultSecretsEnginesDatabaseCredentialsPath().replace("{name}", params.getResourceName()),
                 HttpMethod.GET, null, DatabaseCredentials.class, params);
 
+        HashMap dbType = (HashMap) restTemplateService.sendVault(Constants.TARGET_VAULT_URL, propertyService.getVaultSecretsEnginesDatabaseConnectionsPath().replace("{name}", params.getResourceName()),
+                HttpMethod.GET, null, Map.class, params);
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        Map<String, Map> mapData = objectMapper.convertValue(dbType, Map.class);
+
+        for (Map.Entry<String, Map> entry : mapData.entrySet()) {
+            if (entry.getKey().equals(DATA)) {
+                Map data = entry.getValue();
+
+                Map<String, String> mapData2 = objectMapper.convertValue(data, Map.class);
+                for (Map.Entry<String, String> entry2 : mapData2.entrySet()) {
+                    if (entry2.getKey().equals(PLUGIN_NAME)) {
+                        String pluginName = entry2.getValue();
+                        if (pluginName.equals(POSTGRESQL_DATABASE_PLUGIN)) {
+                            pluginName = POSTGRESQL_DATABASE;
+                            databaseCredentials.setPlugin_name(pluginName);
+                        }
+                    }
+                }
+            }
+        }
+
         databaseCredentials.setDefault_ttl(databaseRoles.getData().getDefault_ttl());
         databaseCredentials.setMax_ttl(databaseRoles.getData().getMax_ttl());
 
@@ -176,19 +198,6 @@ public class SecretsService {
 
     }
 
-    /**
-     * Vault Dynamic Secrets YAML 조회(Get Vault Dynamic Secrets Yaml)
-     *
-     * @param params the params
-     * @return the Secrets yaml
-     */
-    public CommonResourcesYaml getVaultDynamicSecretsYaml(Params params){
-        String resourceYaml = restTemplateService.send(Constants.TARGET_CP_MASTER_API,
-                propertyService.getVaultVaultDynamicSecretListUrl(), HttpMethod.GET, null, String.class, Constants.ACCEPT_TYPE_YAML, params);
-        return (CommonResourcesYaml) commonService.setResultModel(new CommonResourcesYaml(resourceYaml), Constants.RESULT_STATUS_SUCCESS);
-
-    }
-
 
     /**
      * Secrets 생성(Create Secrets)
@@ -199,6 +208,7 @@ public class SecretsService {
     public ResultStatus createSecrets(Params params) {
 
         ResultStatus resultStatus = new ResultStatus();
+        StringBuilder stringBuilder = new StringBuilder();
 
         if (params.getStorageBackend().equals(Constants.STORAGE_BACK_END_KUBERNETES)) {
             resourceYamlService.createSecrets(params);
@@ -209,11 +219,49 @@ public class SecretsService {
         } else if (params.getStorageBackend().equals(Constants.STORAGE_BACK_END_VAULT)) {
 
             Map map = new HashMap();
-            StringBuilder stringBuilder = new StringBuilder();
+            String line = "";
 
             map.put("name", params.getMetadataName());
             map.put("defaultTtl", params.getDefaultTtl());
             map.put("maxTtl", params.getMaxTtl());
+
+            HashMap auth = (HashMap) restTemplateService.sendVault(Constants.TARGET_VAULT_URL, propertyService.getVaultAccessAuthKubernetesRolesPath(),
+                    HttpMethod.GET, null, Map.class, params);
+
+            AuthKubernetesRoles authKubernetesRoles = commonService.setResultObject(auth, AuthKubernetesRoles.class);
+            stringBuilder.append(templateService.get("create_vault_access_authentication_method_role.ftl"));
+            stringBuilder.append(Constants.NEW_LINE);
+            line = "      " + "\"" + params.getMetadataName() + "-policy\"";
+            stringBuilder.append(line);
+
+           if (authKubernetesRoles.getData().getToken_policies().isEmpty()) {
+               stringBuilder.append(Constants.NEW_LINE);
+               line = "    ]";
+               stringBuilder.append(line);
+               stringBuilder.append(Constants.NEW_LINE);
+               line = "}";
+               stringBuilder.append(line);
+
+           } else if (authKubernetesRoles.getData().getToken_policies().size() > 1) {
+               line = ", ";
+               stringBuilder.append(line);
+
+               for (int i=0; i < authKubernetesRoles.getData().getToken_policies().size(); i++) {
+                   line = "\"" + authKubernetesRoles.getData().getToken_policies().get(i).toString() + "\"";
+                   stringBuilder.append(line);
+                   if (i != authKubernetesRoles.getData().getToken_policies().size()-1) {
+                       line = ", ";
+                       stringBuilder.append(line);
+                   }
+               }
+
+               stringBuilder.append(Constants.NEW_LINE);
+               line = "    ]";
+               stringBuilder.append(line);
+               stringBuilder.append(Constants.NEW_LINE);
+               line = "}";
+               stringBuilder.append(line);
+           }
 
             restTemplateService.sendVault(Constants.TARGET_VAULT_URL, propertyService.getVaultSecretsEnginesDatabaseConnectionsPath().replace("{name}", params.getMetadataName()),
                     HttpMethod.POST, templateService.convert("create_vault_secret_engine_database_postgres_config.ftl", map) , ResultStatus.class, params);
@@ -224,8 +272,8 @@ public class SecretsService {
             restTemplateService.sendVault(Constants.TARGET_VAULT_URL, propertyService.getVaultPolicies().replace("{name}", params.getMetadataName()),
                     HttpMethod.POST, templateService.convert("create_vault_policy.ftl", map) , ResultStatus.class, params);
 
-            restTemplateService.sendVault(Constants.TARGET_VAULT_URL, propertyService.getVaultAccessAuthKubernetesRolesPath().replace("{name}", params.getMetadataName()),
-                    HttpMethod.POST, templateService.convert("create_vault_access_authentication_method_role.ftl", map) , ResultStatus.class, params);
+            restTemplateService.sendVault(Constants.TARGET_VAULT_URL, propertyService.getVaultAccessAuthKubernetesRolesPath(),
+                    HttpMethod.PUT, String.valueOf(stringBuilder), ResultStatus.class, params);
 
             params.setYaml(templateService.convert("create_vault_dynamic_secret.ftl", map));
 
@@ -258,6 +306,10 @@ public class SecretsService {
      * @return the resultStatus
      */
     public ResultStatus deleteVaultSecrets(Params params) {
+
+        StringBuilder stringBuilder = new StringBuilder();
+        String line = "";
+
         restTemplateService.sendVault(Constants.TARGET_VAULT_URL, propertyService.getVaultSecretsEnginesDatabaseConnectionsPath().replace("{name}", params.getResourceName()),
                 HttpMethod.DELETE, null , Object.class, params);
 
@@ -267,8 +319,37 @@ public class SecretsService {
         restTemplateService.sendVault(Constants.TARGET_VAULT_URL, propertyService.getVaultPolicies().replace("{name}", params.getResourceName()),
                 HttpMethod.DELETE, null , Object.class, params);
 
-        restTemplateService.sendVault(Constants.TARGET_VAULT_URL, propertyService.getVaultAccessAuthKubernetesRolesPath().replace("{name}", params.getResourceName()),
-                HttpMethod.DELETE, null , Object.class, params);
+        HashMap auth = (HashMap) restTemplateService.sendVault(Constants.TARGET_VAULT_URL, propertyService.getVaultAccessAuthKubernetesRolesPath(),
+                HttpMethod.GET, null, Map.class, params);
+
+        AuthKubernetesRoles authKubernetesRoles = commonService.setResultObject(auth, AuthKubernetesRoles.class);
+        stringBuilder.append(templateService.get("create_vault_access_authentication_method_role.ftl"));
+        stringBuilder.append(Constants.NEW_LINE);
+        line = "      ";
+        stringBuilder.append(line);
+
+        for (int i=0; i < authKubernetesRoles.getData().getToken_policies().size(); i++) {
+            String tokenPolicy = authKubernetesRoles.getData().getToken_policies().get(i).toString();
+            if (!tokenPolicy.equals(params.getResourceName() + "-policy")) {
+                line = "\"" + tokenPolicy + "\"";
+                stringBuilder.append(line);
+                line = ", ";
+                stringBuilder.append(line);
+            }
+        }
+
+        //맨 마지막 따옴표 빼기
+        stringBuilder.substring(0, stringBuilder.length() - 1);
+
+        stringBuilder.append(Constants.NEW_LINE);
+        line = "    ]";
+        stringBuilder.append(line);
+        stringBuilder.append(Constants.NEW_LINE);
+        line = "}";
+        stringBuilder.append(line);
+
+        restTemplateService.sendVault(Constants.TARGET_VAULT_URL, propertyService.getVaultAccessAuthKubernetesRolesPath(),
+                HttpMethod.PUT, String.valueOf(stringBuilder), ResultStatus.class, params);
 
         ResultStatus resultStatus = restTemplateService.send(Constants.TARGET_CP_MASTER_API,
                 propertyService.getVaultVaultDynamicSecretDeleteUrl(), HttpMethod.DELETE, null, ResultStatus.class, params);
@@ -317,16 +398,6 @@ public class SecretsService {
 
         return (ResultStatus) commonService.setResultModel(resultStatus, Constants.RESULT_STATUS_SUCCESS);
 
-       /* HashMap responseMap = (HashMap) restTemplateService.send(Constants.TARGET_CP_MASTER_API,
-                propertyService.getCpMasterApiListSecretsGetUrl(), HttpMethod.GET, null, Map.class, params);
-        Secrets secrets = commonService.setResultObject(responseMap, Secrets.class);
-        secrets = commonService.annotationsProcessing(secrets, Secrets.class);
-
-        resourceYamlService.updateSecrets(params, secrets);
-
-        ResultStatus resultStatus = restTemplateService.sendYaml(Constants.TARGET_CP_MASTER_API,
-                propertyService.getCpMasterApiListSecretsUpdateUrl(), HttpMethod.PUT, ResultStatus.class, params);
-        return (ResultStatus) commonService.setResultModel(resultStatus, Constants.RESULT_STATUS_SUCCESS);*/
     }
 
 

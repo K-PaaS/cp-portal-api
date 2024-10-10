@@ -20,5 +20,6 @@ public class DatabaseCredentials {
     private String lease_duration;
     private String default_ttl;
     private String max_ttl;
+    private String plugin_name;
     private DatabaseCredentialsData data;
 }

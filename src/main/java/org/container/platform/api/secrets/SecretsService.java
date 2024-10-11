@@ -234,34 +234,34 @@ public class SecretsService {
             line = "      " + "\"" + params.getMetadataName() + "-policy\"";
             stringBuilder.append(line);
 
-           if (authKubernetesRoles.getData().getToken_policies().isEmpty()) {
-               stringBuilder.append(Constants.NEW_LINE);
-               line = "    ]";
-               stringBuilder.append(line);
-               stringBuilder.append(Constants.NEW_LINE);
-               line = "}";
-               stringBuilder.append(line);
+            if (authKubernetesRoles.getData().getToken_policies().isEmpty()) {
+                stringBuilder.append(Constants.NEW_LINE);
+                line = "    ]";
+                stringBuilder.append(line);
+                stringBuilder.append(Constants.NEW_LINE);
+                line = "}";
+                stringBuilder.append(line);
 
-           } else if (authKubernetesRoles.getData().getToken_policies().size() > 1) {
-               line = ", ";
-               stringBuilder.append(line);
+            } else {
+                line = ", ";
+                stringBuilder.append(line);
 
-               for (int i=0; i < authKubernetesRoles.getData().getToken_policies().size(); i++) {
-                   line = "\"" + authKubernetesRoles.getData().getToken_policies().get(i).toString() + "\"";
-                   stringBuilder.append(line);
-                   if (i != authKubernetesRoles.getData().getToken_policies().size()-1) {
-                       line = ", ";
-                       stringBuilder.append(line);
-                   }
-               }
+                for (int i = 0; i < authKubernetesRoles.getData().getToken_policies().size(); i++) {
+                    line = "\"" + authKubernetesRoles.getData().getToken_policies().get(i).toString() + "\"";
+                    stringBuilder.append(line);
+                    if (i != authKubernetesRoles.getData().getToken_policies().size() - 1) {
+                        line = ", ";
+                        stringBuilder.append(line);
+                    }
+                }
+            }
 
-               stringBuilder.append(Constants.NEW_LINE);
-               line = "    ]";
-               stringBuilder.append(line);
-               stringBuilder.append(Constants.NEW_LINE);
-               line = "}";
-               stringBuilder.append(line);
-           }
+            stringBuilder.append(Constants.NEW_LINE);
+            line = "    ]";
+            stringBuilder.append(line);
+            stringBuilder.append(Constants.NEW_LINE);
+            line = "}";
+            stringBuilder.append(line);
 
             restTemplateService.sendVault(Constants.TARGET_VAULT_URL, propertyService.getVaultSecretsEnginesDatabaseConnectionsPath().replace("{name}", params.getMetadataName()),
                     HttpMethod.POST, templateService.convert("create_vault_secret_engine_database_postgres_config.ftl", map) , ResultStatus.class, params);
@@ -338,8 +338,7 @@ public class SecretsService {
             }
         }
 
-        //맨 마지막 따옴표 빼기
-        stringBuilder.substring(0, stringBuilder.length() - 1);
+        stringBuilder.deleteCharAt(stringBuilder.length()-2);
 
         stringBuilder.append(Constants.NEW_LINE);
         line = "    ]";

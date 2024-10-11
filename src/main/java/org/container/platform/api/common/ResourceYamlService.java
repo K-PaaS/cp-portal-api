@@ -661,6 +661,7 @@ public class ResourceYamlService {
         String encodedValue = "";
         Map<String, Map> mapData = objectMapper.convertValue(params.getData(), Map.class);
         String auth = "";
+        String dockerConfigJson = "";
 
         if (params.getDataType().equals(Constants.DATA_TYPE_SERVICE_ACCOUNT_TOKEN)) {
             map.put("tokenName", params.getMetadataName());
@@ -699,22 +700,23 @@ public class ResourceYamlService {
                     } else {
                         return new ResultStatus(Constants.RESULT_STATUS_FAIL, MessageConstant.NOT_DOCKER_CONFIG_FILE.getMsg(), CommonStatusCode.UNPROCESSABLE_ENTITY.getCode(), MessageConstant.NOT_DOCKER_CONFIG_FILE.getMsg());
                     }
-                } else if (DOCKER_CONFIG_EMAIL.equals(key)) {
+                }
+
+                if (map.get("dockerUsername") != null && map.get("dockerPassword") != null) {
+                    auth = map.get("dockerUsername") + ":" + map.get("dockerPassword");
+                    auth = Base64.getEncoder().encodeToString(auth.getBytes());
+                    map.put("dockerAuth", auth);
+                }
+
+                if (DOCKER_CONFIG_EMAIL.equals(key)) {
                     if (!value.isEmpty()) {
                         map.put("dockerEmail", value);
+                        dockerConfigJson = templateService.convert("docker_config_email_json.ftl", map);
                     } else {
-                        map.put("dockerEmail", "");
+                        dockerConfigJson = templateService.convert("docker_config_json.ftl", map);
                     }
                 }
             }
-
-            if (map.get("dockerUsername") != null && map.get("dockerPassword") != null) {
-                auth = map.get("dockerUsername") + ":" + map.get("dockerPassword");
-                auth = Base64.getEncoder().encodeToString(auth.getBytes());
-                map.put("dockerAuth", auth);
-            }
-
-            String dockerConfigJson = templateService.convert("docker_config_json.ftl", map);
 
             if (isJSONValid(dockerConfigJson)) {
 

@@ -224,6 +224,7 @@ public class SecretsService {
             map.put("name", params.getMetadataName());
             map.put("defaultTtl", params.getDefaultTtl());
             map.put("maxTtl", params.getMaxTtl());
+            map.put("serviceName", params.getDbService());
 
             HashMap auth = (HashMap) restTemplateService.sendVault(Constants.TARGET_VAULT_URL, propertyService.getVaultAccessAuthKubernetesRolesPath(),
                     HttpMethod.GET, null, Map.class, params);

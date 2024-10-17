@@ -14,4 +14,5 @@ public class DatabaseInfo {
     private String dbType;
     private String name;
     private String createdTime;
+    private String status;
 }

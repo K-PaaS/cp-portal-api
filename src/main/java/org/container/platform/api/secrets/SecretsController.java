@@ -137,6 +137,21 @@ public class SecretsController {
         return secretsService.createSecrets(params);
     }
 
+    /**
+     * Vault Secrets App 적용(Apply Vault Secrets for App)
+     *
+     * @param params the params
+     * @return the resultStatus
+     */
+    @ApiOperation(value = "Vault Secrets 적용(Apply Vault Secrets)", nickname = "applyVaultSecrets")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
+    })
+    @PostMapping("/vault/application")
+    public ResultStatus applyVaultSecrets(Params params) {
+        return secretsService.applyVaultSecrets(params);
+    }
+
 
     /**
      * Secrets 삭제(Delete Secrets)

@@ -22,4 +22,7 @@ public class DatabaseCredentials {
     private String max_ttl;
     private String plugin_name;
     private DatabaseCredentialsData data;
+    private String application;
+    private String status;
+    private String flag;
 }

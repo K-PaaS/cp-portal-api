@@ -249,6 +249,7 @@ public class Constants {
     public static final String DATA_TYPE_TLS = "kubernetes.io/tls";
     public static final String DATA_TYPE_BOOTSTRAP_TOKEN_DATA = "bootstrap.kubernetes.io/token";
     public static final String DATA = "data";
+    public static final String K8S_AUTH_ROLE = "k8s-auth";
     public static final String PLUGIN_NAME = "plugin_name";
     public static final String SUB_STRING_ROLE = "-role";
     public static final String POSTGRESQL_DATABASE_PLUGIN = "postgresql-database-plugin";
@@ -410,6 +411,8 @@ public class Constants {
 
     public static final String STATUS_FAILED = "Failed";
     public static final String STATUS_RUNNING = "Running";
+    public static final String STATUS_UNKNOWN = "Unknown";
+    public static final String STATUS_OFF = "Off";
 
     public static final String CLUSTER_ADMIN_SERVICE_ACCOUNT = "cp-cluster-admin-{userAuthId}";
     public static final String CLUSTER_ROLE_BINDING_NAME = "-cluster-admin-binding";

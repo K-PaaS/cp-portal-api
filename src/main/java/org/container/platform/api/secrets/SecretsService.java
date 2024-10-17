@@ -6,6 +6,7 @@ import org.container.platform.api.common.model.CommonResourcesYaml;
 import org.container.platform.api.common.model.Params;
 import org.container.platform.api.common.model.ResultStatus;
 import org.container.platform.api.secrets.vaultSecrets.*;
+import org.container.platform.api.workloads.pods.Pods;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
@@ -82,6 +83,36 @@ public class SecretsService {
                 propertyService.getVaultVaultDynamicSecretListUrl(), HttpMethod.GET, null, Map.class, params);
         VaultDynamicSecretsList vaultDynamicSecretsList = commonService.setResultObject(responseMap, VaultDynamicSecretsList.class);
 
+        //DB에서 POD 조회
+        //restTemplateService.sendGlobal(Constants.TARGET_COMMON_API, "/vaultDatabaseSecrets", HttpMethod.GET, null, VaultDatabaseSecrets.class, params);
+       /* for (int i=0; i < vaultDynamicSecretsList.getItems().size(); i++) {
+            String path = vaultDynamicSecretsList.getItems().get(i).getSpec().getPath();
+            int idx = path.indexOf("/");
+            String name = path.substring(idx+1);
+            int idx2 = name.indexOf(SUB_STRING_ROLE);
+            name = name.substring(0, idx2);
+            //map.put("name", name);
+
+
+            VaultDatabaseSecrets getVDS = restTemplateService.sendGlobal(Constants.TARGET_COMMON_API, "/vaultDatabaseSecrets/{name:.+}"
+                    .replace("{name:.+}", name), HttpMethod.GET, null, VaultDatabaseSecrets.class, params);
+
+            params.setResourceName(getVDS.getAppName());
+
+            if (getVDS.getAppName() != null) {
+                //app name 으로 파드 조회
+                HashMap responseMap2 = (HashMap) restTemplateService.send(Constants.TARGET_CP_MASTER_API,
+                        propertyService.getCpMasterApiListPodsGetUrl(), HttpMethod.GET, null, Map.class, params);
+
+                Pods pods = commonService.setResultObject(responseMap2, Pods.class);
+
+                String status = pods.getPodStatus();
+                map.put("applicableStatus", status);
+            } else if (getVDS.getAppName() == null) {
+                map.put("applicableStatus", "-");
+            }
+        }*/
+
         for (int i=0; i < vaultDynamicSecretsList.getItems().size(); i++) {
             map = new HashMap<>();
             String path = vaultDynamicSecretsList.getItems().get(i).getSpec().getPath();
@@ -115,6 +146,24 @@ public class SecretsService {
                         }
                     }
                 }
+            }
+
+            VaultDatabaseSecrets getVDS = restTemplateService.sendGlobal(Constants.TARGET_COMMON_API, "/vaultDatabaseSecrets/{name:.+}"
+                    .replace("{name:.+}", name), HttpMethod.GET, null, VaultDatabaseSecrets.class, params);
+
+            params.setResourceName(getVDS.getAppName());
+            params.setNamespace(getVDS.getAppNamespace());
+
+            if (getVDS.getAppName() != null) {
+                HashMap responseMap2 = (HashMap) restTemplateService.send(Constants.TARGET_CP_MASTER_API,
+                        propertyService.getCpMasterApiListPodsGetUrl(), HttpMethod.GET, null, Map.class, params);
+
+                Pods pods = commonService.setResultObject(responseMap2, Pods.class);
+
+                String status = pods.getPodStatus();
+                map.put("applicableStatus", status);
+            } else {
+                map.put("applicableStatus", STATUS_OFF);
             }
 
             list.add(map);
@@ -181,6 +230,26 @@ public class SecretsService {
         databaseCredentials.setDefault_ttl(databaseRoles.getData().getDefault_ttl());
         databaseCredentials.setMax_ttl(databaseRoles.getData().getMax_ttl());
 
+        //DB 상세 조회 후
+        VaultDatabaseSecrets getVDS = restTemplateService.sendGlobal(Constants.TARGET_COMMON_API, "/vaultDatabaseSecrets/{name:.+}"
+                .replace("{name:.+}", params.getResourceName()), HttpMethod.GET, null, VaultDatabaseSecrets.class, params);
+
+        databaseCredentials.setFlag(getVDS.getFlag());
+        params.setResourceName(getVDS.getAppName());
+        params.setNamespace(getVDS.getAppNamespace());
+
+        //파드 이름으로 파드 조회
+        if (getVDS.getAppName() != null) {
+            databaseCredentials.setApplication(getVDS.getAppName());
+            HashMap responseMap2 = (HashMap) restTemplateService.send(Constants.TARGET_CP_MASTER_API,
+                    propertyService.getCpMasterApiListPodsGetUrl(), HttpMethod.GET, null, Map.class, params);
+
+            Pods pods = commonService.setResultObject(responseMap2, Pods.class);
+
+            String status = pods.getPodStatus();
+            databaseCredentials.setStatus(status);
+        }
+
         return (DatabaseCredentials) commonService.setResultModel(databaseCredentials, Constants.RESULT_STATUS_SUCCESS);
     }
 
@@ -226,8 +295,11 @@ public class SecretsService {
             map.put("maxTtl", params.getMaxTtl());
             map.put("serviceName", params.getDbService());
 
-            HashMap auth = (HashMap) restTemplateService.sendVault(Constants.TARGET_VAULT_URL, propertyService.getVaultAccessAuthKubernetesRolesPath(),
+            HashMap auth = (HashMap) restTemplateService.sendVault(Constants.TARGET_VAULT_URL, propertyService.getVaultAccessAuthKubernetesRolesPath().replace("{name}", Constants.K8S_AUTH_ROLE),
                     HttpMethod.GET, null, Map.class, params);
+
+            VaultDatabaseSecrets vaultDatabaseSecrets = setVaultDatabaseSecrets(params);
+            restTemplateService.sendGlobal(Constants.TARGET_COMMON_API, "/vaultDatabaseSecrets", HttpMethod.POST, vaultDatabaseSecrets, VaultDatabaseSecrets.class, params);
 
             AuthKubernetesRoles authKubernetesRoles = commonService.setResultObject(auth, AuthKubernetesRoles.class);
             stringBuilder.append(templateService.get("create_vault_access_authentication_method_role.ftl"));
@@ -264,6 +336,8 @@ public class SecretsService {
             line = "}";
             stringBuilder.append(line);
 
+            restTemplateService.sendGlobal(Constants.TARGET_COMMON_API, "/vaultDatabaseSecrets", HttpMethod.POST, vaultDatabaseSecrets, VaultDatabaseSecrets.class, params);
+
             restTemplateService.sendVault(Constants.TARGET_VAULT_URL, propertyService.getVaultSecretsEnginesDatabaseConnectionsPath().replace("{name}", params.getMetadataName()),
                     HttpMethod.POST, templateService.convert("create_vault_secret_engine_database_postgres_config.ftl", map) , ResultStatus.class, params);
 
@@ -273,7 +347,7 @@ public class SecretsService {
             restTemplateService.sendVault(Constants.TARGET_VAULT_URL, propertyService.getVaultPolicies().replace("{name}", params.getMetadataName()),
                     HttpMethod.POST, templateService.convert("create_vault_policy.ftl", map) , ResultStatus.class, params);
 
-            restTemplateService.sendVault(Constants.TARGET_VAULT_URL, propertyService.getVaultAccessAuthKubernetesRolesPath(),
+            restTemplateService.sendVault(Constants.TARGET_VAULT_URL, propertyService.getVaultAccessAuthKubernetesRolesPath().replace("{name}", Constants.K8S_AUTH_ROLE),
                     HttpMethod.PUT, String.valueOf(stringBuilder), ResultStatus.class, params);
 
             params.setYaml(templateService.convert("create_vault_dynamic_secret.ftl", map));
@@ -286,6 +360,75 @@ public class SecretsService {
 
     }
 
+    /**
+     * Vault Secrets App 적용(Apply Vault Secrets for App)
+     *
+     * @param params the params
+     * @return the resultStatus
+     */
+    public ResultStatus applyVaultSecrets(Params params) {
+        StringBuilder stringBuilder = new StringBuilder();
+        Map map = new HashMap();
+        String line = "";
+
+        params.setResourceName("jjy-5569b67d56-9pkj2");
+        params.setDbService("test1");
+
+        map.put("name", params.getDbService());
+        map.put("namespace", params.getNamespace());
+
+        String yamlHead = "";
+        String yamlBody = "";
+
+      /*  // service account 만들기
+        String serviceAccountYaml = templateService.convert("create_vault_service_account.ftl", map);
+        params.setYaml(serviceAccountYaml);
+
+        restTemplateService.sendYaml(Constants.TARGET_CP_MASTER_API,
+                propertyService.getCpMasterApiListConfigMapsCreateUrl(), HttpMethod.POST, ResultStatus.class, params);
+
+        // 서비스 account policy 만들기
+
+
+        // k8s 서비스 account role 생성
+        HashMap auth = (HashMap) restTemplateService.sendVault(Constants.TARGET_VAULT_URL, propertyService.getVaultAccessAuthKubernetesRolesPath().replace("{name}", params.getResourceName()),
+                HttpMethod.GET, null, Map.class, params);*/
+
+        // 해당 pod yaml 조회
+        /*String resourceYaml = restTemplateService.send(Constants.TARGET_CP_MASTER_API,
+                propertyService.getCpMasterApiListPodsGetUrl(), HttpMethod.GET, null, String.class, Constants.ACCEPT_TYPE_YAML, params);
+
+        System.out.println(resourceYaml);
+
+        int idx = resourceYaml.indexOf("  creationTimestamp:");
+        yamlHead = resourceYaml.substring(0, idx);
+        yamlBody = resourceYaml.substring(idx);
+
+        // yaml 수정
+        stringBuilder.append(yamlHead);
+        stringBuilder.append(templateService.convert("create_vault_agent_inject_secret_annotation.ftl", map));
+        stringBuilder.append(NEW_LINE);
+        stringBuilder.append(yamlBody);
+
+        params.setYaml(String.valueOf(stringBuilder));
+        System.out.println(params.getYaml());*/
+
+        //DB 수정 Logic Application 이름, namespace 인풋
+        VaultDatabaseSecrets vaultDatabaseSecrets = new VaultDatabaseSecrets();
+        vaultDatabaseSecrets.setName(params.getDbService());
+        vaultDatabaseSecrets.setAppName(params.getResourceName());
+        vaultDatabaseSecrets.setAppNamespace(params.getNamespace());
+        vaultDatabaseSecrets.setFlag(CHECK_Y);
+
+        restTemplateService.sendGlobal(Constants.TARGET_COMMON_API, "/vaultDatabaseSecrets", HttpMethod.PUT, vaultDatabaseSecrets, VaultDatabaseSecrets.class, params);
+
+        //restTemplateService.sendGlobal(Constants.TARGET_COMMON_API, "/vaultDatabaseSecrets", HttpMethod.PUT, setVaultDatabaseSecrets(params), VaultDatabaseSecrets.class, params);
+
+        // yaml 생성
+        ResultStatus resultStatus = restTemplateService.sendYaml(Constants.TARGET_CP_MASTER_API,
+                propertyService.getCpMasterApiListPodsUpdateUrl(), HttpMethod.PUT, ResultStatus.class, params);
+        return (ResultStatus) commonService.setResultModel(resultStatus, Constants.RESULT_STATUS_SUCCESS);
+    }
 
     /**
      * Secrets 삭제(Delete Secrets)
@@ -311,6 +454,19 @@ public class SecretsService {
         StringBuilder stringBuilder = new StringBuilder();
         String line = "";
 
+        VaultDatabaseSecrets getVDS = restTemplateService.sendGlobal(Constants.TARGET_COMMON_API, "/vaultDatabaseSecrets/{name:.+}"
+                .replace("{name:.+}", params.getResourceName()), HttpMethod.GET, null, VaultDatabaseSecrets.class, params);
+
+        if (getVDS.getAppName() != null && getVDS.getAppNamespace() != null) {
+            params.setResourceName(getVDS.getAppName());
+            params.setNamespace(getVDS.getAppNamespace());
+            restTemplateService.send(Constants.TARGET_CP_MASTER_API,
+                    propertyService.getCpMasterApiListPodsDeleteUrl(), HttpMethod.DELETE, null, ResultStatus.class, params);
+        }
+
+        restTemplateService.sendGlobal(Constants.TARGET_COMMON_API, "/vaultDatabaseSecrets/{name:.+}"
+                .replace("{name:.+}", params.getResourceName()), HttpMethod.DELETE, null, VaultDatabaseSecrets.class, params);
+
         restTemplateService.sendVault(Constants.TARGET_VAULT_URL, propertyService.getVaultSecretsEnginesDatabaseConnectionsPath().replace("{name}", params.getResourceName()),
                 HttpMethod.DELETE, null , Object.class, params);
 
@@ -320,7 +476,7 @@ public class SecretsService {
         restTemplateService.sendVault(Constants.TARGET_VAULT_URL, propertyService.getVaultPolicies().replace("{name}", params.getResourceName()),
                 HttpMethod.DELETE, null , Object.class, params);
 
-        HashMap auth = (HashMap) restTemplateService.sendVault(Constants.TARGET_VAULT_URL, propertyService.getVaultAccessAuthKubernetesRolesPath(),
+        HashMap auth = (HashMap) restTemplateService.sendVault(Constants.TARGET_VAULT_URL, propertyService.getVaultAccessAuthKubernetesRolesPath().replace("{name}", Constants.K8S_AUTH_ROLE),
                 HttpMethod.GET, null, Map.class, params);
 
         AuthKubernetesRoles authKubernetesRoles = commonService.setResultObject(auth, AuthKubernetesRoles.class);
@@ -348,7 +504,7 @@ public class SecretsService {
         line = "}";
         stringBuilder.append(line);
 
-        restTemplateService.sendVault(Constants.TARGET_VAULT_URL, propertyService.getVaultAccessAuthKubernetesRolesPath(),
+        restTemplateService.sendVault(Constants.TARGET_VAULT_URL, propertyService.getVaultAccessAuthKubernetesRolesPath().replace("{name}", Constants.K8S_AUTH_ROLE),
                 HttpMethod.PUT, String.valueOf(stringBuilder), ResultStatus.class, params);
 
         ResultStatus resultStatus = restTemplateService.send(Constants.TARGET_CP_MASTER_API,
@@ -415,5 +571,25 @@ public class SecretsService {
                 .collect(Collectors.toList()));
         secretsList = commonService.resourceListProcessing(secretsList, params, SecretsList.class);
         return (SecretsList) commonService.setResultModel(secretsList, Constants.RESULT_STATUS_SUCCESS);
+    }
+
+    /**
+     * VaultDatabaseSecrets 설정(Set VaultDatabaseSecrets)
+     *
+     * @param params the params
+     * @return the vault database secrets
+     */
+    private VaultDatabaseSecrets setVaultDatabaseSecrets(Params params){
+        VaultDatabaseSecrets vaultDatabaseSecrets = new VaultDatabaseSecrets();
+        if(!params.getResourceUid().equals(Constants.EMPTY_STRING))
+            vaultDatabaseSecrets.setId(Long.parseLong(params.getResourceUid()));
+        vaultDatabaseSecrets.setName(params.getMetadataName());
+        if (params.getDbType().equals(VAULT_DATABASE_POSTGRES)) {
+            vaultDatabaseSecrets.setDbType(POSTGRESQL_DATABASE);
+        }
+        vaultDatabaseSecrets.setFlag(CHECK_N);
+        vaultDatabaseSecrets.setStatus(STATUS_UNKNOWN);
+
+        return vaultDatabaseSecrets;
     }
 }

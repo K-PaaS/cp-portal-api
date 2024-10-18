@@ -6,7 +6,8 @@ import org.container.platform.api.common.model.CommonResourcesYaml;
 import org.container.platform.api.common.model.Params;
 import org.container.platform.api.common.model.ResultStatus;
 import org.container.platform.api.secrets.vaultSecrets.*;
-import org.container.platform.api.workloads.pods.Pods;
+import org.container.platform.api.workloads.deployments.Deployments;
+import org.container.platform.api.workloads.deployments.DeploymentsList;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
@@ -83,36 +84,6 @@ public class SecretsService {
                 propertyService.getVaultVaultDynamicSecretListUrl(), HttpMethod.GET, null, Map.class, params);
         VaultDynamicSecretsList vaultDynamicSecretsList = commonService.setResultObject(responseMap, VaultDynamicSecretsList.class);
 
-        //DB에서 POD 조회
-        //restTemplateService.sendGlobal(Constants.TARGET_COMMON_API, "/vaultDatabaseSecrets", HttpMethod.GET, null, VaultDatabaseSecrets.class, params);
-       /* for (int i=0; i < vaultDynamicSecretsList.getItems().size(); i++) {
-            String path = vaultDynamicSecretsList.getItems().get(i).getSpec().getPath();
-            int idx = path.indexOf("/");
-            String name = path.substring(idx+1);
-            int idx2 = name.indexOf(SUB_STRING_ROLE);
-            name = name.substring(0, idx2);
-            //map.put("name", name);
-
-
-            VaultDatabaseSecrets getVDS = restTemplateService.sendGlobal(Constants.TARGET_COMMON_API, "/vaultDatabaseSecrets/{name:.+}"
-                    .replace("{name:.+}", name), HttpMethod.GET, null, VaultDatabaseSecrets.class, params);
-
-            params.setResourceName(getVDS.getAppName());
-
-            if (getVDS.getAppName() != null) {
-                //app name 으로 파드 조회
-                HashMap responseMap2 = (HashMap) restTemplateService.send(Constants.TARGET_CP_MASTER_API,
-                        propertyService.getCpMasterApiListPodsGetUrl(), HttpMethod.GET, null, Map.class, params);
-
-                Pods pods = commonService.setResultObject(responseMap2, Pods.class);
-
-                String status = pods.getPodStatus();
-                map.put("applicableStatus", status);
-            } else if (getVDS.getAppName() == null) {
-                map.put("applicableStatus", "-");
-            }
-        }*/
-
         for (int i=0; i < vaultDynamicSecretsList.getItems().size(); i++) {
             map = new HashMap<>();
             String path = vaultDynamicSecretsList.getItems().get(i).getSpec().getPath();
@@ -155,13 +126,49 @@ public class SecretsService {
             params.setNamespace(getVDS.getAppNamespace());
 
             if (getVDS.getAppName() != null) {
+
+                /*HashMap responseMap2 = (HashMap) restTemplateService.send(Constants.TARGET_CP_MASTER_API,
+                        propertyService.getCpMasterApiListDeploymentsGetUrl(), HttpMethod.GET, null, Map.class, params);
+                Deployments deployments = commonService.setResultObject(responseMap2, Deployments.class);*/
+
                 HashMap responseMap2 = (HashMap) restTemplateService.send(Constants.TARGET_CP_MASTER_API,
-                        propertyService.getCpMasterApiListPodsGetUrl(), HttpMethod.GET, null, Map.class, params);
+                        propertyService.getCpMasterApiListDeploymentsListUrl(), HttpMethod.GET, null, Map.class, params);
+                DeploymentsList deploymentsList = commonService.setResultObject(responseMap2, DeploymentsList.class);
+                System.out.println(deploymentsList);
 
-                Pods pods = commonService.setResultObject(responseMap2, Pods.class);
+                for (int j=0; j < deploymentsList.getItems().size(); j++) {
+                    Object obj = deploymentsList.getItems().get(j);
+                    String objStr = obj.toString();
 
-                String status = pods.getPodStatus();
-                map.put("applicableStatus", status);
+                    int idx3 = objStr.indexOf("name=");
+                    int idx4 = objStr.indexOf(", namespace=");
+
+                    String appName = objStr.substring(idx3+5,idx4);
+
+                    if (params.getResourceName().equals(appName)) {
+                        int idx5 = objStr.indexOf("runningPods=");
+                        int idx6 = objStr.indexOf("totalPods=");
+                        int idx7 = objStr.indexOf("images=");
+
+                        String runningPods = objStr.substring(idx5+12,idx6-2);
+                        String totalPods = objStr.substring(idx6+10,idx7-2);
+
+                        System.out.println(runningPods);
+                        System.out.println(totalPods);
+                    }
+
+                }
+
+               /* int idx3 = status.indexOf("/");
+                String numerator = status.substring(0,idx3);
+                String denominator = status.substring(idx3+1);
+
+                if (denominator.equals(numerator)) {
+                    map.put("applicableStatus", STATUS_ON);
+                } else {
+                    map.put("applicableStatus", STATUS_HOLD);
+                }*/
+
             } else {
                 map.put("applicableStatus", STATUS_OFF);
             }
@@ -238,16 +245,26 @@ public class SecretsService {
         params.setResourceName(getVDS.getAppName());
         params.setNamespace(getVDS.getAppNamespace());
 
-        //파드 이름으로 파드 조회
+        //수정
         if (getVDS.getAppName() != null) {
             databaseCredentials.setApplication(getVDS.getAppName());
+
             HashMap responseMap2 = (HashMap) restTemplateService.send(Constants.TARGET_CP_MASTER_API,
-                    propertyService.getCpMasterApiListPodsGetUrl(), HttpMethod.GET, null, Map.class, params);
+                    propertyService.getCpMasterApiListDeploymentsGetUrl(), HttpMethod.GET, null, Map.class, params);
 
-            Pods pods = commonService.setResultObject(responseMap2, Pods.class);
+            Deployments deployments = commonService.setResultObject(responseMap2, Deployments.class);
 
-            String status = pods.getPodStatus();
-            databaseCredentials.setStatus(status);
+            String status = deployments.getStatus().toString();
+
+            int idx3 = status.indexOf("/");
+            String numerator = status.substring(0,idx3);
+            String denominator = status.substring(idx3+1);
+
+            if (denominator.equals(numerator)) {
+                databaseCredentials.setStatus(STATUS_ON);
+            } else {
+                databaseCredentials.setStatus(STATUS_HOLD);
+            }
         }
 
         return (DatabaseCredentials) commonService.setResultModel(databaseCredentials, Constants.RESULT_STATUS_SUCCESS);
@@ -371,36 +388,32 @@ public class SecretsService {
         Map map = new HashMap();
         String line = "";
 
-        params.setResourceName("jjy-5569b67d56-9pkj2");
-        params.setDbService("test1");
+        params.setResourceName("web");
+        params.setDbService("test");
 
-        map.put("name", params.getDbService());
+        map.put("db_name", params.getDbService());
+        map.put("app_name", params.getResourceName());
         map.put("namespace", params.getNamespace());
 
         String yamlHead = "";
         String yamlBody = "";
 
-      /*  // service account 만들기
+        // service account 만들기
         String serviceAccountYaml = templateService.convert("create_vault_service_account.ftl", map);
         params.setYaml(serviceAccountYaml);
 
         restTemplateService.sendYaml(Constants.TARGET_CP_MASTER_API,
                 propertyService.getCpMasterApiListConfigMapsCreateUrl(), HttpMethod.POST, ResultStatus.class, params);
 
-        // 서비스 account policy 만들기
-
-
         // k8s 서비스 account role 생성
-        HashMap auth = (HashMap) restTemplateService.sendVault(Constants.TARGET_VAULT_URL, propertyService.getVaultAccessAuthKubernetesRolesPath().replace("{name}", params.getResourceName()),
-                HttpMethod.GET, null, Map.class, params);*/
+        restTemplateService.sendVault(Constants.TARGET_VAULT_URL, propertyService.getVaultAccessAuthKubernetesRolesPath().replace("{name}", params.getResourceName()),
+                HttpMethod.POST, templateService.convert("create_vault_access_authentication_method_role_service_account.ftl", map), ResultStatus.class, params);
 
-        // 해당 pod yaml 조회
-        /*String resourceYaml = restTemplateService.send(Constants.TARGET_CP_MASTER_API,
-                propertyService.getCpMasterApiListPodsGetUrl(), HttpMethod.GET, null, String.class, Constants.ACCEPT_TYPE_YAML, params);
+        // 해당 deployment yaml 조회
+        String resourceYaml = restTemplateService.send(Constants.TARGET_CP_MASTER_API,
+                propertyService.getCpMasterApiListDeploymentsGetUrl(), HttpMethod.GET, null, String.class, Constants.ACCEPT_TYPE_YAML, params);
 
-        System.out.println(resourceYaml);
-
-        int idx = resourceYaml.indexOf("  creationTimestamp:");
+        int idx = resourceYaml.indexOf("      creationTimestamp:");
         yamlHead = resourceYaml.substring(0, idx);
         yamlBody = resourceYaml.substring(idx);
 
@@ -411,7 +424,6 @@ public class SecretsService {
         stringBuilder.append(yamlBody);
 
         params.setYaml(String.valueOf(stringBuilder));
-        System.out.println(params.getYaml());*/
 
         //DB 수정 Logic Application 이름, namespace 인풋
         VaultDatabaseSecrets vaultDatabaseSecrets = new VaultDatabaseSecrets();
@@ -422,11 +434,9 @@ public class SecretsService {
 
         restTemplateService.sendGlobal(Constants.TARGET_COMMON_API, "/vaultDatabaseSecrets", HttpMethod.PUT, vaultDatabaseSecrets, VaultDatabaseSecrets.class, params);
 
-        //restTemplateService.sendGlobal(Constants.TARGET_COMMON_API, "/vaultDatabaseSecrets", HttpMethod.PUT, setVaultDatabaseSecrets(params), VaultDatabaseSecrets.class, params);
-
         // yaml 생성
         ResultStatus resultStatus = restTemplateService.sendYaml(Constants.TARGET_CP_MASTER_API,
-                propertyService.getCpMasterApiListPodsUpdateUrl(), HttpMethod.PUT, ResultStatus.class, params);
+                propertyService.getCpMasterApiListDeploymentsUpdateUrl(), HttpMethod.PUT, ResultStatus.class, params);
         return (ResultStatus) commonService.setResultModel(resultStatus, Constants.RESULT_STATUS_SUCCESS);
     }
 

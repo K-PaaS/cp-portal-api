@@ -1,13 +1,13 @@
 {
     "audience": "vault",
     "bound_service_account_names": [
-        "${name}"
+        "${app_name}"
     ],
     "bound_service_account_namespaces": [
         "${namespace}"
     ],
     "ttl": 24h,
     "policies": [
-        "${name}-policy"
+        "${db_name}-policy"
     ]
 }

@@ -1,6 +1,5 @@
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: ${name}
+  name: ${app_name}
   namespace: ${namespace}
-automountServiceAccountToken: true

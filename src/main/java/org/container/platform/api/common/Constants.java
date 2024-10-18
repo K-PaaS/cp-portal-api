@@ -412,6 +412,9 @@ public class Constants {
     public static final String STATUS_FAILED = "Failed";
     public static final String STATUS_RUNNING = "Running";
     public static final String STATUS_UNKNOWN = "Unknown";
+    public static final String STATUS_ON = "On";
+    public static final String STATUS_HOLD = "Hold";
+
     public static final String STATUS_OFF = "Off";
 
     public static final String CLUSTER_ADMIN_SERVICE_ACCOUNT = "cp-cluster-admin-{userAuthId}";

@@ -1,6 +1,7 @@
 package org.container.platform.api.secrets.vaultSecrets;
 
 import lombok.Data;
+import org.container.platform.api.common.model.CommonItemMetaData;
 
 import java.util.List;
 
@@ -17,6 +18,6 @@ public class DatabaseInfoList {
     private String resultMessage;
     private Integer httpStatusCode;
     private String detailMessage;
-
+    private CommonItemMetaData itemMetaData;
     private List items;
 }

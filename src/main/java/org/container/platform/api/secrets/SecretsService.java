@@ -12,10 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.container.platform.api.common.Constants.*;
@@ -125,16 +122,11 @@ public class SecretsService {
             params.setResourceName(getVDS.getAppName());
             params.setNamespace(getVDS.getAppNamespace());
 
-            if (getVDS.getAppName() != null) {
-
-                /*HashMap responseMap2 = (HashMap) restTemplateService.send(Constants.TARGET_CP_MASTER_API,
-                        propertyService.getCpMasterApiListDeploymentsGetUrl(), HttpMethod.GET, null, Map.class, params);
-                Deployments deployments = commonService.setResultObject(responseMap2, Deployments.class);*/
+            if (getVDS.getAppName() != null && getVDS.getFlag().equals(CHECK_Y)) {
 
                 HashMap responseMap2 = (HashMap) restTemplateService.send(Constants.TARGET_CP_MASTER_API,
                         propertyService.getCpMasterApiListDeploymentsListUrl(), HttpMethod.GET, null, Map.class, params);
                 DeploymentsList deploymentsList = commonService.setResultObject(responseMap2, DeploymentsList.class);
-                System.out.println(deploymentsList);
 
                 for (int j=0; j < deploymentsList.getItems().size(); j++) {
                     Object obj = deploymentsList.getItems().get(j);
@@ -153,21 +145,14 @@ public class SecretsService {
                         String runningPods = objStr.substring(idx5+12,idx6-2);
                         String totalPods = objStr.substring(idx6+10,idx7-2);
 
-                        System.out.println(runningPods);
-                        System.out.println(totalPods);
+                        if (totalPods.equals(runningPods)) {
+                            map.put("applicableStatus", STATUS_ON);
+                        } else {
+                            map.put("applicableStatus", STATUS_HOLD);
+                        }
                     }
 
                 }
-
-               /* int idx3 = status.indexOf("/");
-                String numerator = status.substring(0,idx3);
-                String denominator = status.substring(idx3+1);
-
-                if (denominator.equals(numerator)) {
-                    map.put("applicableStatus", STATUS_ON);
-                } else {
-                    map.put("applicableStatus", STATUS_HOLD);
-                }*/
 
             } else {
                 map.put("applicableStatus", STATUS_OFF);
@@ -242,29 +227,44 @@ public class SecretsService {
                 .replace("{name:.+}", params.getResourceName()), HttpMethod.GET, null, VaultDatabaseSecrets.class, params);
 
         databaseCredentials.setFlag(getVDS.getFlag());
+        databaseCredentials.setApplication(getVDS.getAppName());
         params.setResourceName(getVDS.getAppName());
         params.setNamespace(getVDS.getAppNamespace());
 
-        //수정
-        if (getVDS.getAppName() != null) {
-            databaseCredentials.setApplication(getVDS.getAppName());
+        if (getVDS.getAppName() != null && getVDS.getFlag().equals(CHECK_Y)) {
 
             HashMap responseMap2 = (HashMap) restTemplateService.send(Constants.TARGET_CP_MASTER_API,
-                    propertyService.getCpMasterApiListDeploymentsGetUrl(), HttpMethod.GET, null, Map.class, params);
+                    propertyService.getCpMasterApiListDeploymentsListUrl(), HttpMethod.GET, null, Map.class, params);
+            DeploymentsList deploymentsList = commonService.setResultObject(responseMap2, DeploymentsList.class);
 
-            Deployments deployments = commonService.setResultObject(responseMap2, Deployments.class);
+            for (int j=0; j < deploymentsList.getItems().size(); j++) {
+                Object obj = deploymentsList.getItems().get(j);
+                String objStr = obj.toString();
 
-            String status = deployments.getStatus().toString();
+                int idx3 = objStr.indexOf("name=");
+                int idx4 = objStr.indexOf(", namespace=");
 
-            int idx3 = status.indexOf("/");
-            String numerator = status.substring(0,idx3);
-            String denominator = status.substring(idx3+1);
+                String appName = objStr.substring(idx3+5,idx4);
 
-            if (denominator.equals(numerator)) {
-                databaseCredentials.setStatus(STATUS_ON);
-            } else {
-                databaseCredentials.setStatus(STATUS_HOLD);
+                if (params.getResourceName().equals(appName)) {
+                    int idx5 = objStr.indexOf("runningPods=");
+                    int idx6 = objStr.indexOf("totalPods=");
+                    int idx7 = objStr.indexOf("images=");
+
+                    String runningPods = objStr.substring(idx5+12,idx6-2);
+                    String totalPods = objStr.substring(idx6+10,idx7-2);
+
+                    if (totalPods.equals(runningPods)) {
+                        databaseCredentials.setStatus(STATUS_ON);
+                    } else {
+                        databaseCredentials.setStatus(STATUS_HOLD);
+                    }
+                }
+
             }
+
+        } else {
+            databaseCredentials.setStatus(STATUS_OFF);
         }
 
         return (DatabaseCredentials) commonService.setResultModel(databaseCredentials, Constants.RESULT_STATUS_SUCCESS);

@@ -23,6 +23,7 @@ public class DatabaseCredentials {
     private String plugin_name;
     private DatabaseCredentialsData data;
     private String application;
+    private String namespace;
     private String status;
     private String flag;
 }

@@ -253,6 +253,9 @@ public class SecretsService {
 
                     String runningPods = objStr.substring(idx5+12,idx6-2);
                     String totalPods = objStr.substring(idx6+10,idx7-2);
+                    String namespace = objStr.substring(idx4+12,idx5-2);
+
+                    databaseCredentials.setNamespace(namespace);
 
                     if (totalPods.equals(runningPods)) {
                         databaseCredentials.setStatus(STATUS_ON);
@@ -388,22 +391,20 @@ public class SecretsService {
         Map map = new HashMap();
         String line = "";
 
-        params.setResourceName("web");
-        params.setDbService("test");
-
         map.put("db_name", params.getDbService());
         map.put("app_name", params.getResourceName());
         map.put("namespace", params.getNamespace());
 
         String yamlHead = "";
-        String yamlBody = "";
+        String yamlBody1 = "";
+        String yamlBody2 = "";
 
         // service account 만들기
         String serviceAccountYaml = templateService.convert("create_vault_service_account.ftl", map);
         params.setYaml(serviceAccountYaml);
 
         restTemplateService.sendYaml(Constants.TARGET_CP_MASTER_API,
-                propertyService.getCpMasterApiListConfigMapsCreateUrl(), HttpMethod.POST, ResultStatus.class, params);
+                propertyService.getCpMasterApiListUsersCreateUrl(), HttpMethod.POST, ResultStatus.class, params);
 
         // k8s 서비스 account role 생성
         restTemplateService.sendVault(Constants.TARGET_VAULT_URL, propertyService.getVaultAccessAuthKubernetesRolesPath().replace("{name}", params.getResourceName()),
@@ -414,15 +415,19 @@ public class SecretsService {
                 propertyService.getCpMasterApiListDeploymentsGetUrl(), HttpMethod.GET, null, String.class, Constants.ACCEPT_TYPE_YAML, params);
 
         int idx = resourceYaml.indexOf("      creationTimestamp:");
+        int idx2 = resourceYaml.indexOf("      containers:");
         yamlHead = resourceYaml.substring(0, idx);
-        yamlBody = resourceYaml.substring(idx);
+        yamlBody1 = resourceYaml.substring(idx, idx2);
+        yamlBody2 = resourceYaml.substring(idx2);
 
         // yaml 수정
         stringBuilder.append(yamlHead);
         stringBuilder.append(templateService.convert("create_vault_agent_inject_secret_annotation.ftl", map));
         stringBuilder.append(NEW_LINE);
-        stringBuilder.append(yamlBody);
-
+        stringBuilder.append(yamlBody1);
+        stringBuilder.append("      serviceAccountName: " + params.getResourceName());
+        stringBuilder.append(NEW_LINE);
+        stringBuilder.append(yamlBody2);
         params.setYaml(String.valueOf(stringBuilder));
 
         //DB 수정 Logic Application 이름, namespace 인풋

@@ -148,7 +148,7 @@ public class SecretsController {
             @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
     })
     @PostMapping("/vault/application")
-    public ResultStatus applyVaultSecrets(Params params) {
+    public ResultStatus applyVaultSecrets(@RequestBody Params params) {
         return secretsService.applyVaultSecrets(params);
     }
 

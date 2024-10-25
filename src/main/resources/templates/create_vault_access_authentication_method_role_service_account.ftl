@@ -6,7 +6,7 @@
     "bound_service_account_namespaces": [
         "${namespace}"
     ],
-    "ttl": 24h,
+    "ttl": "24h",
     "policies": [
         "${db_name}-policy"
     ]

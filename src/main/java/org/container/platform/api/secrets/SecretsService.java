@@ -467,7 +467,12 @@ public class SecretsService {
     public ResultStatus deleteVaultSecrets(Params params) {
 
         StringBuilder stringBuilder = new StringBuilder();
+        StringBuilder stringBuilder2 = new StringBuilder();
+
         String line = "";
+        String yamlHead = "";
+        String yamlBody1 = "";
+        String yamlBody2 = "";
 
         VaultDatabaseSecrets getVDS = restTemplateService.sendGlobal(Constants.TARGET_COMMON_API, "/vaultDatabaseSecrets/{name:.+}"
                 .replace("{name:.+}", params.getResourceName()), HttpMethod.GET, null, VaultDatabaseSecrets.class, params);
@@ -475,8 +480,37 @@ public class SecretsService {
         if (getVDS.getAppName() != null && getVDS.getAppNamespace() != null) {
             params.setResourceName(getVDS.getAppName());
             params.setNamespace(getVDS.getAppNamespace());
+            params.setDbService(getVDS.getName());
+
+            String resourceYaml = restTemplateService.send(Constants.TARGET_CP_MASTER_API,
+                    propertyService.getCpMasterApiListDeploymentsGetUrl(), HttpMethod.GET, null, String.class, Constants.ACCEPT_TYPE_YAML, params);
+
+            int idx = resourceYaml.indexOf("      annotations:");
+            int idx2 = resourceYaml.indexOf("      creationTimestamp:");
+            int idx3 = resourceYaml.indexOf("      serviceAccount:");
+            int idx4 = resourceYaml.indexOf("      terminationGracePeriodSeconds:");
+
+            yamlHead = resourceYaml.substring(0, idx);
+            yamlBody1 = resourceYaml.substring(idx2, idx3);
+            yamlBody2 = resourceYaml.substring(idx4);
+
+            stringBuilder2.append(yamlHead);
+            stringBuilder2.append(yamlBody1);
+            stringBuilder2.append(yamlBody2);
+
+            params.setYaml(String.valueOf(stringBuilder2));
+
+            restTemplateService.sendYaml(Constants.TARGET_CP_MASTER_API,
+                    propertyService.getCpMasterApiListDeploymentsUpdateUrl(), HttpMethod.PUT, ResultStatus.class, params);
+
+            //serviceaccount 삭제
             restTemplateService.send(Constants.TARGET_CP_MASTER_API,
-                    propertyService.getCpMasterApiListPodsDeleteUrl(), HttpMethod.DELETE, null, ResultStatus.class, params);
+                    propertyService.getCpMasterApiListUsersDeleteUrl().replace("{namespace}", params.getNamespace()).replace("{name}", params.getResourceName()),
+                    HttpMethod.DELETE, null, ResultStatus.class, params);
+
+            restTemplateService.sendVault(Constants.TARGET_VAULT_URL, propertyService.getVaultAccessAuthKubernetesRolesPath().replace("{name}", params.getResourceName()),
+                    HttpMethod.DELETE, null, ResultStatus.class, params);
+
         }
 
         restTemplateService.sendGlobal(Constants.TARGET_COMMON_API, "/vaultDatabaseSecrets/{name:.+}"
@@ -523,7 +557,7 @@ public class SecretsService {
                 HttpMethod.PUT, String.valueOf(stringBuilder), ResultStatus.class, params);
 
         ResultStatus resultStatus = restTemplateService.send(Constants.TARGET_CP_MASTER_API,
-                propertyService.getVaultVaultDynamicSecretDeleteUrl(), HttpMethod.DELETE, null, ResultStatus.class, params);
+                propertyService.getVaultVaultDynamicSecretDeleteUrl().replace("{name}", params.getDbService()), HttpMethod.DELETE, null, ResultStatus.class, params);
 
         return (ResultStatus) commonService.setResultModel(resultStatus, Constants.RESULT_STATUS_SUCCESS);
     }

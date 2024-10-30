@@ -9,11 +9,14 @@ import org.container.platform.api.common.*;
 import org.container.platform.api.common.model.Params;
 import org.container.platform.api.common.model.ResultStatus;
 import org.container.platform.api.exception.ResultStatusException;
-import org.container.platform.api.secrets.SecretsList;
 import org.container.platform.api.users.serviceAccount.ServiceAccountList;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 
 
 /**
@@ -153,6 +156,26 @@ public class UsersController {
             return namespacesService.getMappingNamespacesListByAdmin(params);
         }
         return usersService.getMappingNamespacesListByUser(params);
+    }
+
+    /**
+     * Users 와 맵핑되고 컨테이너 플랫폼 운영 Namespaces 제외된 Namespaces 목록 조회(Get a list of namespaces that map to Users and exclude container platform operational namespaces)
+     *
+     * @return the users list
+     */
+    @ApiOperation(value = "Users 와 맵핑되고 컨테이너 플랫폼 운영 Namespaces 제외된 Namespaces 목록 조회(Get a list of namespaces that map to Users and exclude container platform operational namespaces)", nickname = "getUserMappedNamespacesExcludingOperational")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
+    })
+    @GetMapping(value = "/clusters/{cluster:.+}/users/nonOperationalNamespacesList")
+    public UsersList getUserMappedNamespacesExcludingOperational(Params params) {
+        List<String> namespacesToExclude = Arrays.asList("ALL", "chaos-mesh", "cp-pipeline", "cp-portal", "cp-source-control", "harbor", "ingress-nginx", "keycloak", "kube-node-lease", "kube-public", "kube-system", "mariadb", "metallb-system", "vault", "vault-secrets-operator-system");
+        UsersList usersList = getNamespacesListByUserOwns(params);
+        List<Users> filteredItems = usersList.getItems().stream()
+                .filter(user -> !namespacesToExclude.contains(user.getCpNamespace()))
+                .collect(Collectors.toList());
+        UsersList filteredUsersList = new UsersList(filteredItems);
+        return (UsersList) commonService.setResultModel(filteredUsersList, Constants.RESULT_STATUS_SUCCESS);
     }
 
     /**

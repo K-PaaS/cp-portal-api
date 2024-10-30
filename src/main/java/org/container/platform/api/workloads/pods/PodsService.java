@@ -9,17 +9,12 @@ import org.container.platform.api.common.model.CommonResourcesYaml;
 import org.container.platform.api.common.model.Params;
 import org.container.platform.api.common.model.ResultStatus;
 import org.container.platform.api.metrics.MetricsService;
-import org.container.platform.api.workloads.pods.support.ContainerStatusesItem;
-import org.container.platform.api.workloads.pods.support.PodsListItem;
-import org.container.platform.api.workloads.pods.support.PodsStatus;
+import org.container.platform.api.workloads.pods.support.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 
@@ -252,5 +247,30 @@ public class PodsService {
         return podsList;
     }
 
+
+    /**
+     * Namespaces의 Labels 목록 조회(Get Labels List By Namespaces)
+     *
+     * @param params the params
+     * @return the pods list
+     */
+    public PodsLabels getLabelsList(Params params) {
+        PodsList podsList = this.getPodsList(params);
+        Map<String, Set<Object>> labels = new HashMap<>();
+
+        for(PodsListItem podsListItem : podsList.getItems()) {
+            Map<String, Object> itemLabels = (Map<String, Object>) podsListItem.getLabels();
+            for (Map.Entry<String, Object> entry : itemLabels.entrySet()) {
+                String key = entry.getKey();
+                Object value = entry.getValue();
+                labels.computeIfAbsent(key, k -> new HashSet<>()).add(value);
+            }
+        }
+
+        PodsLabels podsLabels = new PodsLabels();
+        podsLabels.setItems(Collections.singletonList(new PodsLabelsItem(labels)));
+
+        return (PodsLabels) commonService.setResultModel(podsLabels, Constants.RESULT_STATUS_SUCCESS);
+    }
 
 }

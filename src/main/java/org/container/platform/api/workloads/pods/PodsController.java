@@ -8,6 +8,7 @@ import org.container.platform.api.common.model.CommonResourcesYaml;
 import org.container.platform.api.common.model.Params;
 import org.container.platform.api.common.model.ResultStatus;
 import org.container.platform.api.common.util.ResourceExecuteManager;
+import org.container.platform.api.workloads.pods.support.PodsLabels;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -167,5 +168,19 @@ public class PodsController {
         return podsService.deletePods(params);
     }
 
-
+    /**
+     * Namespaces의 Labels 목록 조회(Get Labels List By Namespaces)
+     *
+     * @param params the params
+     * @return the pods list
+     */
+    @ApiOperation(value = "Namespaces의 Labels 목록 조회(Get Labels List By Namespaces)", nickname = "getLabelsList")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
+    })
+    @GetMapping("/labels")
+    @ResponseBody
+    public PodsLabels getLabelsList(Params params) {
+        return podsService.getLabelsList(params);
+    }
 }

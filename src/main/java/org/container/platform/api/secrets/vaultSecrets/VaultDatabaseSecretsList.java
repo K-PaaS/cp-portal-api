@@ -12,18 +12,11 @@ import java.util.List;
  * @since 2024.10.16
  **/
 @Data
-public class VaultDatabaseSecrets {
+public class VaultDatabaseSecretsList {
     private String resultCode;
     private String resultMessage;
     private Integer httpStatusCode;
     private String detailMessage;
 
-    private long id;
-    private String name;
-    private String dbType;
-    private String appName;
-    private String appNamespace;
-    private String status;
-    private String flag;
-    private String created;
+    private List<VaultDatabaseSecrets> items;
 }

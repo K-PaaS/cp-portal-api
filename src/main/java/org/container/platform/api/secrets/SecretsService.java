@@ -399,6 +399,7 @@ public class SecretsService {
 
         String line = "";
         String yamlHead = "";
+        String yamlImage = "";
         String yamlBody = "";
 
         VaultDatabaseSecrets getVDS = restTemplateService.sendGlobal(Constants.TARGET_COMMON_API, "/vaultDatabaseSecrets/{name:.+}"
@@ -414,19 +415,25 @@ public class SecretsService {
                     propertyService.getCpMasterApiListDeploymentsGetUrl(), HttpMethod.GET, null, String.class, Constants.ACCEPT_TYPE_YAML, params);
 
             int idx = resourceYaml.indexOf("      - envFrom:");
-            int idx2 = resourceYaml.indexOf("        image:");
+            int idx2 = resourceYaml.indexOf("            name:");
+            int idx3 = resourceYaml.indexOf("        image:");
+            int idx4 = resourceYaml.indexOf("        imagePullPolicy:");
 
             yamlHead = resourceYaml.substring(0, idx);
-            yamlBody = resourceYaml.substring(idx2);
+            yamlImage = resourceYaml.substring(idx3, idx4);
+            yamlBody = resourceYaml.substring(idx4);
+
+            String yamlImage2 = yamlImage.substring(8);
 
             stringBuilder.append(yamlHead);
+            stringBuilder.append("      - " + yamlImage2);
             stringBuilder.append(yamlBody);
 
             params.setYaml(String.valueOf(stringBuilder));
 
             //Deployment 적용 해제
-            /*restTemplateService.sendYaml(Constants.TARGET_CP_MASTER_API,
-                    propertyService.getCpMasterApiListDeploymentsUpdateUrl(), HttpMethod.PUT, ResultStatus.class, params);*/
+            restTemplateService.sendYaml(Constants.TARGET_CP_MASTER_API,
+                    propertyService.getCpMasterApiListDeploymentsUpdateUrl(), HttpMethod.PUT, ResultStatus.class, params);
 
             //serviceaccount 삭제
             restTemplateService.send(Constants.TARGET_CP_MASTER_API,
@@ -434,7 +441,8 @@ public class SecretsService {
                     HttpMethod.DELETE, null, ResultStatus.class, params);
 
             //VaultAuth 삭제
-            restTemplateService.sendVault(Constants.TARGET_VAULT_URL, propertyService.getVaultAccessAuthKubernetesRolesPath().replace("{name}", params.getDbService()).replace("{namespace}", params.getNamespace()),
+            restTemplateService.send(Constants.TARGET_CP_MASTER_API,
+                    propertyService.getVaultVaultAuthDeleteUrl().replace("{name}", params.getDbService()).replace("{namespace}", params.getNamespace()),
                     HttpMethod.DELETE, null, ResultStatus.class, params);
 
             //VaultDynamicSecret 삭제
@@ -458,7 +466,6 @@ public class SecretsService {
         // database-secret/creds의 policy 삭제
         restTemplateService.sendVault(Constants.TARGET_VAULT_URL, propertyService.getVaultPolicies().replace("{name}", params.getDbService()),
                 HttpMethod.DELETE, null , Object.class, params);
-
 
         return (ResultStatus) commonService.setResultModel(resultStatus, Constants.RESULT_STATUS_SUCCESS);
     }

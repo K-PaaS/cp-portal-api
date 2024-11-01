@@ -1,6 +1,5 @@
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: ${app_name}
+  name: ${db_name}-dynamic-service-account
   namespace: ${namespace}
-automountServiceAccountToken: true

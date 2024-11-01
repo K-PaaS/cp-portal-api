@@ -64,12 +64,19 @@ vault:
     auth-kubernetes:
       roles: "/v1/auth/k8s-auth-mount/role/{name}-role"
   vaultDynamicSecret:
-    list: "/apis/secrets.hashicorp.com/v1beta1/namespaces/vso-dynamic/vaultdynamicsecrets"
-    get: "/apis/secrets.hashicorp.com/v1beta1/namespaces/vso-dynamic/vaultdynamicsecrets/{name}-dynamic-secret"
-    create: "/apis/secrets.hashicorp.com/v1beta1/namespaces/vso-dynamic/vaultdynamicsecrets"
-    delete: "/apis/secrets.hashicorp.com/v1beta1/namespaces/vso-dynamic/vaultdynamicsecrets/{name}-dynamic-secret"
-    update: "/apis/secrets.hashicorp.com/v1beta1/namespaces/vso-dynamic/vaultdynamicsecrets/{name}-dynamic-secret"
+    list: "/apis/secrets.hashicorp.com/v1beta1/namespaces/{namespace}/vaultdynamicsecrets"
+    get: "/apis/secrets.hashicorp.com/v1beta1/namespaces/{namespace}/vaultdynamicsecrets/{name}-dynamic-secret"
+    create: "/apis/secrets.hashicorp.com/v1beta1/namespaces/{namespace}/vaultdynamicsecrets"
+    delete: "/apis/secrets.hashicorp.com/v1beta1/namespaces/{namespace}/vaultdynamicsecrets/{name}-dynamic-secret"
+    update: "/apis/secrets.hashicorp.com/v1beta1/namespaces/{namespace}/vaultdynamicsecrets/{name}-dynamic-secret"
     listAllNamespaces: "/apis/secrets.hashicorp.com/v1beta1/vaultdynamicsecrets"
+  vaultAuth:
+    list: "/apis/secrets.hashicorp.com/v1beta1/namespaces/{namespace}/vaultauths"
+    get: "/apis/secrets.hashicorp.com/v1beta1/namespaces/{namespace}/vaultauths/{name}-dynamic-vault-auth"
+    create: "/apis/secrets.hashicorp.com/v1beta1/namespaces/{namespace}/vaultauths"
+    delete: "/apis/secrets.hashicorp.com/v1beta1/namespaces/{namespace}/vaultauths/{name}-dynamic-vault-auth"
+    update: "/apis/secrets.hashicorp.com/v1beta1/namespaces/{namespace}/vaultauths/{name}-dynamic-vault-auth"
+    listAllNamespaces: "/apis/secrets.hashicorp.com/v1beta1/vaultauths"
 
 cp:
   provide-as-service: cp-portal-service

@@ -1,15 +1,15 @@
 apiVersion: secrets.hashicorp.com/v1beta1
 kind: VaultDynamicSecret
 metadata:
-  name: ${name}-dynamic-secret
-  namespace: vso-dynamic
+  name: ${db_name}-dynamic-secret
+  namespace: ${namespace}
 spec:
   mount: database-secret
-  path: creds/${name}-role
+  path: creds/${db_name}-role
   destination:
-    create: false
-    name: ${name}-dynamic-secret
+    create: true
+    name: ${db_name}-dynamic-secret
   rolloutRestartTargets:
   - kind: Deployment
-    name: ${name}-dynamic-secret
-  vaultAuthRef: dynamic-vault-auth
+    name: ${db_name}-dynamic-secret
+  vaultAuthRef: ${db_name}-dynamic-vault-auth

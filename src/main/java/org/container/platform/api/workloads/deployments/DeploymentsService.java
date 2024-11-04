@@ -7,6 +7,7 @@ import org.container.platform.api.common.RestTemplateService;
 import org.container.platform.api.common.model.CommonResourcesYaml;
 import org.container.platform.api.common.model.Params;
 import org.container.platform.api.common.model.ResultStatus;
+import org.container.platform.api.secrets.vaultSecrets.VaultDatabaseSecretsList;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
@@ -52,6 +53,37 @@ public class DeploymentsService {
         HashMap responseMap = (HashMap) restTemplateService.send(Constants.TARGET_CP_MASTER_API,
                 propertyService.getCpMasterApiListDeploymentsListUrl(), HttpMethod.GET, null, Map.class, params);
         DeploymentsList deploymentsList = commonService.setResultObject(responseMap, DeploymentsList.class);
+        deploymentsList = commonService.resourceListProcessing(deploymentsList, params, DeploymentsList.class);
+        return (DeploymentsList) commonService.setResultModel(deploymentsList, Constants.RESULT_STATUS_SUCCESS);
+    }
+
+    /**
+     * Deployments Vault Secret 적용 목록 조회(Get Deployments Vault Secret List)
+     *
+     * @param params the params
+     * @return the deployments list
+     */
+    public DeploymentsList getDeploymentsVaultSecretList(Params params) {
+        HashMap responseMap = (HashMap) restTemplateService.send(Constants.TARGET_CP_MASTER_API,
+                propertyService.getCpMasterApiListDeploymentsListUrl(), HttpMethod.GET, null, Map.class, params);
+
+        DeploymentsList deploymentsList = commonService.setResultObject(responseMap, DeploymentsList.class);
+
+        VaultDatabaseSecretsList getVDSList = restTemplateService.sendGlobal(Constants.TARGET_COMMON_API, "/vaultDatabaseSecrets",
+                HttpMethod.GET, null, VaultDatabaseSecretsList.class, params);
+
+        for (int i=0; i < deploymentsList.getItems().size(); i++) {
+            String deployment = deploymentsList.getItems().get(i).getName();
+            String namespace = deploymentsList.getItems().get(i).getNamespace();
+            for (int j=0; j < getVDSList.getItems().size(); j++) {
+                String appDeployment = getVDSList.getItems().get(j).getAppName();
+                String appNamespace = getVDSList.getItems().get(j).getAppNamespace();
+                if (namespace.equals(appNamespace) && deployment.equals(appDeployment)) {
+                    deploymentsList.getItems().remove(i);
+                }
+            }
+        }
+
         deploymentsList = commonService.resourceListProcessing(deploymentsList, params, DeploymentsList.class);
         return (DeploymentsList) commonService.setResultModel(deploymentsList, Constants.RESULT_STATUS_SUCCESS);
     }

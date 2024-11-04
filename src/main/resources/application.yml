@@ -65,10 +65,10 @@ vault:
       roles: "/v1/auth/k8s-auth-mount/role/{name}-role"
   vaultDynamicSecret:
     list: "/apis/secrets.hashicorp.com/v1beta1/namespaces/{namespace}/vaultdynamicsecrets"
-    get: "/apis/secrets.hashicorp.com/v1beta1/namespaces/{namespace}/vaultdynamicsecrets/{name}-dynamic-secret"
+    get: "/apis/secrets.hashicorp.com/v1beta1/namespaces/{namespace}/vaultdynamicsecrets/{name}-vault-dynamic-secret"
     create: "/apis/secrets.hashicorp.com/v1beta1/namespaces/{namespace}/vaultdynamicsecrets"
-    delete: "/apis/secrets.hashicorp.com/v1beta1/namespaces/{namespace}/vaultdynamicsecrets/{name}-dynamic-secret"
-    update: "/apis/secrets.hashicorp.com/v1beta1/namespaces/{namespace}/vaultdynamicsecrets/{name}-dynamic-secret"
+    delete: "/apis/secrets.hashicorp.com/v1beta1/namespaces/{namespace}/vaultdynamicsecrets/{name}-vault-dynamic-secret"
+    update: "/apis/secrets.hashicorp.com/v1beta1/namespaces/{namespace}/vaultdynamicsecrets/{name}-vault-dynamic-secret"
     listAllNamespaces: "/apis/secrets.hashicorp.com/v1beta1/vaultdynamicsecrets"
   vaultAuth:
     list: "/apis/secrets.hashicorp.com/v1beta1/namespaces/{namespace}/vaultauths"

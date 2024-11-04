@@ -78,7 +78,6 @@ public class SecretsService {
         Map<String, String> map = null;
 
         VaultDatabaseSecretsList getVDSList = restTemplateService.sendGlobal(Constants.TARGET_COMMON_API, "/vaultDatabaseSecrets", HttpMethod.GET, null, VaultDatabaseSecretsList.class, params);
-        System.out.println(getVDSList);
 
         for (int i=0; i < getVDSList.getItems().size(); i++) {
 
@@ -346,15 +345,13 @@ public class SecretsService {
         String resourceYaml = restTemplateService.send(Constants.TARGET_CP_MASTER_API,
                 propertyService.getCpMasterApiListDeploymentsGetUrl(), HttpMethod.GET, null, String.class, Constants.ACCEPT_TYPE_YAML, params);
 
-        int idx = resourceYaml.indexOf("        ports:");
+        int idx = resourceYaml.indexOf("        name:");
         yamlHead = resourceYaml.substring(0, idx);
         yamlBody = resourceYaml.substring(idx);
 
         // yaml 수정
         stringBuilder.append(yamlHead);
         stringBuilder.append(templateService.convert("create_vault_secret_inject.ftl", map));
-        String secret = templateService.convert("create_vault_secret_inject.ftl", map);
-        System.out.println(secret);
         stringBuilder.append(yamlBody);
         params.setYaml(String.valueOf(stringBuilder));
 
@@ -415,13 +412,12 @@ public class SecretsService {
                     propertyService.getCpMasterApiListDeploymentsGetUrl(), HttpMethod.GET, null, String.class, Constants.ACCEPT_TYPE_YAML, params);
 
             int idx = resourceYaml.indexOf("      - envFrom:");
-            int idx2 = resourceYaml.indexOf("            name:");
-            int idx3 = resourceYaml.indexOf("        image:");
-            int idx4 = resourceYaml.indexOf("        imagePullPolicy:");
+            int idx2 = resourceYaml.indexOf("        image:");
+            int idx3 = resourceYaml.indexOf("        imagePullPolicy:");
 
             yamlHead = resourceYaml.substring(0, idx);
-            yamlImage = resourceYaml.substring(idx3, idx4);
-            yamlBody = resourceYaml.substring(idx4);
+            yamlImage = resourceYaml.substring(idx2, idx3);
+            yamlBody = resourceYaml.substring(idx3);
 
             String yamlImage2 = yamlImage.substring(8);
 
@@ -435,9 +431,13 @@ public class SecretsService {
             restTemplateService.sendYaml(Constants.TARGET_CP_MASTER_API,
                     propertyService.getCpMasterApiListDeploymentsUpdateUrl(), HttpMethod.PUT, ResultStatus.class, params);
 
-            //serviceaccount 삭제
+            //serviceAccount 삭제
             restTemplateService.send(Constants.TARGET_CP_MASTER_API,
                     propertyService.getCpMasterApiListUsersDeleteUrl().replace("{namespace}", params.getNamespace()).replace("{name}", params.getDbService() + "-dynamic-service-account"),
+                    HttpMethod.DELETE, null, ResultStatus.class, params);
+
+            //k8s-auth-role 삭제
+            restTemplateService.sendVault(Constants.TARGET_VAULT_URL, propertyService.getVaultAccessAuthKubernetesRolesPath().replace("{name}", Constants.K8S_AUTH_ROLE + "-" + params.getDbService()),
                     HttpMethod.DELETE, null, ResultStatus.class, params);
 
             //VaultAuth 삭제

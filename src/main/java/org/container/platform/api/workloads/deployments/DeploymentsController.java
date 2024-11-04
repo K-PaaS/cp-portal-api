@@ -51,6 +51,21 @@ public class DeploymentsController {
     }
 
     /**
+     * Deployments Vault Secret 적용 목록 조회(Get Deployments Vault Secret List)
+     *
+     * @param params the params
+     * @return the deployments list
+     */
+    @ApiOperation(value = "Deployments Vault Secret 목록 조회(Get Deployments List)", nickname = "getDeploymentsVaultSecretList")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
+    })
+    @GetMapping(value = "/vaultSecret")
+    public DeploymentsList getDeploymentsVaultSecretList(Params params) {
+        return deploymentsService.getDeploymentsVaultSecretList(params);
+    }
+
+    /**
      * Deployments 상세 조회(Get Deployments Detail)
      *
      * @param params the params

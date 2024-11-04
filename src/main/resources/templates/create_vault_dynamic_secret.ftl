@@ -1,7 +1,7 @@
 apiVersion: secrets.hashicorp.com/v1beta1
 kind: VaultDynamicSecret
 metadata:
-  name: ${db_name}-dynamic-secret
+  name: ${db_name}-vault-dynamic-secret
   namespace: ${namespace}
 spec:
   mount: database-secret

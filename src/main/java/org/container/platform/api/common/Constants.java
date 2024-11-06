@@ -254,6 +254,12 @@ public class Constants {
     public static final String SUB_STRING_ROLE = "-role";
     public static final String POSTGRESQL_DATABASE_PLUGIN = "postgresql-database-plugin";
     public static final String POSTGRESQL_DATABASE = "postgresql";
+    public static final String DEFAULT_TTL = "default_ttl";
+    public static final String MAX_TTL = "max_ttl";
+    public static final String LEASE_DURATION = "leaseDuration";
+    public static final String LEASE_ID = "leaseId";
+    public static final String USERNAME = "username";
+    public static final String PASSWORD = "password";
 
     public static final String NEW_LINE = "\r\n";
     public static final String MAP_KEY = "key";

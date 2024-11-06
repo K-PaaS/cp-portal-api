@@ -93,6 +93,7 @@ dependencies {
 	implementation 'com.sun.xml.bind:jaxb-core:4.0.1'
 	implementation 'javax.xml.bind:jaxb-api:2.4.0-b180830.0359'
 
+	implementation group: 'org.springframework.cloud', name: 'spring-cloud-vault-config-databases', version: '4.1.1'
 	compile( "org.springframework.cloud:spring-cloud-starter-vault-config")
 	compile 'commons-io:commons-io:2.11.0'
 }

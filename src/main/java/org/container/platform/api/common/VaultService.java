@@ -39,15 +39,22 @@ public class VaultService {
      */
     @TrackExecutionTime
     public <T> T read(String path,  Class<T> requestClass) {
-        path = setPath(path);
+        if (path.contains("database")) {
 
-        Object response = Optional.ofNullable(vaultTemplate.read(path))
-                .map(VaultResponse::getData)
-                .filter(x -> x.keySet().contains("data"))
-                .orElseGet(HashMap::new)
-                .getOrDefault("data", null);
+            Object response = Optional.ofNullable(vaultTemplate.read(path));
 
-        return commonService.setResultObject(response, requestClass);
+            return commonService.setResultObject(response, requestClass);
+        } else {
+            path = setPath(path);
+            Object response2 = Optional.ofNullable(vaultTemplate.read(path))
+                    .map(VaultResponse::getData)
+                    .filter(x -> x.keySet().contains("data"))
+                    .orElseGet(HashMap::new)
+                    .getOrDefault("data", null);
+
+            return commonService.setResultObject(response2, requestClass);
+        }
+
     }
 
     /**
@@ -58,12 +65,20 @@ public class VaultService {
      */
     @TrackExecutionTime
     public Object write(String path, Object body){
-        path = setPath(path);
+        if (path.contains("database") || path.contains("policies") || path.contains("auth")) {
 
-        Map<String, Object> data = new HashMap<>();
-        data.put("data", body);
+           /* Map<String, Object> data = new HashMap<>();
+            data.put("database", body);*/
 
-        return vaultTemplate.write(path, data);
+            return vaultTemplate.write(path, body);
+        } else {
+            path = setPath(path);
+
+            Map<String, Object> data = new HashMap<>();
+            data.put("data", body);
+
+            return vaultTemplate.write(path, data);
+        }
     }
 
     /**
@@ -73,8 +88,13 @@ public class VaultService {
      * @return the object
      */
     public void delete(String path) {
-        path = setPath(path);
-        vaultTemplate.delete(path);
+        if (path.contains("database") || path.contains("policies") || path.contains("auth")) {
+            vaultTemplate.delete(path);
+        } else {
+            path = setPath(path);
+            vaultTemplate.delete(path);
+        }
+
     }
 
     /**

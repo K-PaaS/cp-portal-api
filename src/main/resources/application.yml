@@ -14,6 +14,12 @@ spring:
       kv:
         enabled: true
         backend: secret
+      database:
+        enabled: true
+        backend: database
+      postgresql:
+        enabled: true
+        backend: postgresql
       app-role:
         role-id: ${VAULT_ROLE_ID}
         secret-id: ${VAULT_SECRET_ID}
@@ -56,13 +62,19 @@ vault:
       cluster-token: "secret/cluster/{id}"
       ssh-key: "secret/ssh-key/{id}"
     database:
-      connections: "/v1/database-secret/config/{name}-db"
-      roles: "/v1/database-secret/roles/{name}-role"
-      credentials: "/v1/database-secret/creds/{name}-role"
-  policies: "/v1/sys/policies/acl/{name}-policy"
+      base: "database-secret/"
+      connections: "database-secret/config/{name}-db"
+      roles: "database-secret/roles/{name}-role"
+      credentials: "database-secret/creds/{name}-role"
+      #connections: "/v1/database-secret/config/{name}-db"
+      #roles: "/v1/database-secret/roles/{name}-role"
+      #credentials: "/v1/database-secret/creds/{name}-role"
+  policies: "sys/policies/acl/{name}-policy"
+  #policies: "/v1/sys/policies/acl/{name}-policy"
   access:
     auth-kubernetes:
-      roles: "/v1/auth/k8s-auth-mount/role/{name}-role"
+      roles: "auth/k8s-auth-mount/role/{name}-role"
+      #roles: "/v1/auth/k8s-auth-mount/role/{name}-role"
   vaultDynamicSecret:
     list: "/apis/secrets.hashicorp.com/v1beta1/namespaces/{namespace}/vaultdynamicsecrets"
     get: "/apis/secrets.hashicorp.com/v1beta1/namespaces/{namespace}/vaultdynamicsecrets/{name}-vault-dynamic-secret"

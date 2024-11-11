@@ -66,15 +66,10 @@ vault:
       connections: "database-secret/config/{name}-db"
       roles: "database-secret/roles/{name}-role"
       credentials: "database-secret/creds/{name}-role"
-      #connections: "/v1/database-secret/config/{name}-db"
-      #roles: "/v1/database-secret/roles/{name}-role"
-      #credentials: "/v1/database-secret/creds/{name}-role"
   policies: "sys/policies/acl/{name}-policy"
-  #policies: "/v1/sys/policies/acl/{name}-policy"
   access:
     auth-kubernetes:
       roles: "auth/k8s-auth-mount/role/{name}-role"
-      #roles: "/v1/auth/k8s-auth-mount/role/{name}-role"
   vaultDynamicSecret:
     list: "/apis/secrets.hashicorp.com/v1beta1/namespaces/{namespace}/vaultdynamicsecrets"
     get: "/apis/secrets.hashicorp.com/v1beta1/namespaces/{namespace}/vaultdynamicsecrets/{name}-vault-dynamic-secret"

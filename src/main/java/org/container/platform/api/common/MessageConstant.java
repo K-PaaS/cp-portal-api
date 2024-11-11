@@ -82,8 +82,8 @@ public enum MessageConstant {
     NOT_PRIVATE_KEY_FILE("key 파일 형식이 아닙니다.", "This is not a key file."),
 
     NOT_CERTIFICATE_FILE("crt 파일 형식이 아닙니다.", "This is not a crt file."),
-    NOT_DOCKER_CONFIG_FILE("Docker config 파일 형식이 아닙니다.", "This is not a docker config file.");
-
+    NOT_DOCKER_CONFIG_FILE("Docker config 파일 형식이 아닙니다.", "This is not a docker config file."),
+    DUPLICATE_NAME("Name이 중복입니다.","Name is duplicated.");
 
     private String ko_msg;
     private String eng_msg;

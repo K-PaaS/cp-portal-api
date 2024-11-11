@@ -67,9 +67,6 @@ public class VaultService {
     public Object write(String path, Object body){
         if (path.contains("database") || path.contains("policies") || path.contains("auth")) {
 
-           /* Map<String, Object> data = new HashMap<>();
-            data.put("database", body);*/
-
             return vaultTemplate.write(path, body);
         } else {
             path = setPath(path);

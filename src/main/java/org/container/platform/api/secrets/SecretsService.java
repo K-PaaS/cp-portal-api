@@ -1,15 +1,20 @@
 package org.container.platform.api.secrets;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.container.platform.api.clusters.clusters.ClustersService;
 import org.container.platform.api.common.*;
 import org.container.platform.api.common.model.CommonResourcesYaml;
 import org.container.platform.api.common.model.Params;
 import org.container.platform.api.common.model.ResultStatus;
+import org.container.platform.api.exception.ResultStatusException;
 import org.container.platform.api.secrets.vaultSecrets.*;
 import org.container.platform.api.workloads.deployments.DeploymentsList;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
+import org.yaml.snakeyaml.constructor.DuplicateKeyException;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -33,6 +38,8 @@ public class SecretsService {
     private final ResourceYamlService resourceYamlService;
     private final TemplateService templateService;
     private final VaultService vaultService;
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(ClustersService.class);
 
     /**
      * Instantiates a new Secrets service
@@ -120,7 +127,6 @@ public class SecretsService {
                             map.put("applicableStatus", STATUS_HOLD);
                         }
                     }
-
                 }
 
             } else {
@@ -225,7 +231,6 @@ public class SecretsService {
                     }
                 }
             }
-
         }
 
         databaseCredentials.setData(databaseCredentialsData);
@@ -262,7 +267,7 @@ public class SecretsService {
         databaseCredentials.setDefault_ttl(databaseRoles.getData().getDefault_ttl());
         databaseCredentials.setMax_ttl(databaseRoles.getData().getMax_ttl());
 
-        //DB 상세 조회 후
+        //DB 상세 조회
         VaultDatabaseSecrets getVDS = restTemplateService.sendGlobal(Constants.TARGET_COMMON_API, "/vaultDatabaseSecrets/{name:.+}"
                 .replace("{name:.+}", params.getResourceName()), HttpMethod.GET, null, VaultDatabaseSecrets.class, params);
 
@@ -355,15 +360,20 @@ public class SecretsService {
 
             //DB에 database-secret 이름 저장
             VaultDatabaseSecrets vaultDatabaseSecrets = setVaultDatabaseSecrets(params);
-            restTemplateService.sendGlobal(Constants.TARGET_COMMON_API, "/vaultDatabaseSecrets", HttpMethod.POST, vaultDatabaseSecrets, VaultDatabaseSecrets.class, params);
+            try {
+                restTemplateService.sendGlobal(Constants.TARGET_COMMON_API, "/vaultDatabaseSecrets", HttpMethod.POST, vaultDatabaseSecrets, VaultDatabaseSecrets.class, params);
+            } catch (DuplicateKeyException e) {
+                LOGGER.info("DB_REGISTRATION_FAILED : " + CommonUtils.loggerReplace(e.getMessage()));
+                throw new ResultStatusException(MessageConstant.DUPLICATE_NAME.getMsg());
+            }
 
-            // database-secret config 생성
+            //database-secret config 생성
             vaultService.write(propertyService.getVaultSecretsEnginesDatabaseConnectionsPath().replace("{name}", params.getMetadataName()), templateService.convert("create_vault_secret_engine_database_postgres_config.ftl", map));
 
-            // database-secret role 생성
+            //database-secret role 생성
             vaultService.write(propertyService.getVaultSecretsEnginesDatabaseRolesPath().replace("{name}", params.getMetadataName()), templateService.convert("create_vault_secret_engine_database_postgres_role.ftl", map));
 
-            // database-secret/creds의 policy 생성
+            //database-secret/creds의 policy 생성
             vaultService.write(propertyService.getVaultPolicies().replace("{name}", params.getMetadataName()), templateService.convert("create_vault_policy.ftl", map));
 
         }
@@ -419,7 +429,7 @@ public class SecretsService {
         yamlHead = resourceYaml.substring(0, idx);
         yamlBody = resourceYaml.substring(idx);
 
-        // yaml 수정
+        //yaml 수정
         stringBuilder.append(yamlHead);
         stringBuilder.append(templateService.convert("create_vault_secret_inject.ftl", map));
         stringBuilder.append(yamlBody);
@@ -434,7 +444,7 @@ public class SecretsService {
 
         restTemplateService.sendGlobal(Constants.TARGET_COMMON_API, "/vaultDatabaseSecrets", HttpMethod.PUT, vaultDatabaseSecrets, VaultDatabaseSecrets.class, params);
 
-        // yaml 생성
+        //yaml 생성
         ResultStatus resultStatus = restTemplateService.sendYaml(Constants.TARGET_CP_MASTER_API,
                 propertyService.getCpMasterApiListDeploymentsUpdateUrl(), HttpMethod.PUT, ResultStatus.class, params);
         return (ResultStatus) commonService.setResultModel(resultStatus, Constants.RESULT_STATUS_SUCCESS);
@@ -524,13 +534,13 @@ public class SecretsService {
        restTemplateService.sendGlobal(Constants.TARGET_COMMON_API, "/vaultDatabaseSecrets/{name:.+}"
                 .replace("{name:.+}", params.getDbService()), HttpMethod.DELETE, null, VaultDatabaseSecrets.class, params);
 
-        // database-secret config 삭제
+        //database-secret config 삭제
         vaultService.delete(propertyService.getVaultSecretsEnginesDatabaseConnectionsPath().replace("{name}", params.getDbService()));
 
-        // database-secret role 생성
+        //database-secret role 생성
         vaultService.delete(propertyService.getVaultSecretsEnginesDatabaseRolesPath().replace("{name}", params.getDbService()));
 
-        // database-secret/creds의 policy 삭제
+        //database-secret/creds의 policy 삭제
         vaultService.delete(propertyService.getVaultPolicies().replace("{name}", params.getDbService()));
 
         return (ResultStatus) commonService.setResultModel(resultStatus, Constants.RESULT_STATUS_SUCCESS);
@@ -565,16 +575,14 @@ public class SecretsService {
      * @return the resultStatus
      */
     public ResultStatus updateVaultSecrets(Params params) {
-
+        ResultStatus resultStatus = new ResultStatus();
         Map map = new HashMap();
 
         map.put("name", params.getMetadataName());
         map.put("defaultTtl", params.getDefaultTtl());
         map.put("maxTtl", params.getMaxTtl());
 
-        ResultStatus resultStatus = restTemplateService.sendVault(Constants.TARGET_VAULT_URL, propertyService.getVaultSecretsEnginesDatabaseRolesPath().replace("{name}", params.getMetadataName()),
-                HttpMethod.PUT, templateService.convert("create_vault_secret_engine_database_postgres_role.ftl", map) , ResultStatus.class, params);
-        //vaultService.write(propertyService.getVaultSecretsEnginesDatabaseRolesPath().replace("{name}", params.getMetadataName()), templateService.convert("create_vault_secret_engine_database_postgres_role.ftl", map));
+        vaultService.write(propertyService.getVaultSecretsEnginesDatabaseRolesPath().replace("{name}", params.getMetadataName()), templateService.convert("create_vault_secret_engine_database_postgres_role.ftl", map));
         return (ResultStatus) commonService.setResultModel(resultStatus, Constants.RESULT_STATUS_SUCCESS);
 
     }

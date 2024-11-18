@@ -91,7 +91,7 @@ cp:
 
 cpNamespace:
   defaultNamespace: cp-portal-temp-namespace
-  exceptNamespace: ${cpNamespace.defaultNamespace}, all
+  exceptNamespace: ${cpNamespace.defaultNamespace}, all, ALL, chaos-mesh, cp-pipeline, cp-portal, cp-source-control, harbor, ingress-nginx, keycloak, kube-node-lease, kube-public, kube-system, mariadb, metallb-system, vault
   clusterAdminNamespace: kube-system
   role:
     list: cp-init-role, cp-admin-role

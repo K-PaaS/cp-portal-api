@@ -171,7 +171,7 @@ public class UsersController {
     })
     @GetMapping(value = "/clusters/{cluster:.+}/users/nonOperationalNamespacesList")
     public UsersList getUserMappedNamespacesExcludingOperational(Params params) {
-        List<String> namespacesToExclude = Arrays.asList(propertyService.getExceptNamespaceList().toString());
+        List<String> namespacesToExclude = propertyService.getExceptNamespaceList();
         UsersList usersList = getNamespacesListByUserOwns(params);
         List<Users> filteredItems = usersList.getItems().stream()
                 .filter(user -> !namespacesToExclude.contains(user.getCpNamespace()))

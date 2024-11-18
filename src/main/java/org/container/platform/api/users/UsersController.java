@@ -36,13 +36,15 @@ public class UsersController {
     private final NamespacesService namespacesService;
     private final CommonService commonService;
     private final RestTemplateService restTemplateService;
+    private final PropertyService propertyService;
 
     @Autowired
-    public UsersController(UsersService usersService, NamespacesService namespacesService, CommonService commonService, RestTemplateService restTemplateService) {
+    public UsersController(UsersService usersService, NamespacesService namespacesService, CommonService commonService, RestTemplateService restTemplateService, PropertyService propertyService) {
         this.usersService = usersService;
         this.namespacesService = namespacesService;
         this.commonService = commonService;
         this.restTemplateService = restTemplateService;
+        this.propertyService = propertyService;
     }
 
 
@@ -169,7 +171,7 @@ public class UsersController {
     })
     @GetMapping(value = "/clusters/{cluster:.+}/users/nonOperationalNamespacesList")
     public UsersList getUserMappedNamespacesExcludingOperational(Params params) {
-        List<String> namespacesToExclude = Arrays.asList("ALL", "chaos-mesh", "cp-pipeline", "cp-portal", "cp-source-control", "harbor", "ingress-nginx", "keycloak", "kube-node-lease", "kube-public", "kube-system", "mariadb", "metallb-system", "vault", "vault-secrets-operator-system");
+        List<String> namespacesToExclude = Arrays.asList(propertyService.getExceptNamespaceList().toString());
         UsersList usersList = getNamespacesListByUserOwns(params);
         List<Users> filteredItems = usersList.getItems().stream()
                 .filter(user -> !namespacesToExclude.contains(user.getCpNamespace()))

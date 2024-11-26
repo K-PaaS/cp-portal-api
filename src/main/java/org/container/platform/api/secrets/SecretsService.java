@@ -3,6 +3,7 @@ package org.container.platform.api.secrets;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.container.platform.api.clusters.clusters.ClustersService;
 import org.container.platform.api.common.*;
+import org.container.platform.api.common.model.CommonItemMetaData;
 import org.container.platform.api.common.model.CommonResourcesYaml;
 import org.container.platform.api.common.model.Params;
 import org.container.platform.api.common.model.ResultStatus;
@@ -80,6 +81,7 @@ public class SecretsService {
      */
     public DatabaseInfoList getVaultSecretsList(Params params) {
         DatabaseInfoList databaseInfoList = new DatabaseInfoList();
+        CommonItemMetaData commonItemMetaData = new CommonItemMetaData();
 
         List<Map<String,String>> list = null;
         list = new ArrayList<>();
@@ -135,6 +137,9 @@ public class SecretsService {
 
             list.add(map);
             databaseInfoList.setItems(list);
+            commonItemMetaData.setAllItemCount(databaseInfoList.getItems().size());
+            commonItemMetaData.setRemainingItemCount(databaseInfoList.getItems().size()-10);
+            databaseInfoList.setItemMetaData(commonItemMetaData);
         }
 
         return (DatabaseInfoList) commonService.setResultModel(databaseInfoList, Constants.RESULT_STATUS_SUCCESS);

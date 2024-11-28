@@ -36,6 +36,7 @@ public class Users {
     public String clusterProviderType;
     public String clusterApiUrl;
     public String clusterToken;
+    public String clusterType;
     public String cpNamespace;
     public String cpAccountTokenName;
     public String serviceAccountName;

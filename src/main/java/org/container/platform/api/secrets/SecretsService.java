@@ -81,7 +81,6 @@ public class SecretsService {
      */
     public DatabaseInfoList getVaultSecretsList(Params params) {
         DatabaseInfoList databaseInfoList = new DatabaseInfoList();
-        CommonItemMetaData commonItemMetaData = new CommonItemMetaData();
 
         List<Map<String,String>> list = null;
         list = new ArrayList<>();
@@ -137,11 +136,21 @@ public class SecretsService {
 
             list.add(map);
             databaseInfoList.setItems(list);
-            commonItemMetaData.setAllItemCount(databaseInfoList.getItems().size());
-            commonItemMetaData.setRemainingItemCount(databaseInfoList.getItems().size()-10);
-            databaseInfoList.setItemMetaData(commonItemMetaData);
         }
 
+        List resourceItemList;
+        resourceItemList = databaseInfoList.getItems();
+
+        if (params.getSearchName() != null && !params.getSearchName().equals("")) {
+            resourceItemList = commonService.searchKeywordForGlobalResourceName(resourceItemList, params.getSearchName().trim());
+        }
+
+        CommonItemMetaData commonItemMetaData = commonService.setCommonItemMetaData(resourceItemList, params.getOffset(), params.getLimit());
+        databaseInfoList.setItemMetaData(commonItemMetaData);
+
+        resourceItemList = commonService.subListforLimit(resourceItemList, params.getOffset(), params.getLimit());
+
+        databaseInfoList.setItems(resourceItemList);
         return (DatabaseInfoList) commonService.setResultModel(databaseInfoList, Constants.RESULT_STATUS_SUCCESS);
     }
 

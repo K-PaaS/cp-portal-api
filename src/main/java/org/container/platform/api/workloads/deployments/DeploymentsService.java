@@ -72,10 +72,10 @@ public class DeploymentsService {
         VaultDatabaseSecretsList getVDSList = restTemplateService.sendGlobal(Constants.TARGET_COMMON_API, "/vaultDatabaseSecrets",
                 HttpMethod.GET, null, VaultDatabaseSecretsList.class, params);
 
-        for (int i=0; i < deploymentsList.getItems().size(); i++) {
+        for (int i=deploymentsList.getItems().size()-1; i >= 0; i--) {
             String deployment = deploymentsList.getItems().get(i).getName();
             String namespace = deploymentsList.getItems().get(i).getNamespace();
-            for (int j=0; j < getVDSList.getItems().size(); j++) {
+            for (int j=getVDSList.getItems().size()-1; j >= 0 ; j--) {
                 String appDeployment = getVDSList.getItems().get(j).getAppName();
                 String appNamespace = getVDSList.getItems().get(j).getAppNamespace();
                 if (namespace.equals(appNamespace) && deployment.equals(appDeployment)) {

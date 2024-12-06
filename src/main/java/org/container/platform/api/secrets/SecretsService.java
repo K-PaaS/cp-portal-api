@@ -85,7 +85,11 @@ public class SecretsService {
         List<Map<String,String>> list = null;
         list = new ArrayList<>();
 
+        List<Map<String,String>> searchList = null;
+        searchList = new ArrayList<>();
+
         Map<String, String> map = null;
+        Map<String, String> searchMap = null;
 
         VaultDatabaseSecretsList getVDSList = restTemplateService.sendGlobal(Constants.TARGET_COMMON_API, "/vaultDatabaseSecrets", HttpMethod.GET, null, VaultDatabaseSecretsList.class, params);
 
@@ -142,7 +146,27 @@ public class SecretsService {
         resourceItemList = databaseInfoList.getItems();
 
         if (params.getSearchName() != null && !params.getSearchName().equals("")) {
-            resourceItemList = commonService.searchKeywordForGlobalResourceName(resourceItemList, params.getSearchName().trim());
+            ObjectMapper objectMapper = new ObjectMapper();
+            for (int i=0; i < resourceItemList.size(); i++) {
+                HashMap hashMap = (HashMap) resourceItemList.get(i);
+                Map<String, String> mapName = objectMapper.convertValue(hashMap, Map.class);
+                for (Map.Entry<String, String> entry : mapName.entrySet()) {
+                    if (entry.getKey().equals(RESOURCE_NAME)) {
+                        String name = String.valueOf(entry.getValue());
+                        if (name.contains(params.getSearchName().trim())) {
+                            searchList.add(hashMap);
+                        }
+                    }
+                }
+            }
+
+            CommonItemMetaData commonItemMetaData = commonService.setCommonItemMetaData(searchList, params.getOffset(), params.getLimit());
+            databaseInfoList.setItemMetaData(commonItemMetaData);
+
+            searchList = commonService.subListforLimit(searchList, params.getOffset(), params.getLimit());
+
+            databaseInfoList.setItems(searchList);
+            return (DatabaseInfoList) commonService.setResultModel(databaseInfoList, Constants.RESULT_STATUS_SUCCESS);
         }
 
         CommonItemMetaData commonItemMetaData = commonService.setCommonItemMetaData(resourceItemList, params.getOffset(), params.getLimit());

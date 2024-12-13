@@ -93,6 +93,11 @@ public class SecretsService {
 
         VaultDatabaseSecretsList getVDSList = restTemplateService.sendGlobal(Constants.TARGET_COMMON_API, "/vaultDatabaseSecrets", HttpMethod.GET, null, VaultDatabaseSecretsList.class, params);
 
+        if (getVDSList.getItems().isEmpty()) {
+            List<Map<String,String>> listEmpty = new ArrayList<>();
+            databaseInfoList.setItems(listEmpty);
+        }
+
         for (int i=0; i < getVDSList.getItems().size(); i++) {
 
             map = new HashMap<>();

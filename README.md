@@ -1,50 +1,53 @@
 ## Related Repositories
 
 <table>
+<thead>
   <tr>
-    <td colspan=2 align=center>플랫폼</td>
-    <td colspan=2 align=center><a href="https://github.com/K-PaaS/cp-deployment">컨테이너 플랫폼</a></td>
-    <td colspan=2 align=center><a href="https://github.com/K-PaaS/sidecar-deployment">사이드카</a></td>
-    <td colspan=2 align=center><a href="https://github.com/K-PaaS/ap-deployment">어플리케이션 플랫폼</a></td>
+    <th>플랫폼</th>
+    <th><a href="https://github.com/K-PaaS/cp-deployment">컨테이너 플랫폼</a></th>
+    <th>&nbsp;&nbsp;&nbsp;<a href="https://github.com/K-PaaS/sidecar-deployment.git">사이드카</a>&nbsp;&nbsp;&nbsp;</th>
+  </tr>
+</thead>
+<tbody>
+  <tr>
+    <td align="center">포털</td>
+    <td align="center"><a href="https://github.com/K-PaaS/cp-portal-release">CP 포털</a></td>
+    <td align="center">-</td>
   </tr>
   <tr>
-    <td colspan=2 align=center>포털</td>
-    <td colspan=2 align=center><a href="https://github.com/K-PaaS/cp-portal-release">CP 포털</a></td>
-    <td colspan=2 align=center>-</td>
-    <td colspan=2 align=center><a href="https://github.com/K-PaaS/portal-deployment">AP 포털</a></td>
+    <td rowspan="8">Component <br>/서비스</td>
+    <td align="center"><a href="https://github.com/K-PaaS/cp-portal-ui">Portal UI</a></td>
+    <td align="center"><a href="https://github.com/K-PaaS/sidecar-portal-ui">Portal UI</a></td>
   </tr>
-  <tr align=center>
-    <td colspan=2 rowspan=9>Component<br>/ 서비스</td>
-    <td colspan=2><a href="https://github.com/K-PaaS/cp-portal-common-api">Common API</a></td>
-    <td colspan=2>-</td>
-    <td colspan=2><a href="https://github.com/K-PaaS/ap-mongodb-shard-release">MongoDB</a></td>
+  <tr>
+    <td align="center"><a href="https://github.com/K-PaaS/cp-portal-api">🚩Portal API</a></td>
+    <td align="center"><a href="https://github.com/K-PaaS/sidecar-portal-api">Portal API</a></td>
   </tr>
-  <tr align=center>
-    <td colspan=2><a href="https://github.com/K-PaaS/cp-metrics-api">Metric API</a></td>
-    <td colspan=2>  </td>
-    <td colspan=2><a href="https://github.com/K-PaaS/ap-mysql-release">MySQL</a></td>
+  <tr>
+    <td align="center"><a href="https://github.com/K-PaaS/cp-portal-common-api">Common API</a></td>
+    <td align="center"></td>
   </tr>
-  <tr align=center>
-    <td colspan=2><a href="https://github.com/K-PaaS/cp-portal-api">🚩Portal API</a></td>
-    <td colspan=2>  </td>
-    <td colspan=2><a href="https://github.com/K-PaaS/ap-pipeline-release">Pipeline</a></td>
+  <tr>
+    <td align="center"><a href="https://github.com/K-PaaS/cp-metrics-api">Metric API</a></td>
+    <td align="center"></td>
   </tr>
-  <tr align=center>
-    <td colspan=2><a href="https://github.com/K-PaaS/cp-portal-ui">Portal UI</a></td>
-    <td colspan=2>  </td>
-    <td colspan=2><a href="https://github.com/K-PaaS/ap-rabbitmq-release">RabbintMQ</a></td>
+  <tr>
+    <td align="center"><a href="https://github.com/K-PaaS/cp-terraman">Terraman API</a></td>
+    <td align="center"></td>
   </tr>
-  <tr align=center>
-    <td colspan=2><a href="https://github.com/K-PaaS/cp-portal-service-broker">Service Broker</a></td>
-    <td colspan=2>  </td>
-    <td colspan=2><a href="https://github.com/K-PaaS/ap-on-demand-redis-release">Redis</a></td>
+  <tr>
+    <td align="center"><a href="https://github.com/K-PaaS/cp-catalog-api">Catalog API</a></td>
+    <td align="center"></td>
   </tr>
-  <tr align=center>
-    <td colspan=2><a href="https://github.com/K-PaaS/cp-terraman">Terraman API</a></td>
-    <td colspan=2>  </td>
-    <td colspan=2><a href="https://github.com/K-PaaS/ap-source-control-release">SoureceControl</a></td>
+  <tr>
+    <td align="center"><a href="https://github.com/K-PaaS/cp-chaos-api">Chaos API</a></td>
+    <td align="center"></td>
   </tr>
-</table>
+  <tr>
+    <td align="center"><a href="https://github.com/K-PaaS/cp-chaos-collector">Chaos Collector API</a></td>
+    <td align="center"></td>
+  </tr>
+</tbody></table>
 
 <i>🚩 You are here.</i>
 

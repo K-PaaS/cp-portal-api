@@ -2,7 +2,6 @@ package org.container.platform.api.metrics;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
 import java.util.Map;
 
 @Data

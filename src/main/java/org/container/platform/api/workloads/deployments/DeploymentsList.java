@@ -8,7 +8,6 @@ import org.container.platform.api.common.model.CommonItemMetaData;
 import org.container.platform.api.common.model.CommonMetaData;
 import org.container.platform.api.workloads.deployments.support.DeploymentsSpec;
 import org.container.platform.api.workloads.deployments.support.DeploymentsStatus;
-
 import java.util.ArrayList;
 import java.util.List;
 

@@ -5,7 +5,6 @@ import lombok.Data;
 import org.container.platform.api.common.model.CommonItemMetaData;
 import org.container.platform.api.common.model.CommonMetaData;
 import org.container.platform.api.common.model.CommonSpec;
-
 import java.util.List;
 import java.util.Map;
 

@@ -1,14 +1,10 @@
 package org.container.platform.api.users;
 
 import java.util.List;
-
 import lombok.Builder;
 import lombok.Data;
 import org.container.platform.api.common.model.CommonItemMetaData;
-
 import org.springframework.util.ObjectUtils;
-import org.springframework.util.StringUtils;
-
 import org.container.platform.api.common.CommonUtils;
 import org.container.platform.api.common.Constants;
 

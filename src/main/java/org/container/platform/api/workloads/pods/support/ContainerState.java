@@ -2,8 +2,6 @@ package org.container.platform.api.workloads.pods.support;
 
 import lombok.Data;
 
-import java.util.Map;
-
 /**
  * ContainerState Item Model 클래스
  *

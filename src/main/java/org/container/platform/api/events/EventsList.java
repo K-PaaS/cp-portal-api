@@ -3,6 +3,7 @@ package org.container.platform.api.events;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 import org.container.platform.api.common.CommonUtils;
+import org.container.platform.api.common.Constants;
 import org.container.platform.api.common.model.CommonItemMetaData;
 import org.container.platform.api.common.model.CommonMetaData;
 import org.container.platform.api.events.support.EventInvolvedObject;
@@ -79,7 +80,7 @@ class EventsListItem {
     }
 
     public String getFirstTimestamp() {
-        return CommonUtils.procReplaceNullValue(firstTimestamp);
+        return procEmpty(CommonUtils.procSetTimestamp(firstTimestamp));
     }
 
     public void setFirstTimestamp(String firstTimestamp) {
@@ -87,7 +88,7 @@ class EventsListItem {
     }
 
     public String getLastTimestamp() {
-        return CommonUtils.procReplaceNullValue(lastTimestamp);
+        return procEmpty(CommonUtils.procSetTimestamp(lastTimestamp));
     }
 
     public void setLastTimestamp(String lastTimestamp) {
@@ -116,5 +117,9 @@ class EventsListItem {
 
     public void setCreationTimestamp(String creationTimestamp) {
         this.creationTimestamp = creationTimestamp;
+    }
+
+    public String procEmpty(String date){
+        return (date.equals("")) ? Constants.NULL_REPLACE_TEXT : date;
     }
 }

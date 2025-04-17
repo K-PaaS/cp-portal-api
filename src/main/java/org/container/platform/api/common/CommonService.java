@@ -460,35 +460,6 @@ public class CommonService {
         return (T) resourceReturnList;
     }
 
-
-    /**
-     * 리소스 목록 조회 제외 대상 네임스페이스 fieldSelector 생성 (Create Except Namespace Field Selector)
-     *
-     * @param type the type
-     * @return the string
-     */
-/*
-    public String generateFieldSelectorForExceptNamespace(String type) {
-
-        String fieldSelector = "?fieldSelector=";
-        String query = "metadata.namespace!=";
-
-        if (type.equals(Constants.RESOURCE_CLUSTER)) {
-            query = "metadata.name!=";
-        }
-
-        for (String namespace : ignoreNamespaceList) {
-            fieldSelector += query + namespace + Constants.separatorString;
-        }
-
-        // remove last char (separator)
-        fieldSelector = fieldSelector.replaceFirst(".$", "");
-
-        return fieldSelector;
-    }
-*/
-
-
     /**
      * Nodes 명에 따른 Pods 목록조회 fieldSelector 생성 (Create Field Selector For pods By NodeNames)
      *

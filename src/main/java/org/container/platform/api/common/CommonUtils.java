@@ -1,7 +1,6 @@
 package org.container.platform.api.common;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -11,10 +10,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.TimeZone;
 import java.util.regex.Pattern;
-
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
-
 import org.container.platform.api.common.model.CommonOwnerReferences;
 import org.container.platform.api.common.model.ResultStatus;
 import org.container.platform.api.storages.persistentVolumes.support.ObjectReference;

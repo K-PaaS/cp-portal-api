@@ -1,9 +1,9 @@
 package org.container.platform.api.workloads.deployments;
 
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiImplicitParam;
-import io.swagger.annotations.ApiImplicitParams;
-import io.swagger.annotations.ApiOperation;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.container.platform.api.common.model.CommonResourcesYaml;
 import org.container.platform.api.common.model.Params;
 import org.container.platform.api.common.model.ResultStatus;
@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.*;
  * @version 1.0
  * @since 2022.05.20
  */
-@Api(value = "DeploymentsController v1")
+@Tag(name = "DeploymentsController v1")
 @RestController
 @RequestMapping("/clusters/{cluster:.+}/namespaces/{namespace:.+}/deployments")
 public class DeploymentsController {
@@ -41,10 +41,8 @@ public class DeploymentsController {
      * @param params the params
      * @return the deployments list
      */
-    @ApiOperation(value = "Deployments 목록 조회(Get Deployments List)", nickname = "getDeploymentsList")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
-    })
+    @Operation(summary = "Deployments 목록 조회(Get Deployments List)", operationId = "getDeploymentsList")
+    @Parameter(name = "params", description = "request parameters", required = true, schema=@Schema(implementation = Params.class))
     @GetMapping
     public DeploymentsList getDeploymentsList(Params params) {
         return deploymentsService.getDeploymentsList(params);
@@ -56,10 +54,8 @@ public class DeploymentsController {
      * @param params the params
      * @return the deployments list
      */
-    @ApiOperation(value = "Deployments Vault Secret 목록 조회(Get Deployments List)", nickname = "getDeploymentsVaultSecretList")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
-    })
+    @Operation(summary = "Deployments Vault Secret 목록 조회(Get Deployments List)", operationId = "getDeploymentsVaultSecretList")
+    @Parameter(name = "params", description = "request parameters", required = true, schema=@Schema(implementation = Params.class))
     @GetMapping(value = "/vaultSecret")
     public DeploymentsList getDeploymentsVaultSecretList(Params params) {
         return deploymentsService.getDeploymentsVaultSecretList(params);
@@ -71,10 +67,8 @@ public class DeploymentsController {
      * @param params the params
      * @return the deployments detail
      */
-    @ApiOperation(value = "Deployments 상세 조회(Get Deployments Detail)", nickname = "getDeployments")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
-    })
+    @Operation(summary = "Deployments 상세 조회(Get Deployments Detail)", operationId = "getDeployments")
+    @Parameter(name = "params", description = "request parameters", required = true, schema=@Schema(implementation = Params.class))
     @GetMapping(value = "/{resourceName:.+}")
     public Deployments getDeployments(Params params) {
         return deploymentsService.getDeployments(params);
@@ -87,10 +81,8 @@ public class DeploymentsController {
      * @param params the params
      * @return the deployments yaml
      */
-    @ApiOperation(value = "Deployments YAML 조회(Get Deployments Yaml)", nickname = "getDeploymentsYaml")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
-    })
+    @Operation(summary = "Deployments YAML 조회(Get Deployments Yaml)", operationId = "getDeploymentsYaml")
+    @Parameter(name = "params", description = "request parameters", required = true, schema=@Schema(implementation = Params.class))
     @GetMapping(value = "/{resourceName:.+}/yaml")
     public CommonResourcesYaml getDeploymentsYaml(Params params) {
         return deploymentsService.getDeploymentsYaml(params);
@@ -103,10 +95,8 @@ public class DeploymentsController {
      * @param params the params
      * @return the resultStatus
      */
-    @ApiOperation(value = "Deployments 생성(Create Deployments)", nickname = "createDeployments")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
-    })
+    @Operation(summary = "Deployments 생성(Create Deployments)", operationId = "createDeployments")
+    @Parameter(name = "params", description = "request parameters", required = true, schema=@Schema(implementation = Params.class))
     @PostMapping
     public Object createDeployments(@RequestBody Params params) throws Exception {
         if (params.getYaml().contains("---")) {
@@ -123,10 +113,8 @@ public class DeploymentsController {
      * @param params the params
      * @return the resultStatus
      */
-    @ApiOperation(value = "Deployments 수정(Update Deployments)", nickname = "updateDeployments")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
-    })
+    @Operation(summary = "Deployments 수정(Update Deployments)", operationId = "updateDeployments")
+    @Parameter(name = "params", description = "request parameters", required = true, schema=@Schema(implementation = Params.class))
     @PutMapping("/{resourceName:.+}")
     public ResultStatus updateDeployments(@RequestBody Params params) {
         return deploymentsService.updateDeployments(params);
@@ -139,10 +127,8 @@ public class DeploymentsController {
      * @param params the params
      * @return the resultStatus
      */
-    @ApiOperation(value = "Deployments 삭제(Delete Deployments)", nickname = "deleteDeployments")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
-    })
+    @Operation(summary = "Deployments 삭제(Delete Deployments)", operationId = "deleteDeployments")
+    @Parameter(name = "params", description = "request parameters", required = true, schema=@Schema(implementation = Params.class))
     @DeleteMapping("/{resourceName:.+}")
     public ResultStatus deleteDeployments(Params params) {
         return deploymentsService.deleteDeployments(params);

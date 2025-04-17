@@ -2,9 +2,7 @@ package org.container.platform.api.users.serviceAccount;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
-import org.container.platform.api.common.model.CommonItemMetaData;
 import org.container.platform.api.common.model.CommonMetaData;
-
 import java.util.List;
 import java.util.Map;
 

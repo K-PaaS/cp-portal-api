@@ -9,15 +9,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.vault.core.VaultTemplate;
 import org.springframework.vault.support.VaultResponse;
-
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
 @Service
 public class VaultService {
-
-    Logger logger = LoggerFactory.getLogger(VaultService.class);
 
     @Autowired
     VaultTemplate vaultTemplate;
@@ -31,6 +28,8 @@ public class VaultService {
     @Autowired
     TemplateService templateService;
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(VaultService.class);
+
     /**
      * Vault read를 위한 method
      *
@@ -38,19 +37,17 @@ public class VaultService {
      * @return the object
      */
     @TrackExecutionTime
-    public <T> T read(String path,  Class<T> requestClass) {
+    public <T> T read(String path, Class<T> requestClass) {
+
         if (path.contains("database")) {
 
-            Object response = Optional.ofNullable(vaultTemplate.read(path));
+            Object response = Optional.of(vaultTemplate.read(path));
 
             return commonService.setResultObject(response, requestClass);
         } else {
             path = setPath(path);
-            Object response2 = Optional.ofNullable(vaultTemplate.read(path))
-                    .map(VaultResponse::getData)
-                    .filter(x -> x.keySet().contains("data"))
-                    .orElseGet(HashMap::new)
-                    .getOrDefault("data", null);
+
+            Object response2 = Optional.of(vaultTemplate.read(path)).map(VaultResponse::getData).filter(x -> x.containsKey("data")).orElseGet(HashMap::new).getOrDefault("data", null);
 
             return commonService.setResultObject(response2, requestClass);
         }
@@ -64,7 +61,8 @@ public class VaultService {
      * @return the object
      */
     @TrackExecutionTime
-    public Object write(String path, Object body){
+    public Object write(String path, Object body) {
+
         if (path.contains("database") || path.contains("policies") || path.contains("auth")) {
 
             return vaultTemplate.write(path, body);
@@ -113,9 +111,18 @@ public class VaultService {
      */
     public Clusters getClusterDetails(String clusterId) {
         Assert.hasText(clusterId);
-        return read(propertyService.getVaultSecretsEnginesKvClusterTokenPath().replace("{id}", clusterId), Clusters.class);
+        Clusters cluster = null;
+        try {
+            cluster = read(propertyService.getVaultSecretsEnginesKvClusterTokenPath().replace("{id}", clusterId), Clusters.class);
+        }
+        catch (NullPointerException e) {
+            LOGGER.info("No cluster details registered with this clusterId >> " + e.getMessage());
+        }
+        catch (Exception e) {
+            LOGGER.info("exception occurred while getting cluster details >> " + e.getMessage());
+        }
+        return cluster;
     }
-
 
 
     /**
@@ -124,13 +131,13 @@ public class VaultService {
      * @param params the params
      * @return the String
      */
-    public Clusters getClusterInfoDetails(Params params){
+    public Clusters getClusterInfoDetails(Params params) {
         Assert.hasText(params.getCluster());
         Assert.hasText(params.getUserType());
         String userType = params.getUserType();
 
-        if(!userType.equals(Constants.AUTH_SUPER_ADMIN)) Assert.hasText(params.getUserAuthId());
-        if(userType.equals(Constants.AUTH_USER)) Assert.hasText(params.getNamespace());
+        if (!userType.equals(Constants.AUTH_SUPER_ADMIN)) Assert.hasText(params.getUserAuthId());
+        if (userType.equals(Constants.AUTH_USER)) Assert.hasText(params.getNamespace());
 
         return read(getAccessTokenPath(params), Clusters.class);
     }
@@ -146,7 +153,7 @@ public class VaultService {
         delete(getAccessTokenPath(params));
     }
 
-    public String getAccessTokenPath(Params params){
+    public String getAccessTokenPath(Params params) {
         String userType = params.getUserType();
         String tokenPath;
 
@@ -156,11 +163,8 @@ public class VaultService {
                 break;
             case Constants.AUTH_CLUSTER_ADMIN:
             case Constants.AUTH_USER:
-                tokenPath = propertyService.getVaultSecretsEnginesKvUserTokenPath()
-                        .replace("{userAuthId}", params.getUserAuthId())
-                        .replace("{clusterId}", params.getCluster());
-                tokenPath = params.getUserType().equalsIgnoreCase(Constants.AUTH_CLUSTER_ADMIN) ?
-                        tokenPath.replace("/{namespace}", "") : tokenPath.replace("{namespace}", params.getNamespace());
+                tokenPath = propertyService.getVaultSecretsEnginesKvUserTokenPath().replace("{userAuthId}", params.getUserAuthId()).replace("{clusterId}", params.getCluster());
+                tokenPath = params.getUserType().equalsIgnoreCase(Constants.AUTH_CLUSTER_ADMIN) ? tokenPath.replace("/{namespace}", "") : tokenPath.replace("{namespace}", params.getNamespace());
                 break;
             default:
                 //WARN, Invalid userType

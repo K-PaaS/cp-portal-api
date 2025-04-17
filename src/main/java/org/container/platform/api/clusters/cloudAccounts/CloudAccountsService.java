@@ -247,13 +247,7 @@ public class CloudAccountsService {
         if (cloudAccounts.getProvider().equals(Constants.ProviderType.NAVER.name()) && getProviderInfo(params) != null) {
             cloudAccounts.setSite(params.getSite());
         }
-//        if (cloudAccounts.getProvider().equals(Constants.ProviderType.NAVER.name()) && getProviderInfo(params) != null) {
-//            cloudAccounts.setProject(params.getProject());
-//        }
-     /*   if(cloudAccounts.getProvider().equals(Constants.ProviderType.GCP.name()) && getProviderInfo(params) != null) {
-            GCPInfo gcpInfo = (GCPInfo) getProviderInfo(params);
-            cloudAccounts.setProject(gcpInfo.getProject_name());
-        }*/
+
         return cloudAccounts;
     }
 

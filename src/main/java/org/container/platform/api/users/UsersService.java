@@ -7,23 +7,18 @@ import org.container.platform.api.common.model.CommonStatusCode;
 import org.container.platform.api.common.model.Params;
 import org.container.platform.api.common.model.ResultStatus;
 import org.container.platform.api.exception.ResultStatusException;
-import org.container.platform.api.secrets.SecretsList;
 import org.container.platform.api.users.serviceAccount.ServiceAccountList;
 import org.container.platform.api.users.support.NamespaceRole;
-import org.container.platform.api.workloads.deployments.DeploymentsList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
-
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-
 import static org.container.platform.api.common.Constants.*;
 
 /**

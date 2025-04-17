@@ -327,13 +327,34 @@ public class NamespacesService {
         return commonService.setResultModel(namespacesListSupport, Constants.RESULT_STATUS_SUCCESS);
     }
 
-
     public UsersList getMappingNamespacesListByAdmin(Params params) {
         NamespacesList namespacesList = getNamespacesList(params);
         List<Users> items = namespacesList.getItems().stream().map(x -> new Users(x.getName())).collect(Collectors.toList());
         items.add(0, new Users(Constants.ALL_NAMESPACES.toUpperCase()));
         UsersList usersList = new UsersList(items);
         return (UsersList) commonService.setResultModel(usersList, Constants.RESULT_STATUS_SUCCESS);
+    }
+
+    /**
+     * Traffic 정책 여부 확인 (check Traffic Policy Managed)
+     *
+     * @param params the params
+     * @return the resultStatus
+     */
+    public ResultStatus checkTrafficPolicyManaged(Params params) {
+        params.setIsClusterToken(true);
+        NamespacesList namespacesList = getNamespacesList(params);
+        String isManaged = namespacesList.getItems().stream()
+                .filter(x -> isKpaasPolicy(x)).collect(Collectors.toList()).size() > 0 ? "true" : "false";
+        return new ResultStatus(RESULT_STATUS_SUCCESS, isManaged, CommonStatusCode.OK.getCode(), isManaged);
+    }
+
+    public boolean isKpaasPolicy(NamespacesListItem ns) {
+        String[] managedLabels = propertyService.getCpTrafficPolicyManagedLabels().split("=");
+        Map<String, String> labels = ns.getMetadata().getLabels();
+        return propertyService.getCpTrafficPolicyNamespace().equals(ns.getName()) &&
+                labels != null &&
+                managedLabels[1].equals(labels.get(managedLabels[0]));
     }
 
 }

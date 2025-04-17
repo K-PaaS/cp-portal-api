@@ -9,9 +9,7 @@ import org.container.platform.api.common.model.CommonStatus;
 import org.container.platform.api.customServices.ingresses.support.IngressesPaths;
 import org.container.platform.api.customServices.ingresses.support.IngressesRules;
 import org.container.platform.api.customServices.ingresses.support.IngressesSpec;
-
 import java.util.List;
-import java.util.Map;
 
 /**
  * Ingresses List Model 클래스

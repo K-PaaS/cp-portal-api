@@ -26,7 +26,6 @@ import org.container.platform.api.workloads.pods.support.PodsListItem;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
-
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -123,13 +122,13 @@ public class GlobalOverviewTestService {
                 // get pods list
                 podsList = podsService.getPodsList(params);
 
-                globalOverviewItems = new GlobalOverviewItems(Constants.RESULT_STATUS_SUCCESS, users.getClusterId(), users.getClusterName(), users.getClusterProviderType(),
+                globalOverviewItems = new GlobalOverviewItems(Constants.RESULT_STATUS_SUCCESS, users.getClusterId(), users.getClusterName(), users.getClusterType(), users.getClusterProviderType(),
                         getKubeletVersion(nodesList), getNodeCount(nodesList), getNamespaceCount(params), getPodCount(podsList),
                         getPvCount(params), getPvcCount(params), getClusterUsage(nodesList, nodesMetricsList));
 
             } catch (Exception e) {
                 LOGGER.info("GLOBAL OVERVIEW Exception: "+ CommonUtils.loggerReplace(e.getLocalizedMessage()));
-                globalOverviewItems = new GlobalOverviewItems(Constants.RESULT_STATUS_FAIL, users.getClusterId(), users.getClusterName(), users.getClusterProviderType());
+                globalOverviewItems = new GlobalOverviewItems(Constants.RESULT_STATUS_FAIL, users.getClusterId(), users.getClusterName(), users.getClusterType(), users.getClusterProviderType());
                 nodesList = new NodesList();
             }
 

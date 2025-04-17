@@ -1,8 +1,9 @@
 package org.container.platform.api.events;
 
-import io.swagger.annotations.ApiImplicitParam;
-import io.swagger.annotations.ApiImplicitParams;
-import io.swagger.annotations.ApiOperation;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.container.platform.api.common.model.Params;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
  * @version 1.0
  * @since 2022.05.25
  */
+@Tag(name = "EventsController v1")
 @RestController
 @RequestMapping("/clusters/{cluster:.+}/namespaces/{namespace:.+}/events")
 public class EventsController {
@@ -39,10 +41,8 @@ public class EventsController {
      * @param params the params
      * @return the events list
      */
-    @ApiOperation(value = "특정 Namespace 의 전체 Events 목록 조회(Get Events list in a Namespace)", nickname = "getNamespaceEventsList")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
-    })
+    @Operation(summary = "특정 Namespace 의 전체 Events 목록 조회(Get Events list in a Namespace)", operationId = "getNamespaceEventsList")
+    @Parameter(name = "params", description = "request parameters", required = true, schema=@Schema(implementation = Params.class))
     @GetMapping
     public Object getNamespaceEventsList(Params params) {
             return eventsService.getNamespaceEventsList(params);
@@ -55,10 +55,8 @@ public class EventsController {
      * @param params the params
      * @return the events list
      */
-    @ApiOperation(value = "Events 목록 조회(Get Events list)", nickname = "getEventsList")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
-    })
+    @Operation(summary = "Events 목록 조회(Get Events list)", operationId = "getEventsList")
+    @Parameter(name = "params", description = "request parameters", required = true, schema=@Schema(implementation = Params.class))
     @GetMapping(value = "/resources/{resourceUid:.+}")
     public EventsList getEventsList(Params params) {
             return eventsService.getEventsList(params);

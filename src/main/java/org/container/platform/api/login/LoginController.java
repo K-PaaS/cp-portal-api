@@ -2,10 +2,10 @@ package org.container.platform.api.login;
 
 
 import io.jsonwebtoken.impl.DefaultClaims;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiImplicitParam;
-import io.swagger.annotations.ApiImplicitParams;
-import io.swagger.annotations.ApiOperation;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.container.platform.api.common.Constants;
 import org.container.platform.api.common.MessageConstant;
 import org.container.platform.api.common.model.CommonStatusCode;
@@ -20,8 +20,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.web.bind.annotation.*;
-
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -34,7 +33,7 @@ import java.util.Map;
  * @version 1.0
  * @since 2020.09.28
  */
-@Api(value = "LoginController v1")
+@Tag(name = "LoginController v1")
 @RestController
 public class LoginController {
 
@@ -53,10 +52,8 @@ public class LoginController {
      * @param params the params
      * @return return is succeeded
      */
-    @ApiOperation(value = "사용자 로그인(User login)", nickname = "userLogin")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "authRequest", value = "로그인을 위한 사용자 정보", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
-    })
+    @Operation(summary = "사용자 로그인(User login)", operationId = "userLogin")
+    @Parameter(name = "params", description = "request parameters", required = true, schema=@Schema(implementation = Params.class))
     @NoAuth
     @PostMapping("/login")
     @ResponseBody

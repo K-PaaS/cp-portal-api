@@ -1,8 +1,9 @@
 package org.container.platform.api.clusters.hclTemplates;
 
-import io.swagger.annotations.ApiImplicitParam;
-import io.swagger.annotations.ApiImplicitParams;
-import io.swagger.annotations.ApiOperation;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.container.platform.api.common.model.Params;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
  * @version 1.0
  * @since 2022.06.30
  */
+@Tag(name = "HclTemplatesController v1")
 @RestController
 @RequestMapping("/templates")
 @PreAuthorize("@webSecurity.checkisGlobalAdmin()")
@@ -39,10 +41,8 @@ public class HclTemplatesController {
      * @param params the params
      * @return the hclTemplates detail
      */
-    @ApiOperation(value = "HclTemplates 상세 조회(Get HclTemplates)", nickname = "getHclTemplates")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
-    })
+    @Operation(summary = "HclTemplates 상세 조회(Get HclTemplates)", operationId = "getHclTemplates")
+    @Parameter(name = "params", description = "request parameters", required = true, schema=@Schema(implementation = Params.class))
     @GetMapping(value = "/{resourceUid:.+}")
     public Object getHclTemplates(Params params) {
         return hclTemplatesService.getHclTemplates(params);
@@ -55,10 +55,8 @@ public class HclTemplatesController {
      * @param params the params
      * @return the hclTemplates list
      */
-    @ApiOperation(value = "HclTemplates 목록 조회(Get HclTemplates List)", nickname = "getHclTemplatesList")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
-    })
+    @Operation(summary = "HclTemplates 목록 조회(Get HclTemplates List)", operationId = "getHclTemplatesList")
+    @Parameter(name = "params", description = "request parameters", required = true, schema=@Schema(implementation = Params.class))
     @GetMapping
     public HclTemplatesList getHclTemplatesList(Params params) {
         return hclTemplatesService.getHclTemplatesList(params);
@@ -70,10 +68,8 @@ public class HclTemplatesController {
      * @param params the params
      * @return the hclTemplates list
      */
-    @ApiOperation(value = "HclTemplates 타입 별 목록 조회(Get HclTemplates List By Provider)", nickname = "getHclTemplatesListByProvider")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
-    })
+    @Operation(summary = "HclTemplates 타입 별 목록 조회(Get HclTemplates List By Provider)", operationId = "getHclTemplatesListByProvider")
+    @Parameter(name = "params", description = "request parameters", required = true, schema=@Schema(implementation = Params.class))
     @GetMapping(value = "/provider/{providerType:.+}")
     public HclTemplatesList getHclTemplatesListByProvider(Params params) {
         return hclTemplatesService.getHclTemplatesListByProvider(params);
@@ -86,10 +82,8 @@ public class HclTemplatesController {
      * @param params the params
      * @return Object
      */
-    @ApiOperation(value = "HclTemplates 생성(Create HclTemplates)", nickname = "createHclTemplates")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
-    })
+    @Operation(summary = "HclTemplates 생성(Create HclTemplates)", operationId = "createHclTemplates")
+    @Parameter(name = "params", description = "request parameters", required = true, schema=@Schema(implementation = Params.class))
     @PreAuthorize("@webSecurity.checkisSuperAdmin()")
     @PostMapping
     public Object createHclTemplates(@RequestBody  Params params) {
@@ -103,10 +97,8 @@ public class HclTemplatesController {
      * @param params the params
      * @return Object
      */
-    @ApiOperation(value = "HclTemplates 수정(Update HclTemplates)", nickname = "updateHclTemplates")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
-    })
+    @Operation(summary = "HclTemplates 수정(Update HclTemplates)", operationId = "updateHclTemplates")
+    @Parameter(name = "params", description = "request parameters", required = true, schema=@Schema(implementation = Params.class))
     @PreAuthorize("@webSecurity.checkisSuperAdmin()")
     @PutMapping
     public Object updateHclTemplates(@RequestBody Params params) {
@@ -120,10 +112,8 @@ public class HclTemplatesController {
      * @param params the params
      * @return the Object
      */
-    @ApiOperation(value = "HclTemplates 삭제(Delete HclTemplates)", nickname = "deleteHclTemplates")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
-    })
+    @Operation(summary = "HclTemplates 삭제(Delete HclTemplates)", operationId = "deleteHclTemplates")
+    @Parameter(name = "params", description = "request parameters", required = true, schema=@Schema(implementation = Params.class))
     @PreAuthorize("@webSecurity.checkisSuperAdmin()")
     @DeleteMapping(value = "/{resourceUid:.+}")
     public Object deleteHclTemplates(Params params) {

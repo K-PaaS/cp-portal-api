@@ -1,10 +1,6 @@
 package org.container.platform.api.storages.persistentVolumes.support;
 
 import lombok.Data;
-import org.container.platform.api.common.model.CommonCondition;
-
-import java.util.List;
-import java.util.Map;
 
 /**
  * PersistentVolumes Status Model 클래스

@@ -79,6 +79,15 @@ public class PropertyService {
     @Value("${cpAnnotations.last-applied}")
     String cpAnnotationsLastApplied;
 
+    @Value("${cpNamespace.trafficPolicy.namespace}")
+    private String cpTrafficPolicyNamespace;
+
+    @Value("${cpNamespace.trafficPolicy.labels.managed}")
+    private String cpTrafficPolicyManagedLabels;
+
+    @Value("${cpNamespace.trafficPolicy.labels.allowed}")
+    private String cpTrafficPolicyAllowedLabels;
+
     //service
     @Value("${cpMaster.api.list.services.list}")
     private String cpMasterApiListServicesListUrl;
@@ -408,12 +417,6 @@ public class PropertyService {
 
     @Value("${cpMaster.api.list.ingresses.listAllNamespaces}")
     private String cpMasterApiListIngressesListAllNamespacesUrl;
-
-    @Value("${cp.provide-as-service}")
-    private String cpProviderAsService;
-
-    @Value("${cp.provide-as-standalone}")
-    private String cpProviderAsStandalone;
 
     @Value("${vault.secretsEngines.kv.base}")
     private String vaultSecretsEnginesKvBasePath;

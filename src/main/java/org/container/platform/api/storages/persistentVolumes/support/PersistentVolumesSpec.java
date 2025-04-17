@@ -53,9 +53,4 @@ public class PersistentVolumesSpec {
     private Map storageos;
     private Map vsphereVolume;
 
-
-
-
-
-
 }

@@ -1,7 +1,6 @@
 package org.container.platform.api.signUp;
 
 import lombok.Data;
-
 import java.util.List;
 
 /**

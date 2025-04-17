@@ -182,7 +182,6 @@ public class OverviewService {
 
         for (int i = 0; i < getCommonCnt(deploymentsList); i++) {
             DeploymentsStatus status = commonService.getField(STATUS_FIELD_NAME, deploymentsList.getItems().get(i));
-            // status: unavailableReplicas, replicas, availableReplicas
             if (status.getUnavailableReplicas() > 0 && status.getReplicas() != 0 && status.getReplicas() != status.getAvailableReplicas()) {
                 failedCnt++;
             } else {
@@ -207,7 +206,6 @@ public class OverviewService {
 
         for (int i = 0; i < getCommonCnt(replicaSetsList); i++) {
             CommonStatus status = commonService.getField(STATUS_FIELD_NAME, replicaSetsList.getItems().get(i));
-            // status -> AvailableReplicas
             if (status.getAvailableReplicas() < status.getReplicas() && status.getReplicas() > 0) {
                 failedCnt++;
             } else {

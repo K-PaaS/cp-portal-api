@@ -1,9 +1,9 @@
 package org.container.platform.api.configmaps;
 
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiImplicitParam;
-import io.swagger.annotations.ApiImplicitParams;
-import io.swagger.annotations.ApiOperation;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.container.platform.api.common.model.CommonResourcesYaml;
 import org.container.platform.api.common.model.Params;
 import org.container.platform.api.common.model.ResultStatus;
@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.*;
  * @version 1.0
  * @since 2022.05.25
  **/
-@Api(value = "ConfigMapsController v1")
+@Tag(name = "ConfigMapsController v1")
 @RestController
 @RequestMapping("/clusters/{cluster:.+}/namespaces/{namespace:.+}/configMaps")
 public class ConfigMapsController {
@@ -43,10 +43,8 @@ public class ConfigMapsController {
      * @param params the params
      * @return the ConfigMaps detail
      */
-    @ApiOperation(value = "ConfigMaps 목록 조회(Get ConfigMaps List)", nickname = "getConfigMapsList")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
-    })
+    @Operation(summary = "ConfigMaps 목록 조회(Get ConfigMaps List)", operationId = "getConfigMapsList")
+    @Parameter(name = "params", description = "request parameters", required = true, schema=@Schema(implementation = Params.class))
     @GetMapping
     public ConfigMapsList getConfigMapsList(Params params) {
         return configMapsService.getConfigMapsList(params);
@@ -59,10 +57,8 @@ public class ConfigMapsController {
      * @param params the params
      * @return the ConfigMaps detail
      */
-    @ApiOperation(value = "ConfigMaps 상세 조회(Get ConfigMaps Detail)", nickname = "getConfigMaps")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
-    })
+    @Operation(summary = "ConfigMaps 상세 조회(Get ConfigMaps Detail)", operationId = "getConfigMaps")
+    @Parameter(name = "params", description = "request parameters", required = true, schema=@Schema(implementation = Params.class))
     @GetMapping(value = "/{resourceName:.+}")
     public Object getConfigMaps(Params params) {
         return configMapsService.getConfigMaps(params);
@@ -75,10 +71,8 @@ public class ConfigMapsController {
      * @param params the params
      * @return the ConfigMaps yaml
      */
-    @ApiOperation(value = "ConfigMaps YAML 조회(Get ConfigMaps yaml)", nickname = "getConfigMapsYaml")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
-    })
+    @Operation(summary = "ConfigMaps YAML 조회(Get ConfigMaps yaml)", operationId = "getConfigMapsYaml")
+    @Parameter(name = "params", description = "request parameters", required = true, schema=@Schema(implementation = Params.class))
     @GetMapping(value = "/{resourceName:.+}/yaml")
     public CommonResourcesYaml getConfigMapsYaml(Params params) {
         return configMapsService.getConfigMapsYaml(params);
@@ -91,10 +85,8 @@ public class ConfigMapsController {
      * @param params the params
      * @return the resultStatus
      */
-    @ApiOperation(value = "ConfigMaps 생성(Create ConfigMaps)", nickname = "createConfigMaps")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
-    })
+    @Operation(summary = "ConfigMaps 생성(Create ConfigMaps)", operationId = "createConfigMaps")
+    @Parameter(name = "params", description = "request parameters", required = true, schema=@Schema(implementation = Params.class))
     @PostMapping
     public Object createConfigMaps(@RequestBody Params params) throws Exception {
         if (params.getYaml().contains("---")) {
@@ -111,10 +103,8 @@ public class ConfigMapsController {
      * @param params the params
      * @return the resultStatus
      */
-    @ApiOperation(value = "ConfigMaps 삭제(Delete ConfigMaps)", nickname = "deleteConfigMaps")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
-    })
+    @Operation(summary = "ConfigMaps 삭제(Delete ConfigMaps)", operationId = "deleteConfigMaps")
+    @Parameter(name = "params", description = "request parameters", required = true, schema=@Schema(implementation = Params.class))
     @DeleteMapping("/{resourceName:.+}")
     public ResultStatus deleteConfigMaps(Params params) {
         return configMapsService.deleteConfigMaps(params);
@@ -127,10 +117,8 @@ public class ConfigMapsController {
      * @param params the params
      * @return the resultStatus
      */
-    @ApiOperation(value = "ConfigMaps 수정(Update ConfigMaps)", nickname = "updateConfigMaps")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
-    })
+    @Operation(summary = "ConfigMaps 수정(Update ConfigMaps)", operationId = "updateConfigMaps")
+    @Parameter(name = "params", description = "request parameters", required = true, schema=@Schema(implementation = Params.class))
     @PutMapping("/{resourceName:.+}")
     public ResultStatus updateConfigMaps(@RequestBody Params params) {
         return configMapsService.updateConfigMaps(params);

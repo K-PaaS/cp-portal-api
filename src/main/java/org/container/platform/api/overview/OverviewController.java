@@ -1,9 +1,9 @@
 package org.container.platform.api.overview;
 
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiImplicitParam;
-import io.swagger.annotations.ApiImplicitParams;
-import io.swagger.annotations.ApiOperation;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.container.platform.api.common.model.Params;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.*;
  * @version 1.0
  * @since 2022.05.24
  **/
-@Api(value = "OverviewController v1")
+@Tag(name = "OverviewController v1")
 @RestController
 public class OverviewController {
 
@@ -40,10 +40,8 @@ public class OverviewController {
      * @param params the params
      * @return the overview
      */
-    @ApiOperation(value = "Overview 조회(Get Overview)", nickname = "getOverview")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
-    })
+    @Operation(summary = "Overview 조회(Get Overview)", operationId = "getOverview")
+    @Parameter(name = "params", description = "request parameters", required = true, schema=@Schema(implementation = Params.class))
     @GetMapping("/clusters/{cluster:.+}/namespaces/{namespace:.+}/overview")
     public Overview getOverview(Params params) {
         return overviewService.getOverviewAll(params);
@@ -57,10 +55,8 @@ public class OverviewController {
      * @param params the params
      * @return the global overview
      */
-    @ApiOperation(value = "Global Overview 조회(Get Global Overview)", nickname = "getGlobalOverview")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
-    })
+    @Operation(summary = "Global Overview 조회(Get Global Overview)", operationId = "getGlobalOverview")
+    @Parameter(name = "params", description = "request parameters", required = true, schema=@Schema(implementation = Params.class))
     @GetMapping("/global/overview")
     public GlobalOverview getGlobalOverview(Params params) {
         return globalOverviewService.getGlobalOverview(params);

@@ -2,7 +2,6 @@ package org.container.platform.api.users;
 
 import lombok.Data;
 import org.container.platform.api.common.Constants;
-
 import java.util.List;
 
 /**

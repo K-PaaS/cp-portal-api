@@ -4,7 +4,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.container.platform.api.common.Constants;
 import org.container.platform.api.overview.support.Count;
-
 import java.util.HashMap;
 import java.util.Map;
 
@@ -22,6 +21,7 @@ public class GlobalOverviewItems {
     private String resultCode = Constants.RESULT_STATUS_SUCCESS;
     private String clusterId;
     private String clusterName;
+    private String clusterType;
     private String clusterProviderType;
     private String version;
     private Count nodeCount;
@@ -32,11 +32,11 @@ public class GlobalOverviewItems {
     private Map<String, Object> usage;
 
 
-    public GlobalOverviewItems(String resultCode, String clusterId, String clusterName, String clusterProviderType, String version,
-                               Count nodeCount, Count namespaceCount, Count podCount, Count pvCount, Count pvcCount, Map<String, Object> usage) {
+    public GlobalOverviewItems(String resultCode, String clusterId, String clusterName, String clusterType, String clusterProviderType, String version, Count nodeCount, Count namespaceCount, Count podCount, Count pvCount, Count pvcCount, Map<String, Object> usage) {
         this.resultCode = resultCode;
         this.clusterId = clusterId;
         this.clusterName = clusterName;
+        this.clusterType = clusterType;
         this.clusterProviderType = clusterProviderType;
         this.version = version;
         this.nodeCount = nodeCount;
@@ -47,12 +47,11 @@ public class GlobalOverviewItems {
         this.usage = usage;
     }
 
-
-
-    public GlobalOverviewItems(String resultCode, String clusterId, String clusterName, String clusterProviderType) {
+    public GlobalOverviewItems(String resultCode, String clusterId, String clusterName, String clusterType, String clusterProviderType) {
         this.resultCode = resultCode;
         this.clusterId = clusterId;
         this.clusterName = clusterName;
+        this.clusterType = clusterType;
         this.clusterProviderType = clusterProviderType;
         this.version = Constants.NULL_REPLACE_TEXT;
         this.nodeCount = new Count(0,0);

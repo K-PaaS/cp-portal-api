@@ -2,7 +2,6 @@ package org.container.platform.api.workloads.pods.support;
 
 import lombok.Data;
 import org.container.platform.api.common.model.CommonCondition;
-
 import java.util.List;
 
 /**

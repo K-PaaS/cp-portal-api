@@ -1,11 +1,8 @@
 package org.container.platform.api.clusters.resourceQuotas;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-
 import java.util.List;
-
 import lombok.Data;
-
 import org.container.platform.api.common.model.CommonItemMetaData;
 import org.container.platform.api.common.model.CommonSpec;
 

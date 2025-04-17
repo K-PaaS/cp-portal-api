@@ -7,6 +7,7 @@ import org.container.platform.api.common.RestTemplateService;
 import org.container.platform.api.common.model.CommonResourcesYaml;
 import org.container.platform.api.common.model.Params;
 import org.container.platform.api.common.model.ResultStatus;
+import org.container.platform.api.common.util.YamlUtil;
 import org.container.platform.api.secrets.vaultSecrets.VaultDatabaseSecretsList;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpMethod;
@@ -84,6 +85,12 @@ public class DeploymentsService {
             }
         }
 
+        for (int i=deploymentsList.getItems().size()-1; i >= 0; i--) {
+            if (deploymentsList.getItems().get(i).getStatus().getUnavailableReplicas() > 0) {
+                deploymentsList.getItems().remove(i);
+            }
+        }
+
         deploymentsList = commonService.resourceListProcessing(deploymentsList, params, DeploymentsList.class);
         return (DeploymentsList) commonService.setResultModel(deploymentsList, Constants.RESULT_STATUS_SUCCESS);
     }
@@ -125,6 +132,7 @@ public class DeploymentsService {
      * @return the resultStatus
      */
     public ResultStatus createDeployments(Params params) {
+        YamlUtil.allowTrafficPodLabels(params, false);
         ResultStatus resultStatus = restTemplateService.sendYaml(Constants.TARGET_CP_MASTER_API,
                 propertyService.getCpMasterApiListDeploymentsCreateUrl(), HttpMethod.POST, ResultStatus.class, params);
         return (ResultStatus) commonService.setResultModel(resultStatus, Constants.RESULT_STATUS_SUCCESS);

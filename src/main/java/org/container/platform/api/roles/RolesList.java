@@ -1,12 +1,9 @@
 package org.container.platform.api.roles;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-
 import java.util.List;
 import java.util.Map;
-
 import lombok.Data;
-
 import org.container.platform.api.common.Constants;
 import org.container.platform.api.common.model.CommonItemMetaData;
 import org.container.platform.api.common.model.CommonMetaData;

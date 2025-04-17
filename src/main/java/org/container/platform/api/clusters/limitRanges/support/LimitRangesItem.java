@@ -1,13 +1,8 @@
 package org.container.platform.api.clusters.limitRanges.support;
 
 import com.google.gson.annotations.SerializedName;
-
-import java.util.HashMap;
-
 import lombok.Data;
-
 import org.springframework.util.ObjectUtils;
-
 import org.container.platform.api.common.CommonUtils;
 import org.container.platform.api.common.Constants;
 

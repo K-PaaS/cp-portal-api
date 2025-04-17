@@ -2,7 +2,6 @@ package org.container.platform.api.common.model;
 
 import lombok.Builder;
 import lombok.Data;
-
 import org.container.platform.api.common.CommonUtils;
 
 /**

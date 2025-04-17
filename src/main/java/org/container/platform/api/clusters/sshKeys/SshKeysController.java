@@ -1,9 +1,9 @@
 package org.container.platform.api.clusters.sshKeys;
 
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiImplicitParam;
-import io.swagger.annotations.ApiImplicitParams;
-import io.swagger.annotations.ApiOperation;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.container.platform.api.common.ResultStatusService;
 import org.container.platform.api.common.model.Params;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.*;
  * @since 2023.12.26
  */
 
-@Api(value = "sshKeysController v1")
+@Tag(name = "SshKeysController v1")
 @RestController
 @RequestMapping("/clusters/{cluster:.+}/keys")
 public class SshKeysController {
@@ -45,10 +45,8 @@ public class SshKeysController {
      * @param params the params
      * @return the sshKeys list
      */
-    @ApiOperation(value = "SshKeys 목록 조회(Get SshKeys List)", nickname = "getSshKeysList")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
-    })
+    @Operation(summary = "SshKeys 목록 조회(Get SshKeys List)", operationId = "getSshKeysList")
+    @Parameter(name = "params", description = "request parameters", required = true, schema=@Schema(implementation = Params.class))
     @GetMapping
     public SshKeysList getSshKeysList(Params params) {
         return sshKeysService.getSshKeysList(params);
@@ -60,10 +58,8 @@ public class SshKeysController {
      * @param params the params
      * @return the sshKeys detail
      */
-    @ApiOperation(value = "SshKeys 상세 조회(Get SshKeys)", nickname = "getSshKeys")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
-    })
+    @Operation(summary = "SshKeys 상세 조회(Get SshKeys)", operationId = "getSshKeys")
+    @Parameter(name = "params", description = "request parameters", required = true, schema=@Schema(implementation = Params.class))
     @GetMapping(value = "/{resourceUid:.+}")
     public Object getSshKeys(Params params) {
 
@@ -76,10 +72,8 @@ public class SshKeysController {
      * @param params the params
      * @return the Object
      */
-    @ApiOperation(value = "SshKeys 삭제(Delete SshKeys)", nickname = "deleteSshKeys")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
-    })
+    @Operation(summary = "SshKeys 삭제(Delete SshKeys)", operationId = "deleteSshKeys")
+    @Parameter(name = "params", description = "request parameters", required = true, schema=@Schema(implementation = Params.class))
     @PreAuthorize("@webSecurity.checkisSuperAdmin()")
     @DeleteMapping(value = "/{resourceUid:.+}")
     public Object deleteSshKeys(Params params) {
@@ -93,10 +87,8 @@ public class SshKeysController {
      * @param params the params
      * @return Object
      */
-    @ApiOperation(value = "SshKeys 생성(Create SshKeys)", nickname = "initSshKeys")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
-    })
+    @Operation(summary = "SshKeys 생성(Create SshKeys)", operationId = "initSshKeys")
+    @Parameter(name = "params", description = "request parameters", required = true, schema=@Schema(implementation = Params.class))
     @PostMapping
     public Object initSshKeys(@RequestBody Params params) {
         return sshKeysService.createSshKeys(params);
@@ -108,10 +100,8 @@ public class SshKeysController {
      * @param params the params
      * @return Object
      */
-    @ApiOperation(value = "SshKeys 수정(Update SshKeys)", nickname = "updateSshKeys")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
-    })
+    @Operation(summary = "SshKeys 수정(Update SshKeys)", operationId = "updateSshKeys")
+    @Parameter(name = "params", description = "request parameters", required = true, schema=@Schema(implementation = Params.class))
     @PreAuthorize("@webSecurity.checkisSuperAdmin()")
     @PutMapping
     public Object modifyInitSshKeys(@RequestBody Params params) {
@@ -125,10 +115,8 @@ public class SshKeysController {
      * @param params the params
      * @return the sshKeys list
      */
-    @ApiOperation(value = "SshKeys 타입 별 목록 조회(Get SshKeys List By Provider)", nickname = "getSshKeysListByProvider")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
-    })
+    @Operation(summary = "SshKeys 타입 별 목록 조회(Get SshKeys List By Provider)", operationId = "getSshKeysListByProvider")
+    @Parameter(name = "params", description = "request parameters", required = true, schema=@Schema(implementation = Params.class))
     @GetMapping(value = "/provider/{providerType:.+}")
     public SshKeysList getSshKeysListByProvider(Params params) {
         return sshKeysService.getSshKeysListByProvider(params);

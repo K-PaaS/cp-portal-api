@@ -1,9 +1,7 @@
 package org.container.platform.api.overview;
 
 import java.util.List;
-
 import lombok.Data;
-
 import org.container.platform.api.common.CommonUtils;
 import org.container.platform.api.metrics.TopPods;
 import org.container.platform.api.overview.support.Status;

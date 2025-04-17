@@ -94,8 +94,10 @@ public class ClustersService {
 
         if (!params.getIsClusterRegister()) {
             if(ObjectUtils.isEmpty(params.getCloudAccountId()) ||
-                    cloudAccountsService.getCloudAccounts(new Params(params.getCloudAccountId())).getResultCode().equals(Constants.RESULT_STATUS_FAIL))
+                    cloudAccountsService.getCloudAccounts(new Params(params.getCloudAccountId())).getResultCode().equals(Constants.RESULT_STATUS_FAIL)) {
                 throw new ResultStatusException(MessageConstant.RE_CONFIRM_INPUT_VALUE.getMsg());
+            }
+
             //Create Files
                 String path = propertyService.getCpTerramanTemplatePath().replace("{id}", params.getCluster());
                 Path filePath = Paths.get(path);
@@ -215,7 +217,6 @@ public class ClustersService {
 
         for (Clusters clusters : clustersList.getItems()) {
             if(!clusters.getStatus().equals(Constants.ClusterStatus.ACTIVE.getInitial())){
-//                clusters.setIsActive(false);
                 continue;
             }
             try {
@@ -234,33 +235,6 @@ public class ClustersService {
             }
 
         }
-/* get version, nodes, pods from service
-        clustersList.getItems().stream().forEach(
-                (e) -> e.setKubernetesVersion(
-                        nodesService.getNodesList(new Params(e.getClusterId(), e.getName())).getItems().stream()
-                                .filter(x -> x.getMetadata().getLabels().containsKey("node-role.kubernetes.io/control-plane"))
-                                .filter(Objects::nonNull)
-                                .collect(Collectors.toList())
-                                .get(0).getStatus().getNodeInfo().getKubeletVersion()));
-
-        clustersList.getItems().stream().forEach(
-                (e) -> e.setNodeCount(
-                        new Count(nodesService.getNodesList(new Params(e.getClusterId(), e.getName()))
-                                .getItems().stream()
-                                .filter(x -> x.getReady().equalsIgnoreCase("True")).collect(Collectors.toList()).size(),
-                                nodesService.getNodesList(new Params(e.getClusterId(), e.getName())).getItems().size())));
-
-        clustersList.getItems().stream().forEach(
-                (e) -> e.setPodCount(
-                        new Count(podsService.getPodsList(new Params(e.getClusterId(), e.getName()))
-                                .getItems().stream()
-                                .filter(x -> x.getPodStatus().equalsIgnoreCase("Running")).collect(Collectors.toList()).size(),
-                                podsService.getPodsList(new Params(e.getClusterId(), e.getName())).getItems().size())));
- */
-
-//        clustersList.getItems().stream().forEach(x -> LOGGER.info("getAuthorityFromContext Test :: Cluster: " + x.getClusterId() +
-//                " Authority : " + commonService.getClusterAuthorityFromContext(x.getClusterId())));
-
         clustersList = commonService.globalListProcessing(clustersList, params, ClustersList.class);
         return (ClustersList) commonService.setResultModel(clustersList, Constants.RESULT_STATUS_SUCCESS);
     }

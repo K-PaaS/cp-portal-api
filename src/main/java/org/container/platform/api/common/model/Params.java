@@ -3,7 +3,6 @@ package org.container.platform.api.common.model;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 import org.container.platform.api.common.Constants;
-
 import java.util.Collections;
 import java.util.List;
 
@@ -28,6 +27,7 @@ public class Params {
     public String userId = Constants.EMPTY_STRING;
     public String userAuthId = Constants.EMPTY_STRING;
     public String userType = Constants.EMPTY_STRING;
+    public String roleSetCode = Constants.EMPTY_STRING;
     public String isActive = "true";
     public String nodeName = Constants.EMPTY_STRING;
     public String resourceUid = Constants.EMPTY_STRING;
@@ -88,6 +88,7 @@ public class Params {
 
     // rest send type
     public Boolean isClusterToken = false;
+    public Boolean allowTraffic = false;
 
     public
     @JsonProperty("yaml")
@@ -119,6 +120,7 @@ public class Params {
         this.userId = Constants.EMPTY_STRING;
         this.userAuthId = Constants.EMPTY_STRING;
         this.userType = Constants.EMPTY_STRING;
+        this.roleSetCode = Constants.EMPTY_STRING;
         this.isActive = "true";
         this.nodeName = Constants.EMPTY_STRING;
         this.resourceUid = Constants.EMPTY_STRING;
@@ -196,5 +198,23 @@ public class Params {
         this.resourceUid = resourceUid;
     }
 
-
+    @Override
+    public String toString() {
+        return "Params{" +
+                "cluster='" + cluster + '\'' +
+                ", namespace='" + namespace + '\'' +
+                ", resource='" + resource + '\'' +
+                ", resourceName='" + resourceName + '\'' +
+                ", metadataName='" + metadataName + '\'' +
+                ", allowTraffic=" + allowTraffic +
+                ", offset=" + offset +
+                ", limit=" + limit +
+                ", orderBy='" + orderBy + '\'' +
+                ", order='" + order + '\'' +
+                ", searchName='" + searchName + '\'' +
+                ", userId='" + userId + '\'' +
+                ", userType='" + userType + '\'' +
+                ", isGlobal=" + isGlobal +
+                '}';
+    }
 }

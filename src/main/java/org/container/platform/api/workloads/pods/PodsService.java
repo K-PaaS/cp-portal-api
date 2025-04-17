@@ -8,12 +8,12 @@ import org.container.platform.api.common.RestTemplateService;
 import org.container.platform.api.common.model.CommonResourcesYaml;
 import org.container.platform.api.common.model.Params;
 import org.container.platform.api.common.model.ResultStatus;
+import org.container.platform.api.common.util.YamlUtil;
 import org.container.platform.api.metrics.MetricsService;
 import org.container.platform.api.workloads.pods.support.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
-
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -168,6 +168,7 @@ public class PodsService {
      * @return the resultStatus
      */
     public ResultStatus createPods(Params params) {
+        YamlUtil.allowTrafficPodLabels(params, true);
         ResultStatus resultStatus = restTemplateService.sendYaml(Constants.TARGET_CP_MASTER_API,
                 propertyService.getCpMasterApiListPodsCreateUrl(), HttpMethod.POST, ResultStatus.class, params);
         return (ResultStatus) commonService.setResultModel(resultStatus, Constants.RESULT_STATUS_SUCCESS);

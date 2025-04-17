@@ -55,10 +55,10 @@ public class GlobalOverviewService {
 
         List<String> normalCollectClustersList = globalOverview.getItems().stream().map(GlobalOverviewItems::getClusterId).collect(Collectors.toList());
 
-
         for(Users users : mappingClustersList.getItems()) {
          if(!normalCollectClustersList.contains(users.getClusterId())) {
-             GlobalOverviewItems failedCollectClusters = new GlobalOverviewItems(Constants.RESULT_STATUS_FAIL, users.getClusterId(), users.getClusterName(), users.getClusterProviderType());
+             GlobalOverviewItems failedCollectClusters = new GlobalOverviewItems(Constants.RESULT_STATUS_FAIL, users.getClusterId(), users.getClusterName(),
+             users.getClusterType(), users.getClusterProviderType());
                 globalOverview.getItems().add(failedCollectClusters);
          }
         }

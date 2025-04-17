@@ -1,9 +1,9 @@
 package org.container.platform.api.clusters.cloudAccounts;
 
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiImplicitParam;
-import io.swagger.annotations.ApiImplicitParams;
-import io.swagger.annotations.ApiOperation;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.container.platform.api.common.model.Params;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.*;
  * @version 1.0
  * @since 2022.06.30
  **/
-@Api(value = "CloudAccountsController v1")
+@Tag(name = "CloudAccountsController v1")
 @RestController
 @PreAuthorize("@webSecurity.checkisGlobalAdmin()")
 @RequestMapping("/accounts")
@@ -41,10 +41,8 @@ public class CloudAccountsController {
      * @param params the params
      * @return the CloudAccounts list
      */
-    @ApiOperation(value = "CloudAccounts 목록 조회(Get CloudAccounts list)", nickname = "getCloudAccountsList")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
-    })
+    @Operation(summary = "CloudAccounts 목록 조회(Get CloudAccounts list)", operationId = "getCloudAccountsList")
+    @Parameter(name = "params", description = "request parameters", required = true, schema=@Schema(implementation = Params.class))
     @GetMapping
     public CloudAccountsList getCloudAccountsList(Params params) {
         return cloudAccountsService.getCloudAccountsList(params);
@@ -57,10 +55,8 @@ public class CloudAccountsController {
      * @param params the params
      * @return the CloudAccounts list
      */
-    @ApiOperation(value = "CloudAccounts 타입 별 목록 조회(Get CloudAccounts list By Provider)", nickname = "getCloudAccountsListByProvider")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
-    })
+    @Operation(summary = "CloudAccounts 타입 별 목록 조회(Get CloudAccounts list By Provider)", operationId = "getCloudAccountsListByProvider")
+    @Parameter(name = "params", description = "request parameters", required = true, schema=@Schema(implementation = Params.class))
     @GetMapping(value = "/provider/{providerType:.+}")
     public CloudAccountsList getCloudAccountsListByProvider(Params params) {
         return cloudAccountsService.getCloudAccountsListByProvider(params);
@@ -72,10 +68,8 @@ public class CloudAccountsController {
      * @param params the params
      * @return the CloudAccounts detail
      */
-    @ApiOperation(value = "CloudAccounts 상세 조회(Get CloudAccounts detail)", nickname = "getCloudAccounts")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
-    })
+    @Operation(summary = "CloudAccounts 상세 조회(Get CloudAccounts detail)", operationId = "getCloudAccounts")
+    @Parameter(name = "params", description = "request parameters", required = true, schema=@Schema(implementation = Params.class))
     @GetMapping(value = "/{resourceUid:.+}")
     public Object getCloudAccounts(Params params) {
         return cloudAccountsService.getCloudAccounts(params);
@@ -89,10 +83,8 @@ public class CloudAccountsController {
      * @return the Object
      */
     @PreAuthorize("@webSecurity.checkisSuperAdmin()")
-    @ApiOperation(value = "CloudAccounts 생성(Create CloudAccounts)", nickname = "createCloudAccounts")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
-    })
+    @Operation(summary = "CloudAccounts 생성(Create CloudAccounts)", operationId = "createCloudAccounts")
+    @Parameter(name = "params", description = "request parameters", required = true, schema=@Schema(implementation = Params.class))
     @PostMapping
     public Object createCloudAccounts(@RequestBody Params params) {
         cloudAccountsService.validationCheckCloudAccounts(params);
@@ -106,10 +98,8 @@ public class CloudAccountsController {
      * @param params the params
      * @return the Object
      */
-    @ApiOperation(value = "CloudAccounts 수정(Update CloudAccounts)", nickname = "updateCloudAccounts")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
-    })
+    @Operation(summary = "CloudAccounts 수정(Update CloudAccounts)", operationId = "updateCloudAccounts")
+    @Parameter(name = "params", description = "request parameters", required = true, schema=@Schema(implementation = Params.class))
     @PreAuthorize("@webSecurity.checkisSuperAdmin()")
     @PatchMapping
     public Object updateCloudAccounts(@RequestBody Params params) {
@@ -123,10 +113,8 @@ public class CloudAccountsController {
      * @param params the params
      * @return the Object
      */
-    @ApiOperation(value = "CloudAccounts 삭제(Delete CloudAccounts)", nickname = "deleteCloudAccounts")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
-    })
+    @Operation(summary = "CloudAccounts 삭제(Delete CloudAccounts)", operationId = "deleteCloudAccounts")
+    @Parameter(name = "params", description = "request parameters", required = true, schema=@Schema(implementation = Params.class))
     @PreAuthorize("@webSecurity.checkisSuperAdmin()")
     @DeleteMapping(value = "/{resourceUid:.+}")
     public Object deleteCloudAccounts(Params params) {
@@ -140,17 +128,15 @@ public class CloudAccountsController {
      * @param params the params
      * @return the Object
      */
-    @ApiOperation(value = "ProviderInfo 조회(Get ProviderInfo)", nickname = "getProviderInfo")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
-    })
-
+    @Operation(summary = "ProviderInfo 조회(Get Provider Info)", operationId = "getProviderInfo")
+    @Parameter(name = "params", description = "request parameters", required = true, schema=@Schema(implementation = Params.class))
     @GetMapping(value = "/provider/info")
     public Object getProviderInfo(Params params) {
         return cloudAccountsService.getProviderInfoList(params);
     }
 
-
+    @Operation(summary = "ProviderInfo 상세 조회(Get Provider Info Details)", operationId = "getProviderInfoDetail")
+    @Parameter(name = "params", description = "request parameters", required = true, schema=@Schema(implementation = Params.class))
     @GetMapping(value = "/provider/info/{providerType:.+}")
     public Object getProviderInfoDetail(Params params) {
         return cloudAccountsService.getProviderInfo(params);

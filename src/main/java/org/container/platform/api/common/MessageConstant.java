@@ -83,7 +83,11 @@ public enum MessageConstant {
 
     NOT_CERTIFICATE_FILE("crt 파일 형식이 아닙니다.", "This is not a crt file."),
     NOT_DOCKER_CONFIG_FILE("Docker config 파일 형식이 아닙니다.", "This is not a docker config file."),
-    DUPLICATE_NAME("Name이 중복입니다.","Name is duplicated.");
+    DUPLICATE_NAME("Name이 중복입니다.","Name is duplicated."),
+    INVALID_DB_SERVICE("잘못된 DB Service 입니다.","Invalid DB Service."),
+    INVALID_UNIT_OF_TIME("잘못된 시간 단위 입니다.","Invalid Unit of Time."),
+    FORBIDDEN( "해당 리소스에 접근할 수 있는 권한이 없습니다.", "You do not have permission to access the resource."),
+    APPLICATION_FORBIDDEN( "적용한 어플리케이션 네임스페스에 접근할 수 있는 권한이 없습니다.", "You do not have permission to access the applied application namespace..");
 
     private String ko_msg;
     private String eng_msg;

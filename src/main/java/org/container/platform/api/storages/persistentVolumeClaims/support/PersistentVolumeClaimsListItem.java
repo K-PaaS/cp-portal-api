@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 import org.container.platform.api.common.CommonUtils;
 import org.container.platform.api.common.model.CommonMetaData;
-
 import java.util.Map;
 
 @Data

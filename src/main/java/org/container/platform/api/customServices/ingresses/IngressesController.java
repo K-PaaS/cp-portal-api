@@ -1,19 +1,16 @@
 package org.container.platform.api.customServices.ingresses;
 
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiImplicitParam;
-import io.swagger.annotations.ApiImplicitParams;
-import io.swagger.annotations.ApiOperation;
-import org.container.platform.api.common.Constants;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.container.platform.api.common.model.CommonResourcesYaml;
 import org.container.platform.api.common.model.Params;
 import org.container.platform.api.common.model.ResultStatus;
 import org.container.platform.api.common.util.ResourceExecuteManager;
-import org.container.platform.api.customServices.services.CustomServices;
 import org.container.platform.api.customServices.services.CustomServicesService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-
 
 /**
  * Ingresses Controller 클래스
@@ -22,7 +19,7 @@ import org.springframework.web.bind.annotation.*;
  * @version 1.0
  * @since 2022.05.24
  */
-@Api(value = "IngressesController v1")
+@Tag(name = "IngressesController v1")
 @RestController
 @RequestMapping("/clusters/{cluster:.+}/namespaces/{namespace:.+}/ingresses")
 public class IngressesController {
@@ -48,10 +45,8 @@ public class IngressesController {
      * @param params the params
      * @return the ingresses list
      */
-    @ApiOperation(value = "Ingresses 목록 조회(Get Ingresses list)", nickname = "getIngressesList")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
-    })
+    @Operation(summary = "Ingresses 목록 조회(Get Ingresses list)", operationId = "getIngressesList")
+    @Parameter(name = "params", description = "request parameters", required = true, schema=@Schema(implementation = Params.class))
     @GetMapping
     public IngressesList getIngressesList(Params params){
         return ingressesService.getIngressesList(params);
@@ -63,10 +58,8 @@ public class IngressesController {
      * @param params the params
      * @return the ingresses detail
      */
-    @ApiOperation(value = "Ingresses 상세 조회(Get Ingresses detail)", nickname = "getIngresses")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
-    })
+    @Operation(summary = "Ingresses 상세 조회(Get Ingresses detail)", operationId = "getIngresses")
+    @Parameter(name = "params", description = "request parameters", required = true, schema=@Schema(implementation = Params.class))
     @GetMapping(value = "/{resourceName:.+}")
     public Ingresses getIngresses(Params params){
             return ingressesService.getIngresses(params);
@@ -78,10 +71,8 @@ public class IngressesController {
      * @param params the params
      * @return the Ingresses yaml
      */
-    @ApiOperation(value = "Ingresses YAML 조회(Get Ingresses yaml)", nickname = "getIngressesYaml")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
-    })
+    @Operation(summary = "Ingresses YAML 조회(Get Ingresses yaml)", operationId = "getIngressesYaml")
+    @Parameter(name = "params", description = "request parameters", required = true, schema=@Schema(implementation = Params.class))
     @GetMapping(value = "/{resourceName:.+}/yaml")
     public CommonResourcesYaml getIngressesYaml(Params params){
             return ingressesService.getIngressesYaml(params);
@@ -93,10 +84,8 @@ public class IngressesController {
      * @param params the params
      * @return the resultStatus
      */
-    @ApiOperation(value = "Ingresses 생성(Create Ingresses)", nickname = "createIngresses")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
-    })
+    @Operation(summary = "Ingresses 생성(Create Ingresses)", operationId = "createIngresses")
+    @Parameter(name = "params", description = "request parameters", required = true, schema=@Schema(implementation = Params.class))
     @PostMapping
     public Object createIngresses(@RequestBody Params params) throws Exception {
         if (params.getYaml().contains("---")) {
@@ -112,10 +101,8 @@ public class IngressesController {
      * @param params the params
      * @return the resultStatus
      */
-    @ApiOperation(value = "Ingresses 삭제(Delete Ingresses)", nickname = "deleteIngresses")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
-    })
+    @Operation(summary = "Ingresses 삭제(Delete Ingresses)", operationId = "deleteIngresses")
+    @Parameter(name = "params", description = "request parameters", required = true, schema=@Schema(implementation = Params.class))
     @DeleteMapping("/{resourceName:.+}")
     public ResultStatus deleteIngresses(Params params) {
         return ingressesService.deleteIngresses(params);
@@ -128,10 +115,8 @@ public class IngressesController {
      * @param params the params
      * @return the resultStatus
      */
-    @ApiOperation(value = "Ingresses 수정(Update Ingresses)", nickname = "updateIngresses")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
-    })
+    @Operation(summary = "Ingresses 수정(Update Ingresses)", operationId = "updateIngresses")
+    @Parameter(name = "params", description = "request parameters", required = true, schema=@Schema(implementation = Params.class))
     @PutMapping("/{resourceName:.+}")
     public ResultStatus updateIngresses(@RequestBody Params params) {
         return ingressesService.updateIngresses(params);

@@ -1,9 +1,9 @@
 package org.container.platform.api.signUp;
 
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiImplicitParam;
-import io.swagger.annotations.ApiImplicitParams;
-import io.swagger.annotations.ApiOperation;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.container.platform.api.common.*;
 import org.container.platform.api.common.model.Params;
 import org.container.platform.api.common.model.ResultStatus;
@@ -12,9 +12,6 @@ import org.container.platform.api.exception.ResultStatusException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-import java.util.Map;
-
 /**
  * Sign Up Controller 클래스
  *
@@ -22,7 +19,7 @@ import java.util.Map;
  * @version 1.0
  * @since 2022.06.02
  **/
-@Api(value = "SignUpController v1")
+@Tag(name = "SignUpController v1")
 @RestController
 public class SignUpController {
 
@@ -46,10 +43,8 @@ public class SignUpController {
      * @param params the params
      * @return the resultStatus
      */
-    @ApiOperation(value = "회원가입(Sign Up)", nickname = "signUpUsers")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
-    })
+    @Operation(summary = "회원가입(Sign Up)", operationId = "signUpUsers")
+    @Parameter(name = "params", description = "request parameters", required = true, schema=@Schema(implementation = Params.class))
     @NoAuth
     @PostMapping(value = Constants.URI_SIGN_UP)
     public ResultStatus signUpUsers(@RequestBody Params params) {

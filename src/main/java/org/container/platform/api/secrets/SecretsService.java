@@ -2,13 +2,17 @@ package org.container.platform.api.secrets;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.container.platform.api.clusters.clusters.ClustersService;
+import org.container.platform.api.clusters.clusters.support.PortalRequestParams;
 import org.container.platform.api.common.*;
 import org.container.platform.api.common.model.CommonItemMetaData;
 import org.container.platform.api.common.model.CommonResourcesYaml;
 import org.container.platform.api.common.model.Params;
 import org.container.platform.api.common.model.ResultStatus;
 import org.container.platform.api.exception.ResultStatusException;
+import org.container.platform.api.secrets.vaultAuth.VaultAuthList;
+import org.container.platform.api.secrets.VaultDynamicSecret.VaultDynamicSecretList;
 import org.container.platform.api.secrets.vaultSecrets.*;
+import org.container.platform.api.users.serviceAccount.ServiceAccountList;
 import org.container.platform.api.workloads.deployments.DeploymentsList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,10 +20,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
 import org.yaml.snakeyaml.constructor.DuplicateKeyException;
-
 import java.util.*;
 import java.util.stream.Collectors;
-
 import static org.container.platform.api.common.Constants.*;
 
 
@@ -81,6 +83,9 @@ public class SecretsService {
      */
     public DatabaseInfoList getVaultSecretsList(Params params) {
         DatabaseInfoList databaseInfoList = new DatabaseInfoList();
+        VaultDatabaseSecrets vaultDatabaseSecrets = new VaultDatabaseSecrets();
+
+        String listSVNamespace = "";
 
         List<Map<String,String>> list = null;
         list = new ArrayList<>();
@@ -93,58 +98,219 @@ public class SecretsService {
 
         VaultDatabaseSecretsList getVDSList = restTemplateService.sendGlobal(Constants.TARGET_COMMON_API, "/vaultDatabaseSecrets", HttpMethod.GET, null, VaultDatabaseSecretsList.class, params);
 
+        listSVNamespace = params.getNamespace();
+
         if (getVDSList.getItems().isEmpty()) {
             List<Map<String,String>> listEmpty = new ArrayList<>();
             databaseInfoList.setItems(listEmpty);
         }
 
         for (int i=0; i < getVDSList.getItems().size(); i++) {
+            if (getVDSList.getItems().get(i).getNamespace().equals(listSVNamespace)) {
 
-            map = new HashMap<>();
-            map.put("name", getVDSList.getItems().get(i).getName());
-            map.put("pluginName", getVDSList.getItems().get(i).getDbType());
-            map.put("createdTime", getVDSList.getItems().get(i).getCreated());
+                map = new HashMap<>();
+                map.put("name", getVDSList.getItems().get(i).getName());
+                map.put("namespace", getVDSList.getItems().get(i).getNamespace());
+                map.put("pluginName", getVDSList.getItems().get(i).getDbType());
+                map.put("createdTime", getVDSList.getItems().get(i).getCreated());
 
-            if (getVDSList.getItems().get(i).getAppName() != null && getVDSList.getItems().get(i).getFlag().equals(CHECK_Y)) {
-
-                params.setResourceName(getVDSList.getItems().get(i).getAppName());
-                params.setNamespace(getVDSList.getItems().get(i).getAppNamespace());
-
-                HashMap responseMap2 = (HashMap) restTemplateService.send(Constants.TARGET_CP_MASTER_API,
-                        propertyService.getCpMasterApiListDeploymentsListUrl(), HttpMethod.GET, null, Map.class, params);
-                DeploymentsList deploymentsList = commonService.setResultObject(responseMap2, DeploymentsList.class);
-
-                for (int j=0; j < deploymentsList.getItems().size(); j++) {
-                    Object obj = deploymentsList.getItems().get(j);
-                    String objStr = obj.toString();
-
-                    int idx3 = objStr.indexOf("name=");
-                    int idx4 = objStr.indexOf(", namespace=");
-
-                    String appName = objStr.substring(idx3+5,idx4);
-
-                    if (params.getResourceName().equals(appName)) {
-                        int idx5 = objStr.indexOf("runningPods=");
-                        int idx6 = objStr.indexOf("totalPods=");
-                        int idx7 = objStr.indexOf("images=");
-
-                        String runningPods = objStr.substring(idx5+12,idx6-2);
-                        String totalPods = objStr.substring(idx6+10,idx7-2);
-
-                        if (totalPods.equals(runningPods)) {
-                            map.put("applicableStatus", STATUS_ON);
+                if (params.getUserType().equals(AUTH_USER) && params.getRoleSetCode().equals(CP_INIT_ROLE)) {
+                    map.put("applicableStatus", getVDSList.getItems().get(i).getStatus());
+                } else if (params.getUserType().equals(AUTH_USER) && params.getRoleSetCode().equals(CP_ADMIN_ROLE)) {
+                    if (getVDSList.getItems().get(i).getFlag().equals(CHECK_Y))  {
+                        if (!Objects.equals(getVDSList.getItems().get(i).getNamespace(), getVDSList.getItems().get(i).getAppNamespace())) {
+                            map.put("applicableStatus", getVDSList.getItems().get(i).getStatus());
                         } else {
-                            map.put("applicableStatus", STATUS_HOLD);
+                            if (getVDSList.getItems().get(i).getAppName() != null && getVDSList.getItems().get(i).getFlag().equals(CHECK_Y)) {
+
+                                params.setResourceName(getVDSList.getItems().get(i).getAppName());
+                                params.setNamespace(getVDSList.getItems().get(i).getAppNamespace());
+
+                                HashMap responseMap2 = (HashMap) restTemplateService.send(Constants.TARGET_CP_MASTER_API,
+                                        propertyService.getCpMasterApiListDeploymentsListUrl(), HttpMethod.GET, null, Map.class, params);
+                                DeploymentsList deploymentsList = commonService.setResultObject(responseMap2, DeploymentsList.class);
+
+                                for (int j = 0; j < deploymentsList.getItems().size(); j++) {
+                                    Object obj = deploymentsList.getItems().get(j);
+                                    String objStr = obj.toString();
+
+                                    int idx3 = objStr.indexOf("name=");
+                                    int idx4 = objStr.indexOf(", namespace=");
+
+                                    String appName = objStr.substring(idx3 + 5, idx4);
+
+                                    if (params.getResourceName().equals(appName)) {
+                                        int idx5 = objStr.indexOf("runningPods=");
+                                        int idx6 = objStr.indexOf("totalPods=");
+                                        int idx7 = objStr.indexOf("images=");
+
+                                        String runningPods = objStr.substring(idx5 + 12, idx6 - 2);
+                                        String totalPods = objStr.substring(idx6 + 10, idx7 - 2);
+
+                                        if (totalPods.equals(runningPods)) {
+                                            map.put("applicableStatus", STATUS_ON);
+                                        } else {
+                                            map.put("applicableStatus", STATUS_HOLD);
+                                        }
+                                    }
+                                }
+
+                            } else {
+                                map.put("applicableStatus", STATUS_OFF);
+                            }
+
+                            vaultDatabaseSecrets.setName(map.get("name"));
+                            vaultDatabaseSecrets.setStatus(map.get("applicableStatus"));
+                            restTemplateService.sendGlobal(Constants.TARGET_COMMON_API, "/vaultDatabaseSecrets/status", HttpMethod.PUT, vaultDatabaseSecrets, VaultDatabaseSecrets.class, params);
                         }
+
+                    } else {
+                        if (getVDSList.getItems().get(i).getAppName() != null && getVDSList.getItems().get(i).getFlag().equals(CHECK_Y)) {
+
+                            params.setResourceName(getVDSList.getItems().get(i).getAppName());
+                            params.setNamespace(getVDSList.getItems().get(i).getAppNamespace());
+
+                            HashMap responseMap2 = (HashMap) restTemplateService.send(Constants.TARGET_CP_MASTER_API,
+                                    propertyService.getCpMasterApiListDeploymentsListUrl(), HttpMethod.GET, null, Map.class, params);
+                            DeploymentsList deploymentsList = commonService.setResultObject(responseMap2, DeploymentsList.class);
+
+                            for (int j = 0; j < deploymentsList.getItems().size(); j++) {
+                                Object obj = deploymentsList.getItems().get(j);
+                                String objStr = obj.toString();
+
+                                int idx3 = objStr.indexOf("name=");
+                                int idx4 = objStr.indexOf(", namespace=");
+
+                                String appName = objStr.substring(idx3 + 5, idx4);
+
+                                if (params.getResourceName().equals(appName)) {
+                                    int idx5 = objStr.indexOf("runningPods=");
+                                    int idx6 = objStr.indexOf("totalPods=");
+                                    int idx7 = objStr.indexOf("images=");
+
+                                    String runningPods = objStr.substring(idx5 + 12, idx6 - 2);
+                                    String totalPods = objStr.substring(idx6 + 10, idx7 - 2);
+
+                                    if (totalPods.equals(runningPods)) {
+                                        map.put("applicableStatus", STATUS_ON);
+                                    } else {
+                                        map.put("applicableStatus", STATUS_HOLD);
+                                    }
+                                }
+                            }
+
+                        } else {
+                            map.put("applicableStatus", STATUS_OFF);
+                        }
+
+                        vaultDatabaseSecrets.setName(map.get("name"));
+                        vaultDatabaseSecrets.setStatus(map.get("applicableStatus"));
+                        restTemplateService.sendGlobal(Constants.TARGET_COMMON_API, "/vaultDatabaseSecrets/status", HttpMethod.PUT, vaultDatabaseSecrets, VaultDatabaseSecrets.class, params);
                     }
+
+                } else {
+                    if (getVDSList.getItems().get(i).getAppName() != null && getVDSList.getItems().get(i).getFlag().equals(CHECK_Y)) {
+
+                        params.setResourceName(getVDSList.getItems().get(i).getAppName());
+                        params.setNamespace(getVDSList.getItems().get(i).getAppNamespace());
+
+                        HashMap responseMap2 = (HashMap) restTemplateService.send(Constants.TARGET_CP_MASTER_API,
+                                propertyService.getCpMasterApiListDeploymentsListUrl(), HttpMethod.GET, null, Map.class, params);
+                        DeploymentsList deploymentsList = commonService.setResultObject(responseMap2, DeploymentsList.class);
+
+                        for (int j = 0; j < deploymentsList.getItems().size(); j++) {
+                            Object obj = deploymentsList.getItems().get(j);
+                            String objStr = obj.toString();
+
+                            int idx3 = objStr.indexOf("name=");
+                            int idx4 = objStr.indexOf(", namespace=");
+
+                            String appName = objStr.substring(idx3 + 5, idx4);
+
+                            if (params.getResourceName().equals(appName)) {
+                                int idx5 = objStr.indexOf("runningPods=");
+                                int idx6 = objStr.indexOf("totalPods=");
+                                int idx7 = objStr.indexOf("images=");
+
+                                String runningPods = objStr.substring(idx5 + 12, idx6 - 2);
+                                String totalPods = objStr.substring(idx6 + 10, idx7 - 2);
+
+                                if (totalPods.equals(runningPods)) {
+                                    map.put("applicableStatus", STATUS_ON);
+                                } else {
+                                    map.put("applicableStatus", STATUS_HOLD);
+                                }
+                            }
+                        }
+
+                    } else {
+                        map.put("applicableStatus", STATUS_OFF);
+                    }
+
+                    vaultDatabaseSecrets.setName(map.get("name"));
+                    vaultDatabaseSecrets.setStatus(map.get("applicableStatus"));
+                    restTemplateService.sendGlobal(Constants.TARGET_COMMON_API, "/vaultDatabaseSecrets/status", HttpMethod.PUT, vaultDatabaseSecrets, VaultDatabaseSecrets.class, params);
                 }
 
-            } else {
-                map.put("applicableStatus", STATUS_OFF);
-            }
+                list.add(map);
+                databaseInfoList.setItems(list);
+            } else if (listSVNamespace.equalsIgnoreCase(ALL_NAMESPACES)) {
+                map = new HashMap<>();
+                map.put("name", getVDSList.getItems().get(i).getName());
+                map.put("pluginName", getVDSList.getItems().get(i).getDbType());
+                map.put("createdTime", getVDSList.getItems().get(i).getCreated());
 
-            list.add(map);
-            databaseInfoList.setItems(list);
+                if (params.getUserType().equals(AUTH_USER) && params.getRoleSetCode().equals(CP_INIT_ROLE)) {
+                    map.put("applicableStatus", getVDSList.getItems().get(i).getStatus());
+                } else {
+                    if (getVDSList.getItems().get(i).getAppName() != null && getVDSList.getItems().get(i).getFlag().equals(CHECK_Y)) {
+
+                        params.setResourceName(getVDSList.getItems().get(i).getAppName());
+                        params.setNamespace(getVDSList.getItems().get(i).getAppNamespace());
+
+                        HashMap responseMap2 = (HashMap) restTemplateService.send(Constants.TARGET_CP_MASTER_API,
+                                propertyService.getCpMasterApiListDeploymentsListUrl(), HttpMethod.GET, null, Map.class, params);
+                        DeploymentsList deploymentsList = commonService.setResultObject(responseMap2, DeploymentsList.class);
+
+                        for (int j = 0; j < deploymentsList.getItems().size(); j++) {
+                            Object obj = deploymentsList.getItems().get(j);
+                            String objStr = obj.toString();
+
+                            int idx3 = objStr.indexOf("name=");
+                            int idx4 = objStr.indexOf(", namespace=");
+
+                            String appName = objStr.substring(idx3 + 5, idx4);
+
+                            if (params.getResourceName().equals(appName)) {
+                                int idx5 = objStr.indexOf("runningPods=");
+                                int idx6 = objStr.indexOf("totalPods=");
+                                int idx7 = objStr.indexOf("images=");
+
+                                String runningPods = objStr.substring(idx5 + 12, idx6 - 2);
+                                String totalPods = objStr.substring(idx6 + 10, idx7 - 2);
+
+                                if (totalPods.equals(runningPods)) {
+                                    map.put("applicableStatus", STATUS_ON);
+                                } else {
+                                    map.put("applicableStatus", STATUS_HOLD);
+                                }
+                            }
+                        }
+
+                    } else {
+                        map.put("applicableStatus", STATUS_OFF);
+                    }
+
+                    vaultDatabaseSecrets.setName(map.get("name"));
+                    vaultDatabaseSecrets.setStatus(map.get("applicableStatus"));
+                    restTemplateService.sendGlobal(Constants.TARGET_COMMON_API, "/vaultDatabaseSecrets/status", HttpMethod.PUT, vaultDatabaseSecrets, VaultDatabaseSecrets.class, params);
+                }
+                list.add(map);
+                databaseInfoList.setItems(list);
+
+            } else {
+                databaseInfoList.setItems(list);
+            }
         }
 
         List resourceItemList;
@@ -316,46 +482,126 @@ public class SecretsService {
 
         databaseCredentials.setFlag(getVDS.getFlag());
         databaseCredentials.setApplication(getVDS.getAppName());
+        databaseCredentials.setNamespace(getVDS.getNamespace());
         params.setResourceName(getVDS.getAppName());
         params.setNamespace(getVDS.getAppNamespace());
 
-        if (getVDS.getAppName() != null && getVDS.getFlag().equals(CHECK_Y)) {
+        if (params.getUserType().equals(AUTH_USER) && params.getRoleSetCode().equals(CP_INIT_ROLE)) {
+            databaseCredentials.setStatus(getVDS.getStatus());
+        } else if (params.getUserType().equals(AUTH_USER) && params.getRoleSetCode().equals(CP_ADMIN_ROLE)) {
+            if (getVDS.getFlag().equals(CHECK_Y)) {
+                if (!Objects.equals(getVDS.getNamespace(), getVDS.getAppNamespace())) {
+                    databaseCredentials.setStatus(getVDS.getStatus());
+                } else {
+                    if (getVDS.getAppName() != null && getVDS.getFlag().equals(CHECK_Y)) {
 
-            HashMap responseMap2 = (HashMap) restTemplateService.send(Constants.TARGET_CP_MASTER_API,
-                    propertyService.getCpMasterApiListDeploymentsListUrl(), HttpMethod.GET, null, Map.class, params);
-            DeploymentsList deploymentsList = commonService.setResultObject(responseMap2, DeploymentsList.class);
+                        HashMap responseMap2 = (HashMap) restTemplateService.send(Constants.TARGET_CP_MASTER_API,
+                                propertyService.getCpMasterApiListDeploymentsListUrl(), HttpMethod.GET, null, Map.class, params);
+                        DeploymentsList deploymentsList = commonService.setResultObject(responseMap2, DeploymentsList.class);
 
-            for (int j=0; j < deploymentsList.getItems().size(); j++) {
-                Object obj = deploymentsList.getItems().get(j);
-                String objStr = obj.toString();
+                        for (int j = 0; j < deploymentsList.getItems().size(); j++) {
+                            Object obj = deploymentsList.getItems().get(j);
+                            String objStr = obj.toString();
 
-                int idx3 = objStr.indexOf("name=");
-                int idx4 = objStr.indexOf(", namespace=");
+                            int idx3 = objStr.indexOf("name=");
+                            int idx4 = objStr.indexOf(", namespace=");
 
-                String appName = objStr.substring(idx3+5,idx4);
+                            String appName = objStr.substring(idx3 + 5, idx4);
 
-                if (params.getResourceName().equals(appName)) {
-                    int idx5 = objStr.indexOf("runningPods=");
-                    int idx6 = objStr.indexOf("totalPods=");
-                    int idx7 = objStr.indexOf("images=");
+                            if (params.getResourceName().equals(appName)) {
+                                int idx5 = objStr.indexOf("runningPods=");
+                                int idx6 = objStr.indexOf("totalPods=");
+                                int idx7 = objStr.indexOf("images=");
 
-                    String runningPods = objStr.substring(idx5+12,idx6-2);
-                    String totalPods = objStr.substring(idx6+10,idx7-2);
-                    String namespace = objStr.substring(idx4+12,idx5-2);
+                                String runningPods = objStr.substring(idx5 + 12, idx6 - 2);
+                                String totalPods = objStr.substring(idx6 + 10, idx7 - 2);
 
-                    databaseCredentials.setNamespace(namespace);
+                                if (totalPods.equals(runningPods)) {
+                                    databaseCredentials.setStatus(STATUS_ON);
+                                } else {
+                                    databaseCredentials.setStatus(STATUS_HOLD);
+                                }
+                            }
 
-                    if (totalPods.equals(runningPods)) {
-                        databaseCredentials.setStatus(STATUS_ON);
+                        }
+
                     } else {
-                        databaseCredentials.setStatus(STATUS_HOLD);
+                        databaseCredentials.setStatus(STATUS_OFF);
                     }
                 }
+            } else {
+                if (getVDS.getAppName() != null && getVDS.getFlag().equals(CHECK_Y)) {
 
+                    HashMap responseMap2 = (HashMap) restTemplateService.send(Constants.TARGET_CP_MASTER_API,
+                            propertyService.getCpMasterApiListDeploymentsListUrl(), HttpMethod.GET, null, Map.class, params);
+                    DeploymentsList deploymentsList = commonService.setResultObject(responseMap2, DeploymentsList.class);
+
+                    for (int j = 0; j < deploymentsList.getItems().size(); j++) {
+                        Object obj = deploymentsList.getItems().get(j);
+                        String objStr = obj.toString();
+
+                        int idx3 = objStr.indexOf("name=");
+                        int idx4 = objStr.indexOf(", namespace=");
+
+                        String appName = objStr.substring(idx3 + 5, idx4);
+
+                        if (params.getResourceName().equals(appName)) {
+                            int idx5 = objStr.indexOf("runningPods=");
+                            int idx6 = objStr.indexOf("totalPods=");
+                            int idx7 = objStr.indexOf("images=");
+
+                            String runningPods = objStr.substring(idx5 + 12, idx6 - 2);
+                            String totalPods = objStr.substring(idx6 + 10, idx7 - 2);
+
+                            if (totalPods.equals(runningPods)) {
+                                databaseCredentials.setStatus(STATUS_ON);
+                            } else {
+                                databaseCredentials.setStatus(STATUS_HOLD);
+                            }
+                        }
+
+                    }
+
+                } else {
+                    databaseCredentials.setStatus(STATUS_OFF);
+                }
             }
-
         } else {
-            databaseCredentials.setStatus(STATUS_OFF);
+            if (getVDS.getAppName() != null && getVDS.getFlag().equals(CHECK_Y)) {
+
+                HashMap responseMap2 = (HashMap) restTemplateService.send(Constants.TARGET_CP_MASTER_API,
+                        propertyService.getCpMasterApiListDeploymentsListUrl(), HttpMethod.GET, null, Map.class, params);
+                DeploymentsList deploymentsList = commonService.setResultObject(responseMap2, DeploymentsList.class);
+
+                for (int j = 0; j < deploymentsList.getItems().size(); j++) {
+                    Object obj = deploymentsList.getItems().get(j);
+                    String objStr = obj.toString();
+
+                    int idx3 = objStr.indexOf("name=");
+                    int idx4 = objStr.indexOf(", namespace=");
+
+                    String appName = objStr.substring(idx3 + 5, idx4);
+
+                    if (params.getResourceName().equals(appName)) {
+                        int idx5 = objStr.indexOf("runningPods=");
+                        int idx6 = objStr.indexOf("totalPods=");
+                        int idx7 = objStr.indexOf("images=");
+
+                        String runningPods = objStr.substring(idx5 + 12, idx6 - 2);
+                        String totalPods = objStr.substring(idx6 + 10, idx7 - 2);
+
+                        if (totalPods.equals(runningPods)) {
+                            databaseCredentials.setStatus(STATUS_ON);
+                        } else {
+                            databaseCredentials.setStatus(STATUS_HOLD);
+                        }
+                    }
+
+                }
+
+            } else {
+                databaseCredentials.setStatus(STATUS_OFF);
+            }
         }
 
         return (DatabaseCredentials) commonService.setResultModel(databaseCredentials, Constants.RESULT_STATUS_SUCCESS);
@@ -394,12 +640,34 @@ public class SecretsService {
 
         } else if (params.getStorageBackend().equals(Constants.STORAGE_BACK_END_VAULT)) {
 
+            if (params.getUserType().equals(AUTH_USER) && params.getRoleSetCode().equals(CP_INIT_ROLE)) {
+                throw new ResultStatusException(MessageConstant.FORBIDDEN.getMsg());
+            }
+
             Map map = new HashMap();
 
             map.put("name", params.getMetadataName());
             map.put("defaultTtl", params.getDefaultTtl());
             map.put("maxTtl", params.getMaxTtl());
             map.put("serviceName", params.getDbService());
+            map.put("namespace", params.getNamespace());
+
+            //database-secret config 생성
+            try {
+                vaultService.write(propertyService.getVaultSecretsEnginesDatabaseConnectionsPath().replace("{name}", params.getMetadataName()), templateService.convert("create_vault_secret_engine_database_postgres_config.ftl", map));
+            } catch (Exception e) {
+                throw new ResultStatusException(MessageConstant.INVALID_DB_SERVICE.getMsg());
+            }
+
+            //database-secret role 생성
+            try {
+                vaultService.write(propertyService.getVaultSecretsEnginesDatabaseRolesPath().replace("{name}", params.getMetadataName()), templateService.convert("create_vault_secret_engine_database_postgres_role.ftl", map));
+            } catch (Exception e) {
+                throw new ResultStatusException(MessageConstant.INVALID_UNIT_OF_TIME.getMsg());
+            }
+
+            //database-secret/creds의 policy 생성
+            vaultService.write(propertyService.getVaultPolicies().replace("{name}", params.getMetadataName()), templateService.convert("create_vault_policy.ftl", map));
 
             //DB에 database-secret 이름 저장
             VaultDatabaseSecrets vaultDatabaseSecrets = setVaultDatabaseSecrets(params);
@@ -409,15 +677,6 @@ public class SecretsService {
                 LOGGER.info("DB_REGISTRATION_FAILED : " + CommonUtils.loggerReplace(e.getMessage()));
                 throw new ResultStatusException(MessageConstant.DUPLICATE_NAME.getMsg());
             }
-
-            //database-secret config 생성
-            vaultService.write(propertyService.getVaultSecretsEnginesDatabaseConnectionsPath().replace("{name}", params.getMetadataName()), templateService.convert("create_vault_secret_engine_database_postgres_config.ftl", map));
-
-            //database-secret role 생성
-            vaultService.write(propertyService.getVaultSecretsEnginesDatabaseRolesPath().replace("{name}", params.getMetadataName()), templateService.convert("create_vault_secret_engine_database_postgres_role.ftl", map));
-
-            //database-secret/creds의 policy 생성
-            vaultService.write(propertyService.getVaultPolicies().replace("{name}", params.getMetadataName()), templateService.convert("create_vault_policy.ftl", map));
 
         }
 
@@ -434,7 +693,7 @@ public class SecretsService {
     public ResultStatus applyVaultSecrets(Params params) {
         StringBuilder stringBuilder = new StringBuilder();
         Map map = new HashMap();
-        String line = "";
+        String reapply = CHECK_N;
 
         map.put("db_name", params.getDbService());
         map.put("app_name", params.getResourceName());
@@ -443,28 +702,49 @@ public class SecretsService {
         String yamlHead = "";
         String yamlBody = "";
 
-        //ServiceAccount 생성
-        params.setYaml(templateService.convert("create_vault_service_account.ftl", map));
+        //ServiceAccount 목록 조회하여 없으면 생성 로직 추가
+        HashMap responseMap = (HashMap) restTemplateService.send(Constants.TARGET_CP_MASTER_API,
+                propertyService.getCpMasterApiListUsersListUrl(), HttpMethod.GET, null, Map.class, params);
+        ServiceAccountList serviceAccountList = commonService.setResultObject(responseMap, ServiceAccountList.class);
 
-        restTemplateService.sendYaml(Constants.TARGET_CP_MASTER_API,
-                propertyService.getCpMasterApiListUsersCreateUrl(), HttpMethod.POST, ResultStatus.class, params);
+        for (int i=0; i < serviceAccountList.getItems().size(); i++) {
+            String saName = serviceAccountList.getItems().get(i).getName();
+            if (!Objects.equals(saName, DEFAULT_SERVICE_ACCOUNT)) {
+                if (saName.contains(DYNAMIC_SERVICE_ACCOUNT)) {
+                    int idx = saName.indexOf(DYNAMIC_SERVICE_ACCOUNT);
+                    String dbName = saName.substring(0, idx);
 
-        //k8s-auth-role 생성
-        vaultService.write(propertyService.getVaultAccessAuthKubernetesRolesPath().replace("{name}", Constants.K8S_AUTH_ROLE + "-" + params.getDbService()), templateService.convert("create_vault_access_authentication_method_role.ftl", map));
+                    if (params.getDbService().equals(dbName)) {
+                        reapply = CHECK_Y;
+                    }
+                }
+            }
+        }
 
-        //VaultAuth 생성
-        params.setYaml(templateService.convert("create_vault_auth.ftl", map));
+        if (reapply.equals(CHECK_N)) {
+            //ServiceAccount 생성
+            params.setYaml(templateService.convert("create_vault_service_account.ftl", map));
 
-        restTemplateService.sendYaml(Constants.TARGET_CP_MASTER_API,
-                propertyService.getVaultVaultAuthCreateUrl().replace("{namespace}", params.getNamespace()), HttpMethod.POST, ResultStatus.class, params);
+            restTemplateService.sendYaml(Constants.TARGET_CP_MASTER_API,
+                    propertyService.getCpMasterApiListUsersCreateUrl(), HttpMethod.POST, ResultStatus.class, params);
 
-        //VaultDynamicSecret 생성
-        params.setYaml(templateService.convert("create_vault_dynamic_secret.ftl", map));
+            //k8s-auth-role 생성
+            vaultService.write(propertyService.getVaultAccessAuthKubernetesRolesPath().replace("{name}", Constants.K8S_AUTH_ROLE + "-" + params.getDbService()), templateService.convert("create_vault_access_authentication_method_role.ftl", map));
 
-        restTemplateService.sendYaml(Constants.TARGET_CP_MASTER_API,
-                propertyService.getVaultVaultDynamicSecretCreateUrl(),HttpMethod.POST, ResultStatus.class, params);
+            //VaultAuth 생성
+            params.setYaml(templateService.convert("create_vault_auth.ftl", map));
 
-        // 적용 deployment yaml 조회
+            restTemplateService.sendYaml(Constants.TARGET_CP_MASTER_API,
+                    propertyService.getVaultVaultAuthCreateUrl().replace("{namespace}", params.getNamespace()), HttpMethod.POST, ResultStatus.class, params);
+
+            //VaultDynamicSecret 생성
+            params.setYaml(templateService.convert("create_vault_dynamic_secret.ftl", map));
+
+            restTemplateService.sendYaml(Constants.TARGET_CP_MASTER_API,
+                    propertyService.getVaultVaultDynamicSecretCreateUrl().replace("{namespace}", params.getNamespace()),HttpMethod.POST, ResultStatus.class, params);
+        }
+
+        //적용 deployment yaml 조회
         String resourceYaml = restTemplateService.send(Constants.TARGET_CP_MASTER_API,
                 propertyService.getCpMasterApiListDeploymentsGetUrl(), HttpMethod.GET, null, String.class, Constants.ACCEPT_TYPE_YAML, params);
 
@@ -490,6 +770,191 @@ public class SecretsService {
         //yaml 생성
         ResultStatus resultStatus = restTemplateService.sendYaml(Constants.TARGET_CP_MASTER_API,
                 propertyService.getCpMasterApiListDeploymentsUpdateUrl(), HttpMethod.PUT, ResultStatus.class, params);
+        return (ResultStatus) commonService.setResultModel(resultStatus, Constants.RESULT_STATUS_SUCCESS);
+    }
+
+    /**
+     * Vault Secrets App 해제(Remove Vault Secrets for App)
+     *
+     * @param params the params
+     * @return the resultStatus
+     */
+    public ResultStatus removeVaultSecrets(Params params) {
+
+        StringBuilder stringBuilder = new StringBuilder();
+        ResultStatus resultStatus = new ResultStatus();
+
+        String line = "";
+        String yamlHead = "";
+        String yamlImage = "";
+        String yamlBody = "";
+
+        VaultDatabaseSecrets getVDS = restTemplateService.sendGlobal(Constants.TARGET_COMMON_API, "/vaultDatabaseSecrets/{name:.+}"
+                .replace("{name:.+}", params.getResourceName()), HttpMethod.GET, null, VaultDatabaseSecrets.class, params);
+
+        params.setDbService(getVDS.getName());
+
+        if (params.getUserType().equals(AUTH_USER) && params.getRoleSetCode().equals(CP_INIT_ROLE)) {
+            throw new ResultStatusException(MessageConstant.FORBIDDEN.getMsg());
+        } else if (params.getUserType().equals(AUTH_USER) && params.getRoleSetCode().equals(CP_ADMIN_ROLE)) {
+            if (!Objects.equals(getVDS.getAppNamespace(), NULL)) {
+                if (!Objects.equals(getVDS.getAppNamespace(), getVDS.getNamespace())) {
+                    throw new ResultStatusException(MessageConstant.APPLICATION_FORBIDDEN.getMsg());
+                }
+            }
+        }
+
+        if (params.getType().equals(STATUS_HOLD)) {
+            params.setResourceName(getVDS.getAppName());
+            params.setNamespace(getVDS.getAppNamespace());
+
+            PortalRequestParams portalRequestParams = new PortalRequestParams();
+            portalRequestParams.setCluster(params.getCluster());
+            portalRequestParams.setNamespace(getVDS.getAppNamespace());
+            portalRequestParams.setResourceName(getVDS.getAppName());
+            portalRequestParams.setTag(TAG_ROLL_BACK);
+
+            //Deployment 롤백
+            restTemplateService.sendGlobal(Constants.TARGET_TERRAMAN_API, "/clusters/request", HttpMethod.POST, portalRequestParams, PortalRequestParams.class, params);
+
+            //ServiceAccount 조회
+            HashMap saResponseMap = (HashMap) restTemplateService.send(Constants.TARGET_CP_MASTER_API,
+                    propertyService.getCpMasterApiListUsersListUrl().replace("{namespace}", getVDS.getAppNamespace()), HttpMethod.GET, null, Map.class, params);
+            ServiceAccountList serviceAccountList = commonService.setResultObject(saResponseMap, ServiceAccountList.class);
+
+            //ServiceAccount 삭제
+            for (int i=0; i < serviceAccountList.getItems().size(); i++) {
+                if (serviceAccountList.getItems().get(i).getName().contains(getVDS.getName() + DYNAMIC_SERVICE_ACCOUNT)) {
+                    restTemplateService.send(Constants.TARGET_CP_MASTER_API,
+                            propertyService.getCpMasterApiListUsersDeleteUrl().replace("{namespace}", getVDS.getAppNamespace()).replace("{name}", getVDS.getName() + "-dynamic-service-account"),
+                            HttpMethod.DELETE, null, ResultStatus.class, params);
+                }
+            }
+
+            //VaultAuth 조회
+            HashMap vaResponseMap = (HashMap) restTemplateService.send(Constants.TARGET_CP_MASTER_API,
+                    propertyService.getVaultVaultAuthListUrl().replace("{namespace}", getVDS.getAppNamespace()), HttpMethod.GET, null, Map.class, params);
+            VaultAuthList vaultAuthList = commonService.setResultObject(vaResponseMap, VaultAuthList.class);
+
+            //VaultAuth 삭제
+            for (int i=0; i < vaultAuthList.getItems().size(); i++) {
+                if (vaultAuthList.getItems().get(i).getName().contains(getVDS.getName() + DYNAMIC_VAULT_AUTH)) {
+                    restTemplateService.send(Constants.TARGET_CP_MASTER_API,
+                            propertyService.getVaultVaultAuthDeleteUrl().replace("{name}", getVDS.getName()).replace("{namespace}", getVDS.getAppNamespace()),
+                            HttpMethod.DELETE, null, ResultStatus.class, params);
+                }
+            }
+
+            //VaultDynamicSecret 조회
+            HashMap vdsResponseMap = (HashMap) restTemplateService.send(Constants.TARGET_CP_MASTER_API,
+                    propertyService.getVaultVaultDynamicSecretListUrl().replace("{namespace}", getVDS.getAppNamespace()), HttpMethod.GET, null, Map.class, params);
+            VaultDynamicSecretList vaultDynamicSecretList = commonService.setResultObject(vdsResponseMap, VaultDynamicSecretList.class);
+
+            //VaultDynamicSecret 삭제
+            for (int i=0; i < vaultDynamicSecretList.getItems().size(); i++) {
+                if (vaultDynamicSecretList.getItems().get(i).getName().contains(getVDS.getName() + VAULT_DYNAMIC_SECRET)) {
+                    restTemplateService.send(Constants.TARGET_CP_MASTER_API,
+                            propertyService.getVaultVaultDynamicSecretDeleteUrl().replace("{name}", getVDS.getName()).replace("{namespace}", getVDS.getAppNamespace()), HttpMethod.DELETE, null, ResultStatus.class, params);
+                }
+            }
+
+            //k8s-auth-role 삭제
+            vaultService.delete(propertyService.getVaultAccessAuthKubernetesRolesPath().replace("{name}", Constants.K8S_AUTH_ROLE + "-" + params.getDbService()));
+
+        } else {
+
+            //ServiceAccount 조회
+            HashMap saResponseMap = (HashMap) restTemplateService.send(Constants.TARGET_CP_MASTER_API,
+                    propertyService.getCpMasterApiListUsersListUrl().replace("{namespace}", getVDS.getAppNamespace()), HttpMethod.GET, null, Map.class, params);
+            ServiceAccountList serviceAccountList = commonService.setResultObject(saResponseMap, ServiceAccountList.class);
+
+            //ServiceAccount 삭제
+            for (int i=0; i < serviceAccountList.getItems().size(); i++) {
+                if (serviceAccountList.getItems().get(i).getName().contains(getVDS.getName() + DYNAMIC_SERVICE_ACCOUNT)) {
+                    restTemplateService.send(Constants.TARGET_CP_MASTER_API,
+                            propertyService.getCpMasterApiListUsersDeleteUrl().replace("{namespace}", getVDS.getAppNamespace()).replace("{name}", getVDS.getName() + "-dynamic-service-account"),
+                            HttpMethod.DELETE, null, ResultStatus.class, params);
+                }
+            }
+
+            //VaultAuth 조회
+            HashMap vaResponseMap = (HashMap) restTemplateService.send(Constants.TARGET_CP_MASTER_API,
+                    propertyService.getVaultVaultAuthListUrl().replace("{namespace}", getVDS.getAppNamespace()), HttpMethod.GET, null, Map.class, params);
+            VaultAuthList vaultAuthList = commonService.setResultObject(vaResponseMap, VaultAuthList.class);
+
+            //VaultAuth 삭제
+            for (int i=0; i < vaultAuthList.getItems().size(); i++) {
+                if (vaultAuthList.getItems().get(i).getName().contains(getVDS.getName() + DYNAMIC_VAULT_AUTH)) {
+                    restTemplateService.send(Constants.TARGET_CP_MASTER_API,
+                            propertyService.getVaultVaultAuthDeleteUrl().replace("{name}", getVDS.getName()).replace("{namespace}", getVDS.getAppNamespace()),
+                            HttpMethod.DELETE, null, ResultStatus.class, params);
+                }
+            }
+
+            //VaultDynamicSecret 조회
+            HashMap vdsResponseMap = (HashMap) restTemplateService.send(Constants.TARGET_CP_MASTER_API,
+                    propertyService.getVaultVaultDynamicSecretListUrl().replace("{namespace}", getVDS.getAppNamespace()), HttpMethod.GET, null, Map.class, params);
+            VaultDynamicSecretList vaultDynamicSecretList = commonService.setResultObject(vdsResponseMap, VaultDynamicSecretList.class);
+
+            //VaultDynamicSecret 삭제
+            for (int i=0; i < vaultDynamicSecretList.getItems().size(); i++) {
+                if (vaultDynamicSecretList.getItems().get(i).getName().contains(getVDS.getName() + VAULT_DYNAMIC_SECRET)) {
+                    restTemplateService.send(Constants.TARGET_CP_MASTER_API,
+                            propertyService.getVaultVaultDynamicSecretDeleteUrl().replace("{name}", getVDS.getName()).replace("{namespace}", getVDS.getAppNamespace()), HttpMethod.DELETE, null, ResultStatus.class, params);
+                }
+            }
+
+            //k8s-auth-role 삭제
+            vaultService.delete(propertyService.getVaultAccessAuthKubernetesRolesPath().replace("{name}", Constants.K8S_AUTH_ROLE + "-" + params.getDbService()));
+
+            if (params.getUserType().equals(AUTH_USER) && params.getRoleSetCode().equals(CP_ADMIN_ROLE)) {
+                PortalRequestParams portalRequestParams = new PortalRequestParams();
+                portalRequestParams.setCluster(params.getCluster());
+                portalRequestParams.setNamespace(getVDS.getAppNamespace());
+                portalRequestParams.setResourceName(getVDS.getAppName());
+                portalRequestParams.setTag(TAG_ROLL_BACK);
+
+                restTemplateService.sendGlobal(Constants.TARGET_TERRAMAN_API, "/clusters/request", HttpMethod.POST, portalRequestParams, PortalRequestParams.class, params);
+            } else {
+                if (getVDS.getAppName() != null && getVDS.getAppNamespace() != null) {
+                    params.setResourceName(getVDS.getAppName());
+                    params.setNamespace(getVDS.getAppNamespace());
+
+                    String resourceYaml = restTemplateService.send(Constants.TARGET_CP_MASTER_API,
+                            propertyService.getCpMasterApiListDeploymentsGetUrl(), HttpMethod.GET, null, String.class, Constants.ACCEPT_TYPE_YAML, params);
+
+                    int idx = resourceYaml.indexOf("      - envFrom:");
+                    int idx2 = resourceYaml.indexOf("        image:");
+                    int idx3 = resourceYaml.indexOf("        imagePullPolicy:");
+
+                    yamlHead = resourceYaml.substring(0, idx);
+                    yamlImage = resourceYaml.substring(idx2, idx3);
+                    yamlBody = resourceYaml.substring(idx3);
+
+                    String yamlImage2 = yamlImage.substring(8);
+
+                    stringBuilder.append(yamlHead);
+                    stringBuilder.append("      - " + yamlImage2);
+                    stringBuilder.append(yamlBody);
+
+                    params.setYaml(String.valueOf(stringBuilder));
+
+                    //Deployment 적용 해제
+                    restTemplateService.sendYaml(Constants.TARGET_CP_MASTER_API,
+                            propertyService.getCpMasterApiListDeploymentsUpdateUrl(), HttpMethod.PUT, ResultStatus.class, params);
+                }
+            }
+        }
+
+        //DB 수정 Logic Application 이름, namespace 인풋
+        VaultDatabaseSecrets vaultDatabaseSecrets = new VaultDatabaseSecrets();
+        vaultDatabaseSecrets.setName(params.getDbService());
+        vaultDatabaseSecrets.setAppName(NULL);
+        vaultDatabaseSecrets.setAppNamespace(NULL);
+        vaultDatabaseSecrets.setFlag(CHECK_N);
+
+        restTemplateService.sendGlobal(Constants.TARGET_COMMON_API, "/vaultDatabaseSecrets", HttpMethod.PUT, vaultDatabaseSecrets, VaultDatabaseSecrets.class, params);
+
         return (ResultStatus) commonService.setResultModel(resultStatus, Constants.RESULT_STATUS_SUCCESS);
     }
 
@@ -527,64 +992,391 @@ public class SecretsService {
 
         params.setDbService(getVDS.getName());
 
-        if (getVDS.getAppName() != null && getVDS.getAppNamespace() != null) {
+        if (params.getUserType().equals(AUTH_USER) && params.getRoleSetCode().equals(CP_INIT_ROLE)) {
+            throw new ResultStatusException(MessageConstant.FORBIDDEN.getMsg());
+        } else if (params.getUserType().equals(AUTH_USER) && params.getRoleSetCode().equals(CP_ADMIN_ROLE)) {
+            if (getVDS.getFlag().equals(CHECK_Y)) {
+                if (!Objects.equals(getVDS.getAppNamespace(), getVDS.getNamespace())) {
+                    throw new ResultStatusException(MessageConstant.APPLICATION_FORBIDDEN.getMsg());
+                }
+            } else {
+                if (params.getType().equals(STATUS_HOLD)) {
+                    params.setResourceName(getVDS.getAppName());
+                    params.setNamespace(getVDS.getAppNamespace());
+
+                    PortalRequestParams portalRequestParams = new PortalRequestParams();
+                    portalRequestParams.setCluster(params.getCluster());
+                    portalRequestParams.setNamespace(getVDS.getAppNamespace());
+                    portalRequestParams.setResourceName(getVDS.getAppName());
+                    portalRequestParams.setTag(TAG_ROLL_BACK);
+
+                    //Deployment 롤백
+                    restTemplateService.sendGlobal(Constants.TARGET_TERRAMAN_API, "/clusters/request", HttpMethod.POST, portalRequestParams, PortalRequestParams.class, params);
+
+                    //ServiceAccount 조회
+                    HashMap saResponseMap = (HashMap) restTemplateService.send(Constants.TARGET_CP_MASTER_API,
+                            propertyService.getCpMasterApiListUsersListUrl().replace("{namespace}", getVDS.getAppNamespace()), HttpMethod.GET, null, Map.class, params);
+                    ServiceAccountList serviceAccountList = commonService.setResultObject(saResponseMap, ServiceAccountList.class);
+
+                    //ServiceAccount 삭제
+                    for (int i=0; i < serviceAccountList.getItems().size(); i++) {
+                        if (serviceAccountList.getItems().get(i).getName().contains(getVDS.getName() + DYNAMIC_SERVICE_ACCOUNT)) {
+                            restTemplateService.send(Constants.TARGET_CP_MASTER_API,
+                                    propertyService.getCpMasterApiListUsersDeleteUrl().replace("{namespace}", getVDS.getAppNamespace()).replace("{name}", getVDS.getName() + "-dynamic-service-account"),
+                                    HttpMethod.DELETE, null, ResultStatus.class, params);
+                        }
+                    }
+
+                    //VaultAuth 조회
+                    HashMap vaResponseMap = (HashMap) restTemplateService.send(Constants.TARGET_CP_MASTER_API,
+                            propertyService.getVaultVaultAuthListUrl().replace("{namespace}", getVDS.getAppNamespace()), HttpMethod.GET, null, Map.class, params);
+                    VaultAuthList vaultAuthList = commonService.setResultObject(vaResponseMap, VaultAuthList.class);
+
+                    //VaultAuth 삭제
+                    for (int i=0; i < vaultAuthList.getItems().size(); i++) {
+                        if (vaultAuthList.getItems().get(i).getName().contains(getVDS.getName() + DYNAMIC_VAULT_AUTH)) {
+                            restTemplateService.send(Constants.TARGET_CP_MASTER_API,
+                                    propertyService.getVaultVaultAuthDeleteUrl().replace("{name}", getVDS.getName()).replace("{namespace}", getVDS.getAppNamespace()),
+                                    HttpMethod.DELETE, null, ResultStatus.class, params);
+                        }
+                    }
+
+                    //VaultDynamicSecret 조회
+                    HashMap vdsResponseMap = (HashMap) restTemplateService.send(Constants.TARGET_CP_MASTER_API,
+                            propertyService.getVaultVaultDynamicSecretListUrl().replace("{namespace}", getVDS.getAppNamespace()), HttpMethod.GET, null, Map.class, params);
+                    VaultDynamicSecretList vaultDynamicSecretList = commonService.setResultObject(vdsResponseMap, VaultDynamicSecretList.class);
+
+                    //VaultDynamicSecret 삭제
+                    for (int i=0; i < vaultDynamicSecretList.getItems().size(); i++) {
+                        if (vaultDynamicSecretList.getItems().get(i).getName().contains(getVDS.getName() + VAULT_DYNAMIC_SECRET)) {
+                            restTemplateService.send(Constants.TARGET_CP_MASTER_API,
+                                    propertyService.getVaultVaultDynamicSecretDeleteUrl().replace("{name}", getVDS.getName()).replace("{namespace}", getVDS.getAppNamespace()), HttpMethod.DELETE, null, ResultStatus.class, params);
+                        }
+                    }
+
+                    //k8s-auth-role 삭제
+                    vaultService.delete(propertyService.getVaultAccessAuthKubernetesRolesPath().replace("{name}", Constants.K8S_AUTH_ROLE + "-" + params.getDbService()));
+
+                    //DB 삭제
+                    restTemplateService.sendGlobal(Constants.TARGET_COMMON_API, "/vaultDatabaseSecrets/{name:.+}"
+                            .replace("{name:.+}", params.getDbService()), HttpMethod.DELETE, null, VaultDatabaseSecrets.class, params);
+
+                    //database-secret config 삭제
+                    vaultService.delete(propertyService.getVaultSecretsEnginesDatabaseConnectionsPath().replace("{name}", params.getDbService()));
+
+                    //database-secret role 삭제
+                    vaultService.delete(propertyService.getVaultSecretsEnginesDatabaseRolesPath().replace("{name}", params.getDbService()));
+
+                    //database-secret/creds의 policy 삭제
+                    vaultService.delete(propertyService.getVaultPolicies().replace("{name}", params.getDbService()));
+
+                } else {
+
+                    if (getVDS.getFlag().equals(CHECK_N)) {
+
+                        //DB 삭제
+                        restTemplateService.sendGlobal(Constants.TARGET_COMMON_API, "/vaultDatabaseSecrets/{name:.+}"
+                                .replace("{name:.+}", params.getDbService()), HttpMethod.DELETE, null, VaultDatabaseSecrets.class, params);
+
+                        //database-secret config 삭제
+                        vaultService.delete(propertyService.getVaultSecretsEnginesDatabaseConnectionsPath().replace("{name}", params.getDbService()));
+
+                        //database-secret role 삭제
+                        vaultService.delete(propertyService.getVaultSecretsEnginesDatabaseRolesPath().replace("{name}", params.getDbService()));
+
+                        //database-secret/creds의 policy 삭제
+                        vaultService.delete(propertyService.getVaultPolicies().replace("{name}", params.getDbService()));
+
+                    } else {
+
+                        params.setNamespace(getVDS.getAppNamespace());
+
+                        //ServiceAccount 조회
+                        HashMap saResponseMap = (HashMap) restTemplateService.send(Constants.TARGET_CP_MASTER_API,
+                                propertyService.getCpMasterApiListUsersListUrl().replace("{namespace}", getVDS.getAppNamespace()), HttpMethod.GET, null, Map.class, params);
+                        ServiceAccountList serviceAccountList = commonService.setResultObject(saResponseMap, ServiceAccountList.class);
+
+                        //ServiceAccount 삭제
+                        for (int i=0; i < serviceAccountList.getItems().size(); i++) {
+                            if (serviceAccountList.getItems().get(i).getName().contains(getVDS.getName() + DYNAMIC_SERVICE_ACCOUNT)) {
+                                restTemplateService.send(Constants.TARGET_CP_MASTER_API,
+                                        propertyService.getCpMasterApiListUsersDeleteUrl().replace("{namespace}", getVDS.getAppNamespace()).replace("{name}", getVDS.getName() + "-dynamic-service-account"),
+                                        HttpMethod.DELETE, null, ResultStatus.class, params);
+                            }
+                        }
+
+                        //VaultAuth 조회
+                        HashMap vaResponseMap = (HashMap) restTemplateService.send(Constants.TARGET_CP_MASTER_API,
+                                propertyService.getVaultVaultAuthListUrl().replace("{namespace}", getVDS.getAppNamespace()), HttpMethod.GET, null, Map.class, params);
+                        VaultAuthList vaultAuthList = commonService.setResultObject(vaResponseMap, VaultAuthList.class);
+
+                        //VaultAuth 삭제
+                        for (int i=0; i < vaultAuthList.getItems().size(); i++) {
+                            if (vaultAuthList.getItems().get(i).getName().contains(getVDS.getName() + DYNAMIC_VAULT_AUTH)) {
+                                restTemplateService.send(Constants.TARGET_CP_MASTER_API,
+                                        propertyService.getVaultVaultAuthDeleteUrl().replace("{name}", getVDS.getName()).replace("{namespace}", getVDS.getAppNamespace()),
+                                        HttpMethod.DELETE, null, ResultStatus.class, params);
+                            }
+                        }
+
+                        //VaultDynamicSecret 조회
+                        HashMap vdsResponseMap = (HashMap) restTemplateService.send(Constants.TARGET_CP_MASTER_API,
+                                propertyService.getVaultVaultDynamicSecretListUrl().replace("{namespace}", getVDS.getAppNamespace()), HttpMethod.GET, null, Map.class, params);
+                        VaultDynamicSecretList vaultDynamicSecretList = commonService.setResultObject(vdsResponseMap, VaultDynamicSecretList.class);
+
+                        //VaultDynamicSecret 삭제
+                        for (int i=0; i < vaultDynamicSecretList.getItems().size(); i++) {
+                            if (vaultDynamicSecretList.getItems().get(i).getName().contains(getVDS.getName() + VAULT_DYNAMIC_SECRET)) {
+                                restTemplateService.send(Constants.TARGET_CP_MASTER_API,
+                                        propertyService.getVaultVaultDynamicSecretDeleteUrl().replace("{name}", getVDS.getName()).replace("{namespace}", getVDS.getAppNamespace()), HttpMethod.DELETE, null, ResultStatus.class, params);
+                            }
+                        }
+
+                        //k8s-auth-role 삭제
+                        vaultService.delete(propertyService.getVaultAccessAuthKubernetesRolesPath().replace("{name}", Constants.K8S_AUTH_ROLE + "-" + params.getDbService()));
+
+                        //User의 cp-admin-role 권한시 삭제
+                        if (params.getUserType().equals(AUTH_USER) && params.getRoleSetCode().equals(CP_ADMIN_ROLE)) {
+
+                            PortalRequestParams portalRequestParams = new PortalRequestParams();
+                            portalRequestParams.setCluster(params.getCluster());
+                            portalRequestParams.setNamespace(getVDS.getAppNamespace());
+                            portalRequestParams.setResourceName(getVDS.getAppName());
+                            portalRequestParams.setTag(TAG_ROLL_BACK);
+
+                            restTemplateService.sendGlobal(Constants.TARGET_TERRAMAN_API, "/clusters/request", HttpMethod.POST, portalRequestParams, PortalRequestParams.class, params);
+
+                        } else {
+                            params.setResourceName(getVDS.getAppName());
+
+                            String resourceYaml = restTemplateService.send(Constants.TARGET_CP_MASTER_API,
+                                    propertyService.getCpMasterApiListDeploymentsGetUrl(), HttpMethod.GET, null, String.class, Constants.ACCEPT_TYPE_YAML, params);
+
+                            int idx = resourceYaml.indexOf("      - envFrom:");
+                            int idx2 = resourceYaml.indexOf("        image:");
+                            int idx3 = resourceYaml.indexOf("        imagePullPolicy:");
+
+                            yamlHead = resourceYaml.substring(0, idx);
+                            yamlImage = resourceYaml.substring(idx2, idx3);
+                            yamlBody = resourceYaml.substring(idx3);
+
+                            String yamlImage2 = yamlImage.substring(8);
+
+                            stringBuilder.append(yamlHead);
+                            stringBuilder.append("      - " + yamlImage2);
+                            stringBuilder.append(yamlBody);
+
+                            params.setYaml(String.valueOf(stringBuilder));
+
+                            //Deployment 적용 해제
+                            restTemplateService.sendYaml(Constants.TARGET_CP_MASTER_API,
+                                    propertyService.getCpMasterApiListDeploymentsUpdateUrl(), HttpMethod.PUT, ResultStatus.class, params);
+                        }
+
+                        //DB 삭제
+                        restTemplateService.sendGlobal(Constants.TARGET_COMMON_API, "/vaultDatabaseSecrets/{name:.+}"
+                                .replace("{name:.+}", params.getDbService()), HttpMethod.DELETE, null, VaultDatabaseSecrets.class, params);
+
+                        //database-secret config 삭제
+                        vaultService.delete(propertyService.getVaultSecretsEnginesDatabaseConnectionsPath().replace("{name}", params.getDbService()));
+
+                        //database-secret role 삭제
+                        vaultService.delete(propertyService.getVaultSecretsEnginesDatabaseRolesPath().replace("{name}", params.getDbService()));
+
+                        //database-secret/creds의 policy 삭제
+                        vaultService.delete(propertyService.getVaultPolicies().replace("{name}", params.getDbService()));
+                    }
+                }
+            }
+        }
+
+        if (params.getType().equals(STATUS_HOLD)) {
             params.setResourceName(getVDS.getAppName());
             params.setNamespace(getVDS.getAppNamespace());
 
-            String resourceYaml = restTemplateService.send(Constants.TARGET_CP_MASTER_API,
-                    propertyService.getCpMasterApiListDeploymentsGetUrl(), HttpMethod.GET, null, String.class, Constants.ACCEPT_TYPE_YAML, params);
+            PortalRequestParams portalRequestParams = new PortalRequestParams();
+            portalRequestParams.setCluster(params.getCluster());
+            portalRequestParams.setNamespace(getVDS.getAppNamespace());
+            portalRequestParams.setResourceName(getVDS.getAppName());
+            portalRequestParams.setTag(TAG_ROLL_BACK);
 
-            int idx = resourceYaml.indexOf("      - envFrom:");
-            int idx2 = resourceYaml.indexOf("        image:");
-            int idx3 = resourceYaml.indexOf("        imagePullPolicy:");
+            //Deployment 롤백
+            restTemplateService.sendGlobal(Constants.TARGET_TERRAMAN_API, "/clusters/request", HttpMethod.POST, portalRequestParams, PortalRequestParams.class, params);
 
-            yamlHead = resourceYaml.substring(0, idx);
-            yamlImage = resourceYaml.substring(idx2, idx3);
-            yamlBody = resourceYaml.substring(idx3);
-
-            String yamlImage2 = yamlImage.substring(8);
-
-            stringBuilder.append(yamlHead);
-            stringBuilder.append("      - " + yamlImage2);
-            stringBuilder.append(yamlBody);
-
-            params.setYaml(String.valueOf(stringBuilder));
-
-            //Deployment 적용 해제
-            restTemplateService.sendYaml(Constants.TARGET_CP_MASTER_API,
-                    propertyService.getCpMasterApiListDeploymentsUpdateUrl(), HttpMethod.PUT, ResultStatus.class, params);
+            //ServiceAccount 조회
+            HashMap saResponseMap = (HashMap) restTemplateService.send(Constants.TARGET_CP_MASTER_API,
+                    propertyService.getCpMasterApiListUsersListUrl().replace("{namespace}", getVDS.getAppNamespace()), HttpMethod.GET, null, Map.class, params);
+            ServiceAccountList serviceAccountList = commonService.setResultObject(saResponseMap, ServiceAccountList.class);
 
             //ServiceAccount 삭제
-            restTemplateService.send(Constants.TARGET_CP_MASTER_API,
-                    propertyService.getCpMasterApiListUsersDeleteUrl().replace("{namespace}", params.getNamespace()).replace("{name}", params.getDbService() + "-dynamic-service-account"),
-                    HttpMethod.DELETE, null, ResultStatus.class, params);
+            for (int i=0; i < serviceAccountList.getItems().size(); i++) {
+                if (serviceAccountList.getItems().get(i).getName().contains(getVDS.getName() + DYNAMIC_SERVICE_ACCOUNT)) {
+                    restTemplateService.send(Constants.TARGET_CP_MASTER_API,
+                            propertyService.getCpMasterApiListUsersDeleteUrl().replace("{namespace}", getVDS.getAppNamespace()).replace("{name}", getVDS.getName() + "-dynamic-service-account"),
+                            HttpMethod.DELETE, null, ResultStatus.class, params);
+                }
+            }
+
+            //VaultAuth 조회
+            HashMap vaResponseMap = (HashMap) restTemplateService.send(Constants.TARGET_CP_MASTER_API,
+                    propertyService.getVaultVaultAuthListUrl().replace("{namespace}", getVDS.getAppNamespace()), HttpMethod.GET, null, Map.class, params);
+            VaultAuthList vaultAuthList = commonService.setResultObject(vaResponseMap, VaultAuthList.class);
+
+            //VaultAuth 삭제
+            for (int i=0; i < vaultAuthList.getItems().size(); i++) {
+                if (vaultAuthList.getItems().get(i).getName().contains(getVDS.getName() + DYNAMIC_VAULT_AUTH)) {
+                    restTemplateService.send(Constants.TARGET_CP_MASTER_API,
+                            propertyService.getVaultVaultAuthDeleteUrl().replace("{name}", getVDS.getName()).replace("{namespace}", getVDS.getAppNamespace()),
+                            HttpMethod.DELETE, null, ResultStatus.class, params);
+                }
+            }
+
+            //VaultDynamicSecret 조회
+            HashMap vdsResponseMap = (HashMap) restTemplateService.send(Constants.TARGET_CP_MASTER_API,
+                    propertyService.getVaultVaultDynamicSecretListUrl().replace("{namespace}", getVDS.getAppNamespace()), HttpMethod.GET, null, Map.class, params);
+            VaultDynamicSecretList vaultDynamicSecretList = commonService.setResultObject(vdsResponseMap, VaultDynamicSecretList.class);
+
+            //VaultDynamicSecret 삭제
+            for (int i=0; i < vaultDynamicSecretList.getItems().size(); i++) {
+                if (vaultDynamicSecretList.getItems().get(i).getName().contains(getVDS.getName() + VAULT_DYNAMIC_SECRET)) {
+                    restTemplateService.send(Constants.TARGET_CP_MASTER_API,
+                            propertyService.getVaultVaultDynamicSecretDeleteUrl().replace("{name}", getVDS.getName()).replace("{namespace}", getVDS.getAppNamespace()), HttpMethod.DELETE, null, ResultStatus.class, params);
+                }
+            }
 
             //k8s-auth-role 삭제
             vaultService.delete(propertyService.getVaultAccessAuthKubernetesRolesPath().replace("{name}", Constants.K8S_AUTH_ROLE + "-" + params.getDbService()));
 
-            //VaultAuth 삭제
-            restTemplateService.send(Constants.TARGET_CP_MASTER_API,
-                    propertyService.getVaultVaultAuthDeleteUrl().replace("{name}", params.getDbService()).replace("{namespace}", params.getNamespace()),
-                    HttpMethod.DELETE, null, ResultStatus.class, params);
+            //DB 삭제
+            restTemplateService.sendGlobal(Constants.TARGET_COMMON_API, "/vaultDatabaseSecrets/{name:.+}"
+                    .replace("{name:.+}", params.getDbService()), HttpMethod.DELETE, null, VaultDatabaseSecrets.class, params);
 
-            //VaultDynamicSecret 삭제
-            restTemplateService.send(Constants.TARGET_CP_MASTER_API,
-                    propertyService.getVaultVaultDynamicSecretDeleteUrl().replace("{name}", params.getDbService()).replace("{namespace}", params.getNamespace()) , HttpMethod.DELETE, null, ResultStatus.class, params);
+            //database-secret config 삭제
+            vaultService.delete(propertyService.getVaultSecretsEnginesDatabaseConnectionsPath().replace("{name}", params.getDbService()));
 
+            //database-secret role 삭제
+            vaultService.delete(propertyService.getVaultSecretsEnginesDatabaseRolesPath().replace("{name}", params.getDbService()));
+
+            //database-secret/creds의 policy 삭제
+            vaultService.delete(propertyService.getVaultPolicies().replace("{name}", params.getDbService()));
+
+        } else {
+
+            if (getVDS.getFlag().equals(CHECK_N)) {
+
+                //DB 삭제
+                restTemplateService.sendGlobal(Constants.TARGET_COMMON_API, "/vaultDatabaseSecrets/{name:.+}"
+                        .replace("{name:.+}", params.getDbService()), HttpMethod.DELETE, null, VaultDatabaseSecrets.class, params);
+
+                //database-secret config 삭제
+                vaultService.delete(propertyService.getVaultSecretsEnginesDatabaseConnectionsPath().replace("{name}", params.getDbService()));
+
+                //database-secret role 삭제
+                vaultService.delete(propertyService.getVaultSecretsEnginesDatabaseRolesPath().replace("{name}", params.getDbService()));
+
+                //database-secret/creds의 policy 삭제
+                vaultService.delete(propertyService.getVaultPolicies().replace("{name}", params.getDbService()));
+
+            } else {
+
+                params.setNamespace(getVDS.getAppNamespace());
+
+                //ServiceAccount 조회
+                HashMap saResponseMap = (HashMap) restTemplateService.send(Constants.TARGET_CP_MASTER_API,
+                        propertyService.getCpMasterApiListUsersListUrl().replace("{namespace}", getVDS.getAppNamespace()), HttpMethod.GET, null, Map.class, params);
+                ServiceAccountList serviceAccountList = commonService.setResultObject(saResponseMap, ServiceAccountList.class);
+
+                //ServiceAccount 삭제
+                for (int i=0; i < serviceAccountList.getItems().size(); i++) {
+                    if (serviceAccountList.getItems().get(i).getName().contains(getVDS.getName() + DYNAMIC_SERVICE_ACCOUNT)) {
+                        restTemplateService.send(Constants.TARGET_CP_MASTER_API,
+                                propertyService.getCpMasterApiListUsersDeleteUrl().replace("{namespace}", getVDS.getAppNamespace()).replace("{name}", getVDS.getName() + "-dynamic-service-account"),
+                                HttpMethod.DELETE, null, ResultStatus.class, params);
+                    }
+                }
+
+                //VaultAuth 조회
+                HashMap vaResponseMap = (HashMap) restTemplateService.send(Constants.TARGET_CP_MASTER_API,
+                        propertyService.getVaultVaultAuthListUrl().replace("{namespace}", getVDS.getAppNamespace()), HttpMethod.GET, null, Map.class, params);
+                VaultAuthList vaultAuthList = commonService.setResultObject(vaResponseMap, VaultAuthList.class);
+
+                //VaultAuth 삭제
+                for (int i=0; i < vaultAuthList.getItems().size(); i++) {
+                    if (vaultAuthList.getItems().get(i).getName().contains(getVDS.getName() + DYNAMIC_VAULT_AUTH)) {
+                        restTemplateService.send(Constants.TARGET_CP_MASTER_API,
+                                propertyService.getVaultVaultAuthDeleteUrl().replace("{name}", getVDS.getName()).replace("{namespace}", getVDS.getAppNamespace()),
+                                HttpMethod.DELETE, null, ResultStatus.class, params);
+                    }
+                }
+
+                //VaultDynamicSecret 조회
+                HashMap vdsResponseMap = (HashMap) restTemplateService.send(Constants.TARGET_CP_MASTER_API,
+                        propertyService.getVaultVaultDynamicSecretListUrl().replace("{namespace}", getVDS.getAppNamespace()), HttpMethod.GET, null, Map.class, params);
+                VaultDynamicSecretList vaultDynamicSecretList = commonService.setResultObject(vdsResponseMap, VaultDynamicSecretList.class);
+
+                //VaultDynamicSecret 삭제
+                for (int i=0; i < vaultDynamicSecretList.getItems().size(); i++) {
+                    if (vaultDynamicSecretList.getItems().get(i).getName().contains(getVDS.getName() + VAULT_DYNAMIC_SECRET)) {
+                        restTemplateService.send(Constants.TARGET_CP_MASTER_API,
+                                propertyService.getVaultVaultDynamicSecretDeleteUrl().replace("{name}", getVDS.getName()).replace("{namespace}", getVDS.getAppNamespace()), HttpMethod.DELETE, null, ResultStatus.class, params);
+                    }
+                }
+
+                //k8s-auth-role 삭제
+                vaultService.delete(propertyService.getVaultAccessAuthKubernetesRolesPath().replace("{name}", Constants.K8S_AUTH_ROLE + "-" + params.getDbService()));
+
+                //User의 cp-admin-role 권한시 삭제
+                if (params.getUserType().equals(AUTH_USER) && params.getRoleSetCode().equals(CP_ADMIN_ROLE)) {
+
+                    PortalRequestParams portalRequestParams = new PortalRequestParams();
+                    portalRequestParams.setCluster(params.getCluster());
+                    portalRequestParams.setNamespace(getVDS.getAppNamespace());
+                    portalRequestParams.setResourceName(getVDS.getAppName());
+                    portalRequestParams.setTag(TAG_ROLL_BACK);
+
+                    restTemplateService.sendGlobal(Constants.TARGET_TERRAMAN_API, "/clusters/request", HttpMethod.POST, portalRequestParams, PortalRequestParams.class, params);
+
+                } else {
+                    params.setResourceName(getVDS.getAppName());
+
+                    String resourceYaml = restTemplateService.send(Constants.TARGET_CP_MASTER_API,
+                            propertyService.getCpMasterApiListDeploymentsGetUrl(), HttpMethod.GET, null, String.class, Constants.ACCEPT_TYPE_YAML, params);
+
+                    int idx = resourceYaml.indexOf("      - envFrom:");
+                    int idx2 = resourceYaml.indexOf("        image:");
+                    int idx3 = resourceYaml.indexOf("        imagePullPolicy:");
+
+                    yamlHead = resourceYaml.substring(0, idx);
+                    yamlImage = resourceYaml.substring(idx2, idx3);
+                    yamlBody = resourceYaml.substring(idx3);
+
+                    String yamlImage2 = yamlImage.substring(8);
+
+                    stringBuilder.append(yamlHead);
+                    stringBuilder.append("      - " + yamlImage2);
+                    stringBuilder.append(yamlBody);
+
+                    params.setYaml(String.valueOf(stringBuilder));
+
+                    //Deployment 적용 해제
+                    restTemplateService.sendYaml(Constants.TARGET_CP_MASTER_API,
+                            propertyService.getCpMasterApiListDeploymentsUpdateUrl(), HttpMethod.PUT, ResultStatus.class, params);
+                }
+
+                //DB 삭제
+                restTemplateService.sendGlobal(Constants.TARGET_COMMON_API, "/vaultDatabaseSecrets/{name:.+}"
+                        .replace("{name:.+}", params.getDbService()), HttpMethod.DELETE, null, VaultDatabaseSecrets.class, params);
+
+                //database-secret config 삭제
+                vaultService.delete(propertyService.getVaultSecretsEnginesDatabaseConnectionsPath().replace("{name}", params.getDbService()));
+
+                //database-secret role 삭제
+                vaultService.delete(propertyService.getVaultSecretsEnginesDatabaseRolesPath().replace("{name}", params.getDbService()));
+
+                //database-secret/creds의 policy 삭제
+                vaultService.delete(propertyService.getVaultPolicies().replace("{name}", params.getDbService()));
+            }
         }
-
-        //DB 삭제
-       restTemplateService.sendGlobal(Constants.TARGET_COMMON_API, "/vaultDatabaseSecrets/{name:.+}"
-                .replace("{name:.+}", params.getDbService()), HttpMethod.DELETE, null, VaultDatabaseSecrets.class, params);
-
-        //database-secret config 삭제
-        vaultService.delete(propertyService.getVaultSecretsEnginesDatabaseConnectionsPath().replace("{name}", params.getDbService()));
-
-        //database-secret role 생성
-        vaultService.delete(propertyService.getVaultSecretsEnginesDatabaseRolesPath().replace("{name}", params.getDbService()));
-
-        //database-secret/creds의 policy 삭제
-        vaultService.delete(propertyService.getVaultPolicies().replace("{name}", params.getDbService()));
 
         return (ResultStatus) commonService.setResultModel(resultStatus, Constants.RESULT_STATUS_SUCCESS);
     }
@@ -625,11 +1417,28 @@ public class SecretsService {
         map.put("defaultTtl", params.getDefaultTtl());
         map.put("maxTtl", params.getMaxTtl());
 
-        vaultService.write(propertyService.getVaultSecretsEnginesDatabaseRolesPath().replace("{name}", params.getMetadataName()), templateService.convert("create_vault_secret_engine_database_postgres_role.ftl", map));
+        if (params.getUserType().equals(AUTH_USER) && params.getRoleSetCode().equals(CP_INIT_ROLE)) {
+            throw new ResultStatusException(MessageConstant.FORBIDDEN.getMsg());
+        } else if (params.getUserType().equals(AUTH_USER) && params.getRoleSetCode().equals(CP_ADMIN_ROLE)) {
+            //DB 상세 조회
+            VaultDatabaseSecrets getVDS = restTemplateService.sendGlobal(Constants.TARGET_COMMON_API, "/vaultDatabaseSecrets/{name:.+}"
+                    .replace("{name:.+}", params.getResourceName()), HttpMethod.GET, null, VaultDatabaseSecrets.class, params);
+            if (getVDS.getFlag().equals(CHECK_Y)) {
+                if (!Objects.equals(getVDS.getNamespace(), getVDS.getAppNamespace())) {
+                    throw new ResultStatusException(MessageConstant.APPLICATION_FORBIDDEN.getMsg());
+                }
+            }
+        }
+
+        //database-secret role 생성
+        try {
+            vaultService.write(propertyService.getVaultSecretsEnginesDatabaseRolesPath().replace("{name}", params.getMetadataName()), templateService.convert("create_vault_secret_engine_database_postgres_role.ftl", map));
+        } catch (Exception e) {
+            throw new ResultStatusException(MessageConstant.INVALID_UNIT_OF_TIME.getMsg());
+        }
         return (ResultStatus) commonService.setResultModel(resultStatus, Constants.RESULT_STATUS_SUCCESS);
 
     }
-
 
     /**
      * 필터링된 Secrets 목록 조회(Get filtered Secrets list)
@@ -658,6 +1467,7 @@ public class SecretsService {
         if(!params.getResourceUid().equals(Constants.EMPTY_STRING))
             vaultDatabaseSecrets.setId(Long.parseLong(params.getResourceUid()));
         vaultDatabaseSecrets.setName(params.getMetadataName());
+        vaultDatabaseSecrets.setNamespace(params.getNamespace());
         if (params.getDbType().equals(VAULT_DATABASE_POSTGRES)) {
             vaultDatabaseSecrets.setDbType(POSTGRESQL_DATABASE);
         }

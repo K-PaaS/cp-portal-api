@@ -1,9 +1,9 @@
 package org.container.platform.api.workloads.replicaSets;
 
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiImplicitParam;
-import io.swagger.annotations.ApiImplicitParams;
-import io.swagger.annotations.ApiOperation;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.container.platform.api.common.model.CommonResourcesYaml;
 import org.container.platform.api.common.model.Params;
 import org.container.platform.api.common.model.ResultStatus;
@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.*;
  * @version 1.0
  * @since 2022.05.23
  */
-@Api(value = "ReplicaSetsController v1")
+@Tag(name = "ReplicaSetsController v1")
 @RestController
 @RequestMapping("/clusters/{cluster:.+}/namespaces/{namespace:.+}/replicaSets")
 public class ReplicaSetsController {
@@ -41,10 +41,8 @@ public class ReplicaSetsController {
      * @param params the params
      * @return the replicaSets list
      */
-    @ApiOperation(value = "ReplicaSets 목록 조회(Get ReplicaSets List)", nickname = "getReplicaSetsList")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
-    })
+    @Operation(summary = "ReplicaSets 목록 조회(Get ReplicaSets List)", operationId = "getReplicaSetsList")
+    @Parameter(name = "params", description = "request parameters", required = true, schema=@Schema(implementation = Params.class))
     @GetMapping
     public ReplicaSetsList getReplicaSetsList(Params params) {
         return replicaSetsService.getReplicaSetsList(params);
@@ -57,10 +55,8 @@ public class ReplicaSetsController {
      * @param params the params
      * @return the replicaSets detail
      */
-    @ApiOperation(value = "ReplicaSets 상세 조회(Get ReplicaSets Detail)", nickname = "getReplicaSets")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
-    })
+    @Operation(summary = "ReplicaSets 상세 조회(Get ReplicaSets Detail)", operationId = "getReplicaSets")
+    @Parameter(name = "params", description = "request parameters", required = true, schema=@Schema(implementation = Params.class))
     @GetMapping(value = "/{resourceName:.+}")
     public ReplicaSets getReplicaSets(Params params) {
         return replicaSetsService.getReplicaSets(params);
@@ -73,10 +69,8 @@ public class ReplicaSetsController {
      * @param params the params
      * @return the replicaSets list
      */
-    @ApiOperation(value = "Selector 값에 따른 ReplicaSets 목록 조회(Get ReplicaSets By Selector)", nickname = "getReplicaSetsListLabelSelector")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
-    })
+    @Operation(summary = "Selector 값에 따른 ReplicaSets 목록 조회(Get ReplicaSets By Selector)", operationId = "getReplicaSetsListLabelSelector")
+    @Parameter(name = "params", description = "request parameters", required = true, schema=@Schema(implementation = Params.class))
     @GetMapping(value = "/resources")
     public ReplicaSetsList getReplicaSetsListLabelSelector(Params params) {
         return replicaSetsService.getReplicaSetsListLabelSelector(params);
@@ -89,10 +83,8 @@ public class ReplicaSetsController {
      * @param params the params
      * @return the replicaSets yaml
      */
-    @ApiOperation(value = "ReplicaSets YAML 조회(Get ReplicaSets Yaml)", nickname = "getReplicaSetsYaml")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
-    })
+    @Operation(summary = "ReplicaSets YAML 조회(Get ReplicaSets Yaml)", operationId = "getReplicaSetsYaml")
+    @Parameter(name = "params", description = "request parameters", required = true, schema=@Schema(implementation = Params.class))
     @GetMapping(value = "/{resourceName:.+}/yaml")
     public CommonResourcesYaml getReplicaSetsYaml(Params params) {
         return replicaSetsService.getReplicaSetsYaml(params);
@@ -105,10 +97,8 @@ public class ReplicaSetsController {
      * @param params the params
      * @return the resultStatus
      */
-    @ApiOperation(value = "ReplicaSets 생성(Create ReplicaSets)", nickname = "createReplicaSets")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
-    })
+    @Operation(summary = "ReplicaSets 생성(Create ReplicaSets)", operationId = "createReplicaSets")
+    @Parameter(name = "params", description = "request parameters", required = true, schema=@Schema(implementation = Params.class))
     @PostMapping
     public Object createReplicaSets(@RequestBody Params params) throws Exception {
         if (params.getYaml().contains("---")) {
@@ -125,10 +115,8 @@ public class ReplicaSetsController {
      * @param params the params
      * @return the resultStatus
      */
-    @ApiOperation(value = "ReplicaSets 수정(Update ReplicaSets)", nickname = "updateReplicaSets")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
-    })
+    @Operation(summary = "ReplicaSets 수정(Update ReplicaSets)", operationId = "updateReplicaSets")
+    @Parameter(name = "params", description = "request parameters", required = true, schema=@Schema(implementation = Params.class))
     @PutMapping(value = "/{resourceName:.+}")
     public ResultStatus updateReplicaSets(@RequestBody Params params) {
         return replicaSetsService.updateReplicaSets(params);
@@ -140,10 +128,8 @@ public class ReplicaSetsController {
      * @param params the params
      * @return the resultStatus
      */
-    @ApiOperation(value = "ReplicaSets 삭제(Delete ReplicaSets)", nickname = "deleteReplicaSets")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
-    })
+    @Operation(summary = "ReplicaSets 삭제(Delete ReplicaSets)", operationId = "deleteReplicaSets")
+    @Parameter(name = "params", description = "request parameters", required = true, schema=@Schema(implementation = Params.class))
     @DeleteMapping(value = "/{resourceName:.+}")
     public ResultStatus deleteReplicaSets(Params params) {
         return replicaSetsService.deleteReplicaSets(params);

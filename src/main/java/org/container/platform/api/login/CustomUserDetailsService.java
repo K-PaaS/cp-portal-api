@@ -10,7 +10,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpMethod;
-
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -19,8 +18,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
-
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
@@ -115,36 +113,6 @@ public class CustomUserDetailsService implements UserDetailsService {
         return new AuthenticationResponse(Constants.RESULT_STATUS_SUCCESS, MessageConstant.LOGIN_SUCCESS.getMsg(), CommonStatusCode.OK.getCode(),
                 MessageConstant.LOGIN_SUCCESS.getMsg(), params.getUserId(), params.getUserAuthId(), params.getUserType(), token, "cp-cluster", params.getIsSuperAdmin());
     }
-
-
-    /*
-     */
-/**
- * 기본 Namespace를 제외한 인증된 사용자가 속한 Namespace 목록 조회(Get List of Namespaces to which authenticated users belong, excluding default namespaces)
- *
- * @param userItem the users item
- * @return the list
- *//*
-
-    public List<loginMetaDataItem> defaultNamespaceFilter(List<Users> userItem) {
-
-        List<loginMetaDataItem> loginMetaData = new ArrayList<>();
-
-        for (Users user : userItem) {
-
-            if (!user.getUserType().equals(Constants.AUTH_CLUSTER_ADMIN)) {
-
-                if (!user.getCpNamespace().equals(propertyService.getDefaultNamespace())) {
-                    loginMetaData.add(new loginMetaDataItem(user.getCpNamespace(), user.getUserType()));
-                }
-
-            }
-        }
-
-        return loginMetaData;
-    }
-*/
-
 
     /**
      * Users 로그인을 위한 상세 조회(Get Users for login)

@@ -1,7 +1,6 @@
 package org.container.platform.api.login.support;
 
 import lombok.Data;
-
 import java.util.ArrayList;
 import java.util.List;
 

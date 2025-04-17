@@ -3,7 +3,6 @@ package org.container.platform.api.workloads.pods;
 import lombok.Data;
 import org.container.platform.api.common.model.CommonItemMetaData;
 import org.container.platform.api.workloads.pods.support.PodsListItem;
-
 import java.util.List;
 import java.util.Map;
 

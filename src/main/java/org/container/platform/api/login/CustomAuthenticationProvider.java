@@ -1,7 +1,6 @@
 package org.container.platform.api.login;
 
 import org.container.platform.api.accessInfo.AccessTokenService;
-import org.container.platform.api.common.CommonUtils;
 import org.container.platform.api.common.Constants;
 import org.container.platform.api.common.MessageConstant;
 import org.container.platform.api.common.model.Params;
@@ -18,7 +17,6 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -93,10 +91,6 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
             portalGrantedAuthorityList.add(new PortalGrantedAuthority(id, type, x.userType, vaultResult.getClusterToken(), vaultResult.getClusterApiUrl()));
         });
 
-
-        portalGrantedAuthorityList.forEach(x -> LOGGER.info("##IN AUTHENTICATE:: JWT Token Set, portalGrantedAuthorityList: " + x));
-
-//        Collection<? extends GrantedAuthority> authorities = loadedUser.getAuthorities();
         Collection<? extends GrantedAuthority> authorities = portalGrantedAuthorityList;
 
         if (loadedUser == null) {
@@ -118,11 +112,9 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
         if (!loadedUser.isCredentialsNonExpired()) {
             throw new CredentialsExpiredException(MessageConstant.UNAVAILABLE_ID.getMsg());
         }
-//        UsernamePasswordAuthenticationToken result = new UsernamePasswordAuthenticationToken(loadedUser, null, loadedUser.getAuthorities());
         UsernamePasswordAuthenticationToken result = new UsernamePasswordAuthenticationToken(loadedUser, null, authorities);
         result.setDetails(authentication.getDetails());
 
-        LOGGER.info("authenticate END, result : " + CommonUtils.loggerReplace(result.toString()));
         return result;
     }
 

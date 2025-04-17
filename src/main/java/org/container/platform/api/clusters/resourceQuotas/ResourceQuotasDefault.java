@@ -7,8 +7,6 @@ import lombok.NoArgsConstructor;
 import org.container.platform.api.common.model.CommonMetaData;
 import org.container.platform.api.common.model.CommonSpec;
 
-import javax.management.monitor.CounterMonitor;
-
 /**
  * ResourceQuotas Default Model 클래스
  *

@@ -195,7 +195,6 @@ public class ResourceQuotasService {
         List<ResourceQuotasDefault> quotasDefaultList = new ArrayList<>();
 
         List<String> k8sRqNameList = resourceQuotasList.getItems().stream().map(ResourceQuotasListItem::getName).collect(Collectors.toList());
-//        List<String> dbRqNameList = resourceQuotasDefaultList.getItems().stream().map(ResourceQuotasDefault::getName).collect(Collectors.toList());
 
         for (ResourceQuotasDefault resourceQuotasDefault : resourceQuotasDefaultList.getItems()) {
             if (!k8sRqNameList.contains(resourceQuotasDefault.getName())) {

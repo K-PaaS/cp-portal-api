@@ -16,6 +16,7 @@ public class Constants {
 
     public static final String CHECK_Y = "Y";
     public static final String CHECK_N = "N";
+    public static final String NULL = "NULL";
 
     public static final String CHECK_TRUE = "true";
     public static final String CHECK_FALSE = "false";
@@ -77,6 +78,9 @@ public class Constants {
 
     public static final String INGRESS_CONTROLLER_NAMESPACE= "ingress-nginx";
     public static final String INGRESS_CONTROLLER_RESOURCE_NAME= "ingress-nginx-controller";
+
+    public static final String CP_INIT_ROLE = "cp-init-role";
+    public static final String CP_ADMIN_ROLE = "cp-admin-role";
 
     public static final List<String> LIMIT_RANGE_TYPE_LIST = Collections.unmodifiableList(new ArrayList<String>(){
         {
@@ -219,8 +223,8 @@ public class Constants {
 
     //cluster
     public static final String RESOURCE_CLUSTER = "Cluster";
-    public static final String RESOURCE_NAMESPACE = "Namespace";
     public static final String RESOURCE_NODE = "Node";
+    public static final String RESOURCE_NAMESPACE = "Namespace";
 
     //workload
     public static final String RESOURCE_DEPLOYMENT = "Deployment";
@@ -232,12 +236,20 @@ public class Constants {
     public static final String RESOURCE_INGRESS = "Ingress";
 
     //storage
-    public static final String RESOURCE_PERSISTENTVOLUMECLAIM = "PersistentVolumeClaim";
     public static final String RESOURCE_PERSISTENTVOLUME = "PersistentVolume";
+    public static final String RESOURCE_PERSISTENTVOLUMECLAIM = "PersistentVolumeClaim";
     public static final String RESOURCE_STORAGECLASS = "StorageClass";
 
     //config
+    public static final String RESOURCE_CONFIGMAP = "ConfigMap";
     public static final String RESOURCE_SECRET = "Secret";
+
+    //management
+    public static final String RESOURCE_ROLE = "Role";
+    public static final String RESOURCE_LIMITRANGE = "LimitRange";
+    public static final String RESOURCE_RESOURCEQUOTA = "ResourceQuota";
+
+
 
     //data type
     public static final String DATA_TYPE_OPAQUE = "Opaque";
@@ -283,18 +295,17 @@ public class Constants {
     public static final String STORAGE_BACK_END_VAULT = "vault";
     public static final String DATA_BYTES = "bytes";
     public static final String SERVICE_ACCOUNT_TOKEN_CA_CRT = "ca.crt";
+    public static final String DYNAMIC_SERVICE_ACCOUNT = "-dynamic-service-account";
+    public static final String DYNAMIC_VAULT_AUTH = "-dynamic-vault-auth";
+    public static final String VAULT_DYNAMIC_SECRET = "-vault-dynamic-secret";
     public static final String VAULT_DATABASE_POSTGRES = "psql";
 
 
     public static final String TAG_BR = "<br>";
     public static final String TAG_DIV_BEGIN = "<div>";
     public static final String TAG_DIV_END = "</div>";
+    public static final String TAG_ROLL_BACK = "rollBack";
 
-
-    //management
-    public static final String RESOURCE_LIMITRANGE = "LimitRange";
-    public static final String RESOURCE_RESOURCEQUOTA = "ResourceQuota";
-    public static final String RESOURCE_ROLE = "Role";
 
     public static final String RESOURCE_NAME = "name";
     public static final String RESOURCE_CREATIONTIMESTAMP = "creationTimestamp";
@@ -331,20 +342,29 @@ public class Constants {
 
     public static final Map<String, String> RESOURCE_SERVICE_MAP = Collections.unmodifiableMap(new HashMap<String, String>() {
         {
-            put(RESOURCE_ENDPOINTS, SERVICE_PACKAGE + "endpoints:EndpointsService");     // Endpoints 서비스
-            put(RESOURCE_EVENTS, SERVICE_PACKAGE + "events:EventsService");     // Endpoints 서비스
-            put(RESOURCE_NAMESPACE, SERVICE_PACKAGE + "clusters.namespaces:NamespacesService");     // Namespace 서비스
+
             put(RESOURCE_NODE, SERVICE_PACKAGE + "clusters.nodes:NodesService");     // Node 서비스
-            put(RESOURCE_DEPLOYMENT, SERVICE_PACKAGE + "workloads.deployments:DeploymentsService");     // Deployment 서비스
+            put(RESOURCE_NAMESPACE, SERVICE_PACKAGE + "clusters.namespaces:NamespacesService");  // Namespace 서비스
+
+            put(RESOURCE_DEPLOYMENT, SERVICE_PACKAGE + "workloads.deployments:DeploymentsService");  // Deployment 서비스
             put(RESOURCE_POD, SERVICE_PACKAGE + "workloads.pods:PodsService");     // Pod 서비스
             put(RESOURCE_REPLICASET, SERVICE_PACKAGE + "workloads.pods:ReplicaSetsService");     // ReplicaSet 서비스
+
             put(RESOURCE_SERVICE, SERVICE_PACKAGE + "customServices:CustomServicesService");     // Service 서비스
-            put(RESOURCE_PERSISTENTVOLUMECLAIM, SERVICE_PACKAGE + "storages.persistentVolumeClaims:PersistentVolumeClaimsService");     // PersistentVolumeClaim 서비스
-            put(RESOURCE_PERSISTENTVOLUME, SERVICE_PACKAGE + "storages.persistentVolumes:PersistentVolumesService");     // PersistentVolume 서비스
+
             put(RESOURCE_STORAGECLASS, SERVICE_PACKAGE + "storages.storageClasses:StorageClassesService");     // StorageClass 서비스
+            put(RESOURCE_PERSISTENTVOLUME, SERVICE_PACKAGE + "storages.persistentVolumes:PersistentVolumesService");     // PersistentVolume 서비스
+            put(RESOURCE_PERSISTENTVOLUMECLAIM, SERVICE_PACKAGE + "storages.persistentVolumeClaims:PersistentVolumeClaimsService");     // PersistentVolumeClaim 서비스
+
+            put(RESOURCE_CONFIGMAP, SERVICE_PACKAGE + "configmaps:ConfigMapsService"); // ConfigMap 서비스
+
+            put(RESOURCE_ROLE, SERVICE_PACKAGE + "roles:RolesService"); // Role 서비스
             put(RESOURCE_RESOURCEQUOTA, SERVICE_PACKAGE + "clusters.resourceQuotas:ResourceQuotasService");     // ResourceQuota 서비스
             put(RESOURCE_LIMITRANGE, SERVICE_PACKAGE + "clusters.limitRanges:LimitRangesService");     // LimitRange 서비스
-            put(RESOURCE_ROLE, SERVICE_PACKAGE + "roles:RolesService"); // Role 서비스
+
+
+            put(RESOURCE_ENDPOINTS, SERVICE_PACKAGE + "endpoints:EndpointsService");     // Endpoints 서비스
+            put(RESOURCE_EVENTS, SERVICE_PACKAGE + "events:EventsService");     // Events 서비스
         }
 
     });

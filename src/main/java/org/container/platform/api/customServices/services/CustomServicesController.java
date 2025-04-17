@@ -1,6 +1,9 @@
 package org.container.platform.api.customServices.services;
 
-import io.swagger.annotations.*;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.container.platform.api.common.model.CommonResourcesYaml;
 import org.container.platform.api.common.model.Params;
 import org.container.platform.api.common.model.ResultStatus;
@@ -15,7 +18,7 @@ import org.springframework.web.bind.annotation.*;
  * @version 1.0
  * @since 2022.05.24
  */
-@Api(value = "CustomServicesController v1")
+@Tag(name = "CustomServicesController v1")
 @RestController
 @RequestMapping("/clusters/{cluster:.+}/namespaces/{namespace:.+}/services")
 public class CustomServicesController {
@@ -39,10 +42,8 @@ public class CustomServicesController {
      * @param params the params
      * @return the services list
      */
-    @ApiOperation(value = "Services 목록 조회(Get Services list)", nickname = "getCustomServicesList")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
-    })
+    @Operation(summary = "Services 목록 조회(Get Services list)", operationId = "getCustomServicesList")
+    @Parameter(name = "params", description = "request parameters", required = true, schema=@Schema(implementation = Params.class))
     @GetMapping
     public CustomServicesList getCustomServicesList(Params params) {
             return customServicesService.getCustomServicesList(params);
@@ -55,10 +56,8 @@ public class CustomServicesController {
      * @param params the params
      * @return the services detail
      */
-    @ApiOperation(value = "Services 상세 조회(Get Services detail)", nickname = "getCustomServices")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
-    })
+    @Operation(summary = "Services 상세 조회(Get Services detail)", operationId = "getCustomServices")
+    @Parameter(name = "params", description = "request parameters", required = true, schema=@Schema(implementation = Params.class))
     @GetMapping(value = "/{resourceName:.+}")
     public Object getCustomServices(Params params) {
             return customServicesService.getCustomServices(params);
@@ -71,10 +70,8 @@ public class CustomServicesController {
      * @param params the params
      * @return the services yaml
      */
-    @ApiOperation(value = "Services YAML 조회(Get Services yaml)", nickname = "getCustomServicesYaml")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
-    })
+    @Operation(summary = "Services YAML 조회(Get Services yaml)", operationId = "getCustomServicesYaml")
+    @Parameter(name = "params", description = "request parameters", required = true, schema=@Schema(implementation = Params.class))
     @GetMapping(value = "/{resourceName:.+}/yaml")
     public CommonResourcesYaml getCustomServicesYaml(Params params) {
             return customServicesService.getCustomServicesYaml(params);
@@ -88,10 +85,8 @@ public class CustomServicesController {
      * @return the resultStatus
      */
 
-    @ApiOperation(value = "Services 생성(Create Services)", nickname = "createServices")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
-    })
+    @Operation(summary = "Services 생성(Create Services)", operationId = "createServices")
+    @Parameter(name = "params", description = "request parameters", required = true, schema=@Schema(implementation = Params.class))
     @PostMapping
     public Object createServices(@RequestBody Params params) throws Exception {
         if (params.getYaml().contains("---")) {
@@ -109,10 +104,8 @@ public class CustomServicesController {
      * @return the resultStatus
      */
 
-    @ApiOperation(value = "Services 삭제(Delete Services)", nickname = "deleteServices")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
-    })
+    @Operation(summary = "Services 삭제(Delete Services)", operationId = "deleteServices")
+    @Parameter(name = "params", description = "request parameters", required = true, schema=@Schema(implementation = Params.class))
     @DeleteMapping("/{resourceName:.+}")
     public ResultStatus deleteServices(Params params) {
         return customServicesService.deleteServices(params);
@@ -125,10 +118,8 @@ public class CustomServicesController {
      * @param params the params
      * @return the resultStatus
      */
-    @ApiOperation(value = "Services 수정(Update Services)", nickname = "updateServices")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
-    })
+    @Operation(summary = "Services 수정(Update Services)", operationId = "updateServices")
+    @Parameter(name = "params", description = "request parameters", required = true, schema=@Schema(implementation = Params.class))
     @PutMapping("/{resourceName:.+}")
     public ResultStatus updateServices(@RequestBody Params params) {
         return customServicesService.updateServices(params);

@@ -303,3 +303,17 @@ rules:
   - patch
   - update
   - watch
+- apiGroups:
+  - secrets.hashicorp.com
+  resources:
+  - vaultauths
+  - vaultdynamicsecrets
+  verbs:
+  - create
+  - delete
+  - deletecollection
+  - get
+  - list
+  - patch
+  - update
+  - watch

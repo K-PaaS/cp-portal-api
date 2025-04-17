@@ -1,8 +1,6 @@
 package org.container.platform.api.workloads.pods.support;
 
 import lombok.Data;
-
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 

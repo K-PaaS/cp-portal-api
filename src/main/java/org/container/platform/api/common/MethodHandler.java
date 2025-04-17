@@ -16,7 +16,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Component;
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
+
 import java.util.Arrays;
 import java.util.Map;
 
@@ -36,7 +37,6 @@ import static org.container.platform.api.common.Constants.NOT_ALLOWED_POD_NAME_L
 public class MethodHandler {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandler.class);
-    private static final String IS_ADMIN_KEY = "isAdmin";
     private static final String YAML_KEY = "yaml";
     private static final String NAMESPACE_KEY = "namespace";
     private static final String KIND_KEY = "kind";
@@ -59,150 +59,89 @@ public class MethodHandler {
      * @param joinPoint the joinPoint
      * @throws Throwable
      */
-    @Around("execution(* org.container.platform.api..*Controller.*create*(..))"
-            + "&& !execution(* org.container.platform.api.clusters.cloudAccounts.*.*(..))"
-            + "&& !execution(* org.container.platform.api.clusters.clusters.*.*(..))"
-            + "&& !execution(* org.container.platform.api.clusters.hclTemplates.*.*(..))"
-    )
+    @Around("execution(* org.container.platform.api..*Controller.*create*(..))" +
+            "&& !execution(* org.container.platform.api.clusters.cloudAccounts.*.*(..))" +
+            "&& !execution(* org.container.platform.api.clusters.clusters.*.*(..))" +
+            "&& !execution(* org.container.platform.api.clusters.hclTemplates.*.*(..))")
     public Object createResourceAspect(ProceedingJoinPoint joinPoint) throws Throwable {
 
         String yaml = "";
         String namespace = "";
-        Boolean isAdmin = true;
+        String resource;
+        String requestResource;
+        String requestURI = request.getRequestURI();
+        Boolean isExistResource = false;
 
         Object[] parameterValues = Arrays.asList(joinPoint.getArgs()).toArray();
         Params params = (Params) parameterValues[0];
-
         namespace = params.getNamespace();
 
-
-        if(namespace.toLowerCase().equals(Constants.ALL_NAMESPACES)) {
+        if (namespace.toLowerCase().equals(Constants.ALL_NAMESPACES)) {
             return new ResultStatus(Constants.RESULT_STATUS_FAIL, MessageConstant.NAMESPACES_CANNOT_BE_CREATED.getMsg(), CommonStatusCode.BAD_REQUEST.getCode(), MessageConstant.NAMESPACES_CANNOT_BE_CREATED.getMsg());
         }
 
-        String requestResource;
-        String requestURI = request.getRequestURI();
-        String resource;
-
-        if (StringUtils.isEmpty(namespace)) {
-            requestResource = InspectionUtil.parsingRequestURI(requestURI)[3];
-        } else {
-            requestResource = InspectionUtil.parsingRequestURI(requestURI)[5];
-        }
-
+        requestResource = StringUtils.isEmpty(namespace) ? InspectionUtil.parsingRequestURI(requestURI)[3] : InspectionUtil.parsingRequestURI(requestURI)[5];
         resource = InspectionUtil.parsingRequestURI(requestURI)[5];
         params.setResource(resource);
 
+        // ingress, secret
         if (StringUtils.isEmpty(yaml)) {
             YamlUtil.makeResourceYaml(params);
         }
 
+
         yaml = params.getYaml();
-
         requestResource = InspectionUtil.makeResourceName(requestResource);
-
-        LOGGER.info("Creating Request Resource :: " + CommonUtils.loggerReplace(requestResource));
+        LOGGER.info("CREATING REQUEST RESOURCE :: " + CommonUtils.loggerReplace(requestResource));
 
         String[] yamlArray = YamlUtil.splitYaml(yaml);
-        boolean isExistResource = false;
+
 
         for (String temp : yamlArray) {
+            String yamlKind = YamlUtil.parsingYaml(temp, KIND_KEY);
             Map YamlMetadata = YamlUtil.parsingYamlMap(temp, METADATA_KEY);
             String createYamlResourceName = YamlMetadata.get(METADATA_NAME_KEY).toString();
-            String createYamlResourceNamespace;
-
-            if (YamlMetadata.get(NAMESPACE_KEY) != null) {
-                createYamlResourceNamespace = YamlMetadata.get(NAMESPACE_KEY).toString();
-            } else {
-                createYamlResourceNamespace = null;
+            String createYamlResourceNamespace = YamlMetadata.get(NAMESPACE_KEY) != null ? YamlMetadata.get(NAMESPACE_KEY).toString() : null;
+            if (!isExistResource) {
+                isExistResource = yamlKind.equalsIgnoreCase(requestResource) ? true : false;
             }
 
-            if (StringUtils.isNotEmpty(createYamlResourceName) && StringUtils.isNotEmpty(createYamlResourceNamespace)) {
-                if (createYamlResourceName.startsWith("kube")) {
+            // check that the current and requested namespace match
+            if (createYamlResourceNamespace != null && !namespace.equals(createYamlResourceNamespace)) {
+                return new ResultStatus(Constants.RESULT_STATUS_FAIL, CommonStatusCode.BAD_REQUEST.name(), CommonStatusCode.BAD_REQUEST.getCode(), MessageConstant.NOT_MATCH_NAMESPACES.getMsg());
+            }
+
+            // check the prefix 'kube-' to the resource name
+            if (StringUtils.isNotEmpty(createYamlResourceName)) {
+                if (createYamlResourceName.startsWith("kube-")) {
                     return new ResultStatus(Constants.RESULT_STATUS_FAIL, MessageConstant.PREFIX_KUBE_NOT_ALLOW.getMsg(), CommonStatusCode.UNPROCESSABLE_ENTITY.getCode(), MessageConstant.PREFIX_KUBE_NOT_ALLOW.getMsg());
-                } else {
-                    break;
-                }
-            } else if (StringUtils.isNotEmpty(createYamlResourceName) && StringUtils.isEmpty(createYamlResourceNamespace)) {
-                if (createYamlResourceName.startsWith("kube")) {
-                    return new ResultStatus(Constants.RESULT_STATUS_FAIL, MessageConstant.PREFIX_KUBE_NOT_ALLOW.getMsg(), CommonStatusCode.UNPROCESSABLE_ENTITY.getCode(), MessageConstant.PREFIX_KUBE_NOT_ALLOW.getMsg());
-                } else {
-                    break;
                 }
             }
-        }
 
-        for (String temp : yamlArray) {
-            String YamlKind = YamlUtil.parsingYaml(temp, KIND_KEY);
-            Map YamlMetadata = YamlUtil.parsingYamlMap(temp, METADATA_KEY);
-
-            String createYamlResourceName = YamlMetadata.get(METADATA_NAME_KEY).toString();
-
-            if (YamlKind.equals(Constants.RESOURCE_POD)) {
-                for (String na : NOT_ALLOWED_POD_NAME_LIST) {
-                    if (createYamlResourceName.equals(na)) {
-                        return new ResultStatus(Constants.RESULT_STATUS_FAIL, MessageConstant.NOT_ALLOWED_POD_NAME.getMsg(), CommonStatusCode.UNPROCESSABLE_ENTITY.getCode(), MessageConstant.NOT_ALLOWED_POD_NAME.getMsg());
-                    }
+            // check resource name that cannot be allowed if resource is pod
+            if (yamlKind.equals(Constants.RESOURCE_POD)) {
+                if (NOT_ALLOWED_POD_NAME_LIST.contains(createYamlResourceName)) {
+                    return new ResultStatus(Constants.RESULT_STATUS_FAIL, MessageConstant.NOT_ALLOWED_POD_NAME.getMsg(), CommonStatusCode.UNPROCESSABLE_ENTITY.getCode(), MessageConstant.NOT_ALLOWED_POD_NAME.getMsg());
                 }
-            } else {
-                break;
-            }
-        }
-
-        for (String temp : yamlArray) {
-            Map YamlMetadata = YamlUtil.parsingYamlMap(temp, METADATA_KEY);
-            String createYamlResourceNamespace;
-
-            if (YamlMetadata.get(NAMESPACE_KEY) != null) {
-                createYamlResourceNamespace = YamlMetadata.get(NAMESPACE_KEY).toString();
-
-                if (namespace.equals(createYamlResourceNamespace)) {
-                    break;
-                } else {
-                    LOGGER.info("the namespace of the provided object does not match the namespace sent on the request':::::::::error");
-                    return new ResultStatus(Constants.RESULT_STATUS_FAIL, CommonStatusCode.BAD_REQUEST.name(),
-                            CommonStatusCode.BAD_REQUEST.getCode(), MessageConstant.NOT_MATCH_NAMESPACES.getMsg());
-                }
-            } else {
-                break;
             }
 
         }
 
-        for (String temp : yamlArray) {
-            String kind = YamlUtil.parsingYaml(temp, KIND_KEY);
-
-            String resourceKind = YamlUtil.makeResourceNameYAML(kind);
-
-            if (resourceKind.equals(requestResource)) {
-                isExistResource = true;
-                break;
-            }
-        }
-
+        // check that yamls contain request resources
         if (!isExistResource) {
-            return new ResultStatus(Constants.RESULT_STATUS_FAIL, MessageConstant.NOT_EXIST_RESOURCE.getMsg(), CommonStatusCode.BAD_REQUEST.getCode(),
-                    requestResource + MessageConstant.NOT_EXIST.getMsg());
+            return new ResultStatus(Constants.RESULT_STATUS_FAIL, MessageConstant.NOT_EXIST_RESOURCE.getMsg(), CommonStatusCode.BAD_REQUEST.getCode(), requestResource + MessageConstant.NOT_EXIST.getMsg());
         }
 
+        // check dry-run for each resource
         for (String temp : yamlArray) {
             String resourceKind = YamlUtil.parsingYaml(temp, KIND_KEY);
-
-            //isAdmin check
-            if(!isAdmin){
-                if(propertyService.getAdminResource().contains(resourceKind)) {
-                    return new ResultStatus(Constants.RESULT_STATUS_FAIL, CommonStatusCode.BAD_REQUEST.name(),
-                            CommonStatusCode.BAD_REQUEST.getCode(), MessageConstant.INCLUDE_INACCESSIBLE_RESOURCES.getMsg());
-                }
-            }
-
             if (!requestResource.equals(Constants.RESOURCE_SECRET.toLowerCase())) {
                 Object dryRunResult = InspectionUtil.resourceDryRunCheck("CreateUrl", HttpMethod.POST, namespace, resourceKind, temp, Constants.NULL_REPLACE_TEXT, params);
                 ObjectMapper oMapper = new ObjectMapper();
                 ResultStatus createdRs = oMapper.convertValue(dryRunResult, ResultStatus.class);
 
                 if (Constants.RESULT_STATUS_FAIL.equals(createdRs.getResultCode())) {
-                    LOGGER.info("DryRun :: Not valid yaml ");
+                    LOGGER.info("[CREATE RESOURCE DRY-RUN] FAILED :: NOT VALID YAML");
                     return createdRs;
                 }
             }
@@ -221,137 +160,89 @@ public class MethodHandler {
     @Around("execution(* org.container.platform.api..*Controller.*update*(..))" +
             "&& !execution(* org.container.platform.api.clusters.cloudAccounts.*.*(..))" +
             "&& !execution(* org.container.platform.api.clusters.clusters.*.*(..))" +
-            "&& !execution(* org.container.platform.api.clusters.hclTemplates.*.*(..))"
-    )
+            "&& !execution(* org.container.platform.api.clusters.hclTemplates.*.*(..))")
     public Object updateResourceAspect(ProceedingJoinPoint joinPoint) throws Throwable {
 
-        String yaml = null;
-        String namespace = null;
-        String resourceName = null;
+        String yaml = "";
+        String namespace = "";
+        String resourceName = "";
+        String resource;
+        String requestResource;
+        String requestURI = request.getRequestURI();
+
 
         Object[] parameterValues = Arrays.asList(joinPoint.getArgs()).toArray();
-
         Params params = (Params) parameterValues[0];
         yaml = params.getYaml();
         namespace = params.getNamespace();
         resourceName = params.getResourceName();
-        String resource;
 
-        String requestResource;
-        String requestURI = request.getRequestURI();
 
-        if (StringUtils.isEmpty(resourceName)) {
-            requestResource = InspectionUtil.parsingRequestURI(requestURI)[3];
-            resourceName = namespace;
-        } else {
-            requestResource = InspectionUtil.parsingRequestURI(requestURI)[5];
-        }
+        requestResource = StringUtils.isEmpty(resourceName) ? InspectionUtil.parsingRequestURI(requestURI)[3] : InspectionUtil.parsingRequestURI(requestURI)[5];
         requestResource = InspectionUtil.makeResourceName(requestResource);
-
         resource = InspectionUtil.parsingRequestURI(requestURI)[5];
         params.setResource(resource);
 
 
+        // ingress, secret
         if (StringUtils.isEmpty(yaml)) {
             YamlUtil.makeResourceYaml(params);
         }
 
         yaml = params.getYaml();
-
-
-        //requestResource = InspectionUtil.makeResourceName(requestResource);
-
-        String resourceKind = YamlUtil.parsingYaml(yaml, KIND_KEY);
-        resourceKind = YamlUtil.makeResourceNameYAML(resourceKind);
-
         String[] yamlArray = YamlUtil.splitYaml(yaml);
-        for (String temp : yamlArray) {
-            Map YamlMetadata = YamlUtil.parsingYamlMap(temp, METADATA_KEY);
-            String updateYamlResourceName = YamlMetadata.get(METADATA_NAME_KEY).toString();
-            String updateYamlResourceNamespace;
 
-            if (YamlMetadata.get(NAMESPACE_KEY) != null) {
-                updateYamlResourceNamespace = YamlMetadata.get(NAMESPACE_KEY).toString();
-            } else {
-                updateYamlResourceNamespace = null;
+
+        for (String temp : yamlArray) {
+            String yamlKind = YamlUtil.parsingYaml(temp, KIND_KEY);
+            Map yamlMetadata = YamlUtil.parsingYamlMap(temp, METADATA_KEY);
+            String updateYamlResourceName = yamlMetadata.get(METADATA_NAME_KEY).toString();
+            String updateYamlResourceNamespace = yamlMetadata.get(NAMESPACE_KEY) != null ? yamlMetadata.get(NAMESPACE_KEY).toString() : null;
+
+            // check that the current and requested resource match
+            if (!requestResource.equalsIgnoreCase(yamlKind)) {
+                return new ResultStatus(Constants.RESULT_STATUS_FAIL, MessageConstant.NOT_EXIST_RESOURCE.getMsg(), CommonStatusCode.BAD_REQUEST.getCode(), requestResource + MessageConstant.NOT_EXIST.getMsg());
             }
 
-            if (StringUtils.isNotEmpty(updateYamlResourceName) && StringUtils.isNotEmpty(updateYamlResourceNamespace)) {
-                if (updateYamlResourceName.startsWith("kube")) {
+            // check that the current and requested resource name match
+            if (!resourceName.equals(updateYamlResourceName)) {
+                return new ResultStatus(Constants.RESULT_STATUS_FAIL, MessageConstant.NOT_ALLOWED_RESOURCE_NAME.getMsg(), CommonStatusCode.BAD_REQUEST.getCode(), MessageConstant.NOT_UPDATE_YAML_FORMAT_THIS_RESOURCE.getMsg());
+            }
+
+            // check that the current and requested namespace match
+            if (updateYamlResourceNamespace != null && !namespace.equals(updateYamlResourceNamespace)) {
+                return new ResultStatus(Constants.RESULT_STATUS_FAIL, CommonStatusCode.BAD_REQUEST.name(), CommonStatusCode.BAD_REQUEST.getCode(), MessageConstant.NOT_MATCH_NAMESPACES.getMsg());
+            }
+
+            // check the prefix 'kube-' to the resource name
+            if (StringUtils.isNotEmpty(updateYamlResourceName)) {
+                if (updateYamlResourceName.startsWith("kube-")) {
                     return new ResultStatus(Constants.RESULT_STATUS_FAIL, MessageConstant.PREFIX_KUBE_NOT_ALLOW.getMsg(), CommonStatusCode.UNPROCESSABLE_ENTITY.getCode(), MessageConstant.PREFIX_KUBE_NOT_ALLOW.getMsg());
-                } else {
-                    break;
-                }
-            } else if (StringUtils.isNotEmpty(updateYamlResourceName) && StringUtils.isEmpty(updateYamlResourceNamespace)) {
-                if (updateYamlResourceName.startsWith("kube")) {
-                    return new ResultStatus(Constants.RESULT_STATUS_FAIL, MessageConstant.PREFIX_KUBE_NOT_ALLOW.getMsg(), CommonStatusCode.UNPROCESSABLE_ENTITY.getCode(), MessageConstant.PREFIX_KUBE_NOT_ALLOW.getMsg());
-                } else {
-                    break;
                 }
             }
-        }
 
-        for (String temp : yamlArray) {
-            String YamlKind = YamlUtil.parsingYaml(temp, KIND_KEY);
-            Map YamlMetadata = YamlUtil.parsingYamlMap(temp, METADATA_KEY);
-
-            String createYamlResourceName = YamlMetadata.get(METADATA_NAME_KEY).toString();
-
-            if (YamlKind.equals(Constants.RESOURCE_POD)) {
-                for (String na : NOT_ALLOWED_POD_NAME_LIST) {
-                    if (createYamlResourceName.equals(na)) {
-                        return new ResultStatus(Constants.RESULT_STATUS_FAIL, MessageConstant.NOT_ALLOWED_POD_NAME.getMsg(), CommonStatusCode.UNPROCESSABLE_ENTITY.getCode(), MessageConstant.NOT_ALLOWED_POD_NAME.getMsg());
-                    }
+            // check resource name that cannot be allowed if resource is pod
+            if (yamlKind.equals(Constants.RESOURCE_POD)) {
+                if (NOT_ALLOWED_POD_NAME_LIST.contains(updateYamlResourceName)) {
+                    return new ResultStatus(Constants.RESULT_STATUS_FAIL, MessageConstant.NOT_ALLOWED_POD_NAME.getMsg(), CommonStatusCode.UNPROCESSABLE_ENTITY.getCode(), MessageConstant.NOT_ALLOWED_POD_NAME.getMsg());
                 }
-            } else {
-                break;
-            }
-        }
-
-        for (String temp : yamlArray) {
-            Map YamlMetadata = YamlUtil.parsingYamlMap(temp, METADATA_KEY);
-            String createYamlResourceNamespace;
-
-            if (YamlMetadata.get(NAMESPACE_KEY) != null) {
-                createYamlResourceNamespace = YamlMetadata.get(NAMESPACE_KEY).toString();
-
-                if (namespace.equals(createYamlResourceNamespace)) {
-                    break;
-                } else {
-                    LOGGER.info("the namespace of the provided object does not match the namespace sent on the request':::::::::error");
-                    return new ResultStatus(Constants.RESULT_STATUS_FAIL, CommonStatusCode.BAD_REQUEST.name(), CommonStatusCode.BAD_REQUEST.getCode(), MessageConstant.NOT_MATCH_NAMESPACES.getMsg());
-                }
-            } else {
-                break;
             }
 
-        }
-
-        String updateYamlResourceName = YamlUtil.parsingYaml(yaml, METADATA_KEY);
-
-        if (!requestResource.equals(resourceKind) ) {
-            return new ResultStatus(Constants.RESULT_STATUS_FAIL, MessageConstant.NOT_EXIST_RESOURCE.getMsg(), CommonStatusCode.BAD_REQUEST.getCode(), requestResource + MessageConstant.NOT_EXIST.getMsg());
-        }
-
-        if (!resourceName.equals(updateYamlResourceName)) {
-            return new ResultStatus(Constants.RESULT_STATUS_FAIL,
-                    MessageConstant.NOT_ALLOWED_RESOURCE_NAME.getMsg(), CommonStatusCode.BAD_REQUEST.getCode(), MessageConstant.NOT_UPDATE_YAML_FORMAT_THIS_RESOURCE.getMsg());
-        }
-
-        resourceKind = YamlUtil.parsingYaml(yaml, KIND_KEY);
-
-        if (!requestResource.equals(Constants.RESOURCE_SECRET.toLowerCase())) {
-            if (StringUtils.isNotEmpty(resourceKind) && StringUtils.isNotEmpty(yaml)) {
-                Object dryRunResult = InspectionUtil.resourceDryRunCheck("UpdateUrl", HttpMethod.PUT, namespace, resourceKind, yaml, resourceName, params);
+            // check dry-run resource
+            if (!requestResource.equals(Constants.RESOURCE_SECRET.toLowerCase())) {
+                Object dryRunResult = InspectionUtil.resourceDryRunCheck("UpdateUrl", HttpMethod.PUT, namespace, yamlKind, yaml, resourceName, params);
                 ObjectMapper oMapper = new ObjectMapper();
                 ResultStatus updatedRs = oMapper.convertValue(dryRunResult, ResultStatus.class);
                 if (Constants.RESULT_STATUS_FAIL.equals(updatedRs.getResultCode())) {
-                    LOGGER.info("DryRun :: Not valid yaml ");
+                    LOGGER.info("[UPDATE RESOURCE DRY-RUN] FAILED :: NOT VALID YAML");
                     return updatedRs;
                 }
             }
+
         }
 
         return joinPoint.proceed(joinPoint.getArgs());
     }
+
+
 }

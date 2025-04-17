@@ -23,7 +23,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 import java.util.*;
 
 /**
@@ -187,7 +187,6 @@ public class JwtUtil {
         String userType = claims.get("userType", String.class);
         String userAuthId = claims.get("userAuthId", String.class);
 
-
         roles.add(new SimpleGrantedAuthority(userType)); //Default role
         rolesInfo.keySet().forEach(clusterId -> {
             JWTRoleInfoItem item = commonService.setResultObject(rolesInfo.get(clusterId), JWTRoleInfoItem.class);
@@ -308,18 +307,19 @@ public class JwtUtil {
             case Constants.AUTH_USER:
                 params.setIsSuperAdmin(false);
                 UsersList usersList = usersService.getMappingClustersAndNamespacesListByUser(params);
-                if(!usersList.getItems().isEmpty())
-                usersList.getItems()
-                        .forEach(x -> {
-                            try {
-                                ((JWTRoleInfoItem) roleInfo.get(x.getClusterId())).getNamespaceList().add(x.cpNamespace);
-                            } catch (NullPointerException e) {
-                                if (x.userType.equals(Constants.AUTH_USER))
-                                    roleInfo.put(x.getClusterId(), new JWTRoleInfoItem(x.userType, x.cpNamespace));
-                                else
-                                    roleInfo.put(x.getClusterId(), new JWTRoleInfoItem(x.userType));
-                            }
-                        });
+                if(!usersList.getItems().isEmpty()) {
+                    usersList.getItems()
+                            .forEach(x -> {
+                                try {
+                                    ((JWTRoleInfoItem) roleInfo.get(x.getClusterId())).getNamespaceList().add(x.cpNamespace);
+                                } catch (NullPointerException e) {
+                                    if (x.userType.equals(Constants.AUTH_USER))
+                                        roleInfo.put(x.getClusterId(), new JWTRoleInfoItem(x.userType, x.cpNamespace));
+                                    else
+                                        roleInfo.put(x.getClusterId(), new JWTRoleInfoItem(x.userType));
+                                }
+                            });
+                }
                 break;
             default:
                 //ERROR

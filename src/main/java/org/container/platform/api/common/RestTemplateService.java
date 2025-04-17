@@ -18,7 +18,6 @@ import org.springframework.http.*;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
-import org.springframework.util.Base64Utils;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestTemplate;
 import java.nio.charset.StandardCharsets;
@@ -75,13 +74,13 @@ public class RestTemplateService {
         this.commonService = commonService;
         this.vaultService = vaultService;
         this.commonApiBase64Authorization = "Basic "
-                + Base64Utils.encodeToString(
+                + Base64.getEncoder().encodeToString(
                 (commonApiAuthorizationId + ":" + commonApiAuthorizationPassword).getBytes(StandardCharsets.UTF_8));
         this.metricCollectorApiBase64Authorization =  "Basic "
-                + Base64Utils.encodeToString(
+                + Base64.getEncoder().encodeToString(
                 (metricCollectorApiAuthorizationId + ":" + metricCollectorApiAuthorizationPassword).getBytes(StandardCharsets.UTF_8));
         this.terramanApiBase64Authorization = "Basic "
-                + Base64Utils.encodeToString(
+                + Base64.getEncoder().encodeToString(
                 (terramanApiAuthorizationId + ":" + terramanApiAuthorizationPassword).getBytes(StandardCharsets.UTF_8));
     }
 
@@ -168,8 +167,8 @@ public class RestTemplateService {
         try {
             resEntity = restTemplate.exchange(baseUrl + reqUrl, httpMethod, reqEntity, responseType);
         } catch (HttpStatusCodeException exception) {
-            LOGGER.info("HttpStatusCodeException API Call URL : {}, errorCode : {}, errorMessage : {}", CommonUtils.loggerReplace(reqUrl), CommonUtils.loggerReplace(exception.getRawStatusCode()), CommonUtils.loggerReplace(exception.getMessage()));
-            throw new CommonStatusCodeException(Integer.toString(exception.getRawStatusCode()));
+            LOGGER.info("HttpStatusCodeException API Call URL : {}, errorCode : {}, errorMessage : {}", CommonUtils.loggerReplace(reqUrl), CommonUtils.loggerReplace(exception.getStatusCode()), CommonUtils.loggerReplace(exception.getMessage()));
+            throw new CommonStatusCodeException(Integer.toString(exception.getStatusCode().value()));
         }
 
         if (resEntity.getBody() != null) {
@@ -221,8 +220,8 @@ public class RestTemplateService {
         try {
             resEntity = restTemplate.exchange(baseUrl + reqUrl, httpMethod, reqEntity, responseType);
         } catch (HttpStatusCodeException exception) {
-            LOGGER.info("HttpStatusCodeException API Call URL : {}, errorCode : {}, errorMessage : {}", CommonUtils.loggerReplace(reqUrl), CommonUtils.loggerReplace(exception.getRawStatusCode()), CommonUtils.loggerReplace(exception.getMessage()));
-            throw new CommonStatusCodeException(Integer.toString(exception.getRawStatusCode()));
+            LOGGER.info("HttpStatusCodeException API Call URL : {}, errorCode : {}, errorMessage : {}", CommonUtils.loggerReplace(reqUrl), CommonUtils.loggerReplace(exception.getStatusCode()), CommonUtils.loggerReplace(exception.getMessage()));
+            throw new CommonStatusCodeException(Integer.toString(exception.getStatusCode().value()));
         }
 
         if (resEntity.getBody() == null) {
@@ -255,7 +254,6 @@ public class RestTemplateService {
         reqHeaders.add(AUTHORIZATION_HEADER_KEY, base64Authorization);
         reqHeaders.add(CONTENT_TYPE, contentType);
         reqHeaders.add("ACCEPT", acceptType);
-
         HttpEntity<Object> reqEntity;
         if (bodyObject == null) {
             reqEntity = new HttpEntity<>(reqHeaders);
@@ -270,8 +268,8 @@ public class RestTemplateService {
         try {
             resEntity = shortRestTemplate.exchange(baseUrl + reqUrl, httpMethod, reqEntity, responseType);
         } catch (HttpStatusCodeException exception) {
-            LOGGER.info("HttpStatusCodeException API Call URL : {}, errorCode : {}, errorMessage : {}", CommonUtils.loggerReplace(reqUrl), CommonUtils.loggerReplace(exception.getRawStatusCode()), CommonUtils.loggerReplace(exception.getMessage()));
-            throw new CommonStatusCodeException(Integer.toString(exception.getRawStatusCode()));
+            LOGGER.info("HttpStatusCodeException API Call URL : {}, errorCode : {}, errorMessage : {}", CommonUtils.loggerReplace(reqUrl), CommonUtils.loggerReplace(exception.getStatusCode()), CommonUtils.loggerReplace(exception.getMessage()));
+            throw new CommonStatusCodeException(Integer.toString(exception.getStatusCode().value()));
         }
 
         if (resEntity.getBody() == null) {
@@ -320,8 +318,8 @@ public class RestTemplateService {
         try {
             resEntity = restTemplate.exchange(reqUrl, httpMethod, reqEntity, responseType);
         } catch (HttpStatusCodeException exception) {
-            LOGGER.info("HttpStatusCodeException API Call URL : {}, errorCode : {}, errorMessage : {}", CommonUtils.loggerReplace(reqUrl), CommonUtils.loggerReplace(exception.getRawStatusCode()), CommonUtils.loggerReplace(exception.getMessage()));
-            throw new CommonStatusCodeException(Integer.toString(exception.getRawStatusCode()));
+            LOGGER.info("HttpStatusCodeException API Call URL : {}, errorCode : {}, errorMessage : {}", CommonUtils.loggerReplace(reqUrl), CommonUtils.loggerReplace(exception.getStatusCode()), CommonUtils.loggerReplace(exception.getMessage()));
+            throw new CommonStatusCodeException(Integer.toString(exception.getStatusCode().value()));
         }
 
         if (resEntity.getBody() == null) {
@@ -411,12 +409,6 @@ public class RestTemplateService {
             authorization = metricCollectorApiBase64Authorization;
         }
 
-       /* // Vault URL
-        if(TARGET_VAULT_URL.equals(reqApi)) {
-            //apiUrl = propertyService.getSpringCloudVaultUri();
-        }*/
-
-
         this.base64Authorization = authorization;
         this.baseUrl = apiUrl;
     }
@@ -473,9 +465,9 @@ public class RestTemplateService {
         try {
             resEntity = restTemplate.exchange(reqUrl, httpMethod, reqEntity, responseType);
         } catch (HttpStatusCodeException exception) {
-            LOGGER.info("HttpStatusCodeException API Call URL : {}, errorCode : {}, errorMessage : {}", CommonUtils.loggerReplace(reqUrl), CommonUtils.loggerReplace(exception.getRawStatusCode()),
+            LOGGER.info("HttpStatusCodeException API Call URL : {}, errorCode : {}, errorMessage : {}", CommonUtils.loggerReplace(reqUrl), CommonUtils.loggerReplace(exception.getStatusCode()),
                     CommonUtils.loggerReplace(exception.getMessage()));
-            throw new CommonStatusCodeException(Integer.toString(exception.getRawStatusCode()));
+            throw new CommonStatusCodeException(Integer.toString(exception.getStatusCode().value()));
         }
 
         ClusterApiAccess apiAccess = commonService.setResultObject(resEntity.getBody(), ClusterApiAccess.class);

@@ -1,7 +1,6 @@
 package org.container.platform.api.customServices.ingresses.support;
 
 import lombok.Data;
-
 import java.util.List;
 
 

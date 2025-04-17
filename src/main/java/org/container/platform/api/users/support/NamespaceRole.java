@@ -1,6 +1,5 @@
 package org.container.platform.api.users.support;
 
-import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 

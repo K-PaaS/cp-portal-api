@@ -3,9 +3,7 @@ package org.container.platform.api.users;
 import lombok.Data;
 import org.container.platform.api.common.Constants;
 import org.container.platform.api.common.model.CommonItemMetaData;
-
 import java.util.List;
-
 import static org.container.platform.api.common.Constants.CHECK_N;
 import static org.container.platform.api.common.Constants.CHECK_Y;
 

@@ -1,10 +1,10 @@
 package org.container.platform.api.clusters.resourceQuotas;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiImplicitParam;
-import io.swagger.annotations.ApiImplicitParams;
-import io.swagger.annotations.ApiOperation;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.container.platform.api.common.ResultStatusService;
 import org.container.platform.api.common.model.CommonResourcesYaml;
 import org.container.platform.api.common.model.Params;
@@ -20,7 +20,7 @@ import org.springframework.web.bind.annotation.*;
  * @version 1.0
  * @since 2022.05.24
  **/
-@Api(value = "ResourceQuotasController v1")
+@Tag(name = "ResourceQuotasController v1")
 @RestController
 @RequestMapping("/clusters/{cluster:.+}/namespaces/{namespace:.+}/resourceQuotas")
 public class ResourceQuotasController {
@@ -45,10 +45,8 @@ public class ResourceQuotasController {
      * @param params the params
      * @return the resourceQuotas list
      */
-    @ApiOperation(value = "ResourceQuotas 목록 조회(Get ResourceQuotas list)", nickname = "getResourceQuotasList")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
-    })
+    @Operation(summary = "ResourceQuotas 목록 조회(Get ResourceQuotas list)", operationId = "getResourceQuotasList")
+    @Parameter(name = "params", description = "request parameters", required = true, schema=@Schema(implementation = Params.class))
     @GetMapping
     public ResourceQuotasList getResourceQuotasList(Params params) {
         return resourceQuotasService.getResourceQuotasList(params);
@@ -60,10 +58,8 @@ public class ResourceQuotasController {
      * @param params the params
      * @return the resourceQuotas detail
      */
-    @ApiOperation(value = "ResourceQuotas 상세 조회(Get ResourceQuotas detail)", nickname = "getResourceQuotas")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
-    })
+    @Operation(summary = "ResourceQuotas 상세 조회(Get ResourceQuotas detail)", operationId = "getResourceQuotas")
+    @Parameter(name = "params", description = "request parameters", required = true, schema=@Schema(implementation = Params.class))
     @GetMapping(value = "/{resourceName:.+}")
     public ResourceQuotas getResourceQuotas(Params params) {
         return resourceQuotasService.getResourceQuotas(params);
@@ -75,10 +71,8 @@ public class ResourceQuotasController {
      * @param params the params
      * @return the resourceQuotas yaml
      */
-    @ApiOperation(value = "ResourceQuotas YAML 조회(Get ResourceQuotas yaml)", nickname = "getResourceQuotasYaml")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
-    })
+    @Operation(summary = "ResourceQuotas YAML 조회(Get ResourceQuotas yaml)", operationId = "getResourceQuotasYaml")
+    @Parameter(name = "params", description = "request parameters", required = true, schema=@Schema(implementation = Params.class))
     @GetMapping(value = "{resourceName:.+}/yaml")
     public CommonResourcesYaml getResourceQuotasYaml(Params params) {
         return resourceQuotasService.getResourceQuotasYaml(params);
@@ -90,10 +84,8 @@ public class ResourceQuotasController {
      * @param params the params
      * @return return is succeeded
      */
-    @ApiOperation(value = "ResourceQuotas 생성(Create ResourceQuotas)", nickname = "createResourceQuotas")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
-    })
+    @Operation(summary = "ResourceQuotas 생성(Create ResourceQuotas)", operationId = "createResourceQuotas")
+    @Parameter(name = "params", description = "request parameters", required = true, schema=@Schema(implementation = Params.class))
     @PostMapping
     public Object createResourceQuotas(@RequestBody Params params) throws Exception {
         if (params.getYaml().contains("---")) {
@@ -110,10 +102,8 @@ public class ResourceQuotasController {
      * @param params the params
      * @return return is succeeded
      */
-    @ApiOperation(value = "ResourceQuotas 삭제(Delete ResourceQuotas)", nickname = "deleteResourceQuotas")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
-    })
+    @Operation(summary = "ResourceQuotas 삭제(Delete ResourceQuotas)", operationId = "deleteResourceQuotas")
+    @Parameter(name = "params", description = "request parameters", required = true, schema=@Schema(implementation = Params.class))
     @DeleteMapping(value = "/{resourceName:.+}")
     public ResultStatus deleteResourceQuotas(Params params) {
         return resourceQuotasService.deleteResourceQuotas(params);
@@ -125,10 +115,8 @@ public class ResourceQuotasController {
      * @param params the params
      * @return return is succeeded
      */
-    @ApiOperation(value = "ResourceQuotas 수정(Update ResourceQuotas)", nickname = "updateResourceQuotas")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
-    })
+    @Operation(summary = "ResourceQuotas 수정(Update ResourceQuotas)", operationId = "updateResourceQuotas")
+    @Parameter(name = "params", description = "request parameters", required = true, schema=@Schema(implementation = Params.class))
     @PutMapping(value = "/{resourceName:.+}")
     public ResultStatus updateResourceQuotas(@RequestBody Params params) {
         return resourceQuotasService.updateResourceQuotas(params);
@@ -141,10 +129,8 @@ public class ResourceQuotasController {
      * @return the resourceQuota list
      * @throws JsonProcessingException
      */
-    @ApiOperation(value = "ResourceQuotas Default Template 목록 조회 (Get ResourceQuotas Default Template list)", nickname = "getResourceQuotasDefaultList")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
-    })
+    @Operation(summary = "ResourceQuotas Default Template 목록 조회 (Get ResourceQuotas Default Template list)", operationId = "getResourceQuotasDefaultList")
+    @Parameter(name = "params", description = "request parameters", required = true, schema=@Schema(implementation = Params.class))
     @GetMapping(value = "/template")
     public Object getResourceQuotasDefaultList(Params params) throws JsonProcessingException {
         return resourceQuotasService.getResourceQuotasTemplateList(params);

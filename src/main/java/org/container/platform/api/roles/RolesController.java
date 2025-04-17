@@ -1,12 +1,14 @@
 package org.container.platform.api.roles;
 
-import io.swagger.annotations.*;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.container.platform.api.common.ResultStatusService;
 import org.container.platform.api.common.model.CommonResourcesYaml;
 import org.container.platform.api.common.model.Params;
 import org.container.platform.api.common.model.ResultStatus;
 import org.container.platform.api.common.util.ResourceExecuteManager;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -17,7 +19,7 @@ import org.springframework.web.bind.annotation.*;
  * @version 1.0
  * @since 2022.05.24
  */
-@Api(value = "RoleController v1")
+@Tag(name = "RoleController v1")
 @RestController
 @RequestMapping("/clusters/{cluster:.+}/namespaces/{namespace:.+}/roles")
 public class RolesController {
@@ -43,10 +45,8 @@ public class RolesController {
      * @param params the params
      * @return the roles list
      */
-    @ApiOperation(value = "Roles 목록 조회(Get Roles list)", nickname = "getRolesList")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
-    })
+    @Operation(summary = "Roles 목록 조회(Get Roles list)", operationId = "getRolesList")
+    @Parameter(name = "params", description = "request parameters", required = true, schema=@Schema(implementation = Params.class))
     @GetMapping
     public RolesList getRolesList(Params params) {
         return rolesService.getRolesList(params);
@@ -59,10 +59,8 @@ public class RolesController {
      * @param params the params
      * @return the roles detail
      */
-    @ApiOperation(value = "Roles 상세 조회(Get Roles detail)", nickname = "getRoles")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
-    })
+    @Operation(summary = "Roles 상세 조회(Get Roles detail)", operationId = "getRoles")
+    @Parameter(name = "params", description = "request parameters", required = true, schema=@Schema(implementation = Params.class))
     @GetMapping(value = "/{resourceName:.+}")
     public Roles getRoles(Params params) {
         return rolesService.getRoles(params);
@@ -75,10 +73,8 @@ public class RolesController {
      * @param params the params
      * @return the roles yaml
      */
-    @ApiOperation(value = "Roles YAML 조회(Get Roles yaml)", nickname = "getRolesYaml")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
-    })
+    @Operation(summary = "Roles YAML 조회(Get Roles yaml)", operationId = "getRolesYaml")
+    @Parameter(name = "params", description = "request parameters", required = true, schema=@Schema(implementation = Params.class))
     @GetMapping(value = "/{resourceName:.+}/yaml")
     public CommonResourcesYaml getRolesYaml(Params params) {
         return rolesService.getRolesYaml(params);
@@ -91,10 +87,8 @@ public class RolesController {
      * @param params the params
      * @return return is succeeded
      */
-    @ApiOperation(value = "Roles 생성(Create Roles)", nickname = "createRoles")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
-    })
+    @Operation(summary = "Roles 생성(Create Roles)", operationId = "createRoles")
+    @Parameter(name = "params", description = "request parameters", required = true, schema=@Schema(implementation = Params.class))
     @PostMapping
     public Object createRoles(@RequestBody Params params) throws Exception {
         if (params.getYaml().contains("---")) {
@@ -111,10 +105,8 @@ public class RolesController {
      * @param params the params
      * @return return is succeeded
      */
-    @ApiOperation(value = "Roles 삭제(Delete Roles)", nickname = "deleteRoles")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
-    })
+    @Operation(summary = "Roles 삭제(Delete Roles)", operationId = "deleteRoles")
+    @Parameter(name = "params", description = "request parameters", required = true, schema=@Schema(implementation = Params.class))
     @DeleteMapping("/{resourceName:.+}")
     public ResultStatus deleteRoles(Params params) {
 
@@ -128,10 +120,8 @@ public class RolesController {
      * @param params the params
      * @return return is succeeded
      */
-    @ApiOperation(value = "Roles 수정(Update Roles)", nickname = "updateRoles")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
-    })
+    @Operation(summary = "Roles 수정(Update Roles)", operationId = "updateRoles")
+    @Parameter(name = "params", description = "request parameters", required = true, schema=@Schema(implementation = Params.class))
     @PutMapping("/{resourceName:.+}")
     public ResultStatus updateRoles(@RequestBody Params params) {
         return rolesService.updateRoles(params);

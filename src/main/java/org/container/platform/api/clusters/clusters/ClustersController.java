@@ -1,8 +1,9 @@
 package org.container.platform.api.clusters.clusters;
 
-import io.swagger.annotations.ApiImplicitParam;
-import io.swagger.annotations.ApiImplicitParams;
-import io.swagger.annotations.ApiOperation;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.container.platform.api.common.model.Params;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
  * @since 2022.06.30
  */
 @RestController
+@Tag(name = "ClustersController v1")
 @PreAuthorize("@webSecurity.checkisGlobalAdmin()")
 @RequestMapping("/clusters")
 public class ClustersController {
@@ -39,10 +41,8 @@ public class ClustersController {
      * @param params the params
      * @return the Clusters list
      */
-    @ApiOperation(value = "Clusters 목록 조회(Get Clusters list)", nickname = "getClustersList")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
-    })
+    @Operation(summary = "Clusters 목록 조회(Get Clusters list)", operationId = "getClustersList")
+    @Parameter(name = "params", description = "request parameters", required = true, schema=@Schema(implementation = Params.class))
     @GetMapping
     public ClustersList getClustersList(Params params){
         return clustersService.getClustersList(params);
@@ -55,10 +55,8 @@ public class ClustersController {
      * @param params the params
      * @return the Clusters detail
      */
-    @ApiOperation(value = "Clusters 조회(Get Clusters Detail)", nickname = "getClusters")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
-    })
+    @Operation(summary = "Clusters 조회(Get Clusters Detail)", operationId = "getClusters")
+    @Parameter(name = "params", description = "request parameters", required = true, schema=@Schema(implementation = Params.class))
     @GetMapping(value = "/{cluster:.+}")
     public Clusters getClusters(Params params) {
         return clustersService.getClusters(params);
@@ -71,10 +69,8 @@ public class ClustersController {
      * @param params the params
      * @return the Object
      */
-    @ApiOperation(value = "Clusters 생성(Create Clusters)", nickname = "createClusters")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
-    })
+    @Operation(summary = "Clusters 생성(Create Clusters)", operationId = "createClusters")
+    @Parameter(name = "params", description = "request parameters", required = true, schema=@Schema(implementation = Params.class))
     @PreAuthorize("@webSecurity.checkisSuperAdmin()")
     @PostMapping
     public Object createClusters(@RequestBody Params params){
@@ -88,10 +84,8 @@ public class ClustersController {
      * @param params the params
      * @return the Object
      */
-    @ApiOperation(value = "Clusters 수정(Update Clusters)", nickname = "updateClusters")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
-    })
+    @Operation(summary = "Clusters 수정(Update Clusters)", operationId = "updateClusters")
+    @Parameter(name = "params", description = "request parameters", required = true, schema=@Schema(implementation = Params.class))
     @PreAuthorize("@webSecurity.checkisSuperAdmin()")
     @PatchMapping
     public Object updateClusters(@RequestBody Params params){
@@ -105,10 +99,8 @@ public class ClustersController {
      * @param params the params
      * @return the Object
      */
-    @ApiOperation(value = "Clusters 삭제(Delete Clusters)", nickname = "deleteClusters")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
-    })
+    @Operation(summary = "Clusters 삭제(Delete Clusters)", operationId = "deleteClusters")
+    @Parameter(name = "params", description = "request parameters", required = true, schema=@Schema(implementation = Params.class))
     @PreAuthorize("@webSecurity.checkisSuperAdmin()")
     @DeleteMapping(value = "/{cluster:.+}")
     public Object deleteClusters(Params params){

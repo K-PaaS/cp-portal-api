@@ -1,6 +1,9 @@
 package org.container.platform.api.storages.persistentVolumeClaims;
 
-import io.swagger.annotations.*;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.container.platform.api.common.ResultStatusService;
 import org.container.platform.api.common.model.CommonResourcesYaml;
 import org.container.platform.api.common.model.Params;
@@ -16,7 +19,7 @@ import org.springframework.web.bind.annotation.*;
  * @version 1.0
  * @since 2022.05.24
  */
-@Api(value = "PersistentVolumeClaimsController v1")
+@Tag(name = "PersistentVolumeClaimsController v1")
 @RestController
 @RequestMapping("/clusters/{cluster:.+}/namespaces/{namespace:.+}/persistentVolumeClaims")
 public class PersistentVolumeClaimsController {
@@ -41,10 +44,8 @@ public class PersistentVolumeClaimsController {
      * @param params the params
      * @return the persistentVolumeClaims list
      */
-    @ApiOperation(value = "PersistentVolumeClaims 목록 조회(Get PersistentVolumeClaims list)", nickname = "getPersistentVolumeClaimsList")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
-    })
+    @Operation(summary = "PersistentVolumeClaims 목록 조회(Get PersistentVolumeClaims list)", operationId = "getPersistentVolumeClaimsList")
+    @Parameter(name = "params", description = "request parameters", required = true, schema = @Schema(implementation = Params.class))
     @GetMapping
     public PersistentVolumeClaimsList getPersistentVolumeClaimsList(Params params) {
         return persistentVolumeClaimsService.getPersistentVolumeClaimsList(params);
@@ -56,10 +57,8 @@ public class PersistentVolumeClaimsController {
      * @param params the params
      * @return the persistentVolumeClaims detail
      */
-    @ApiOperation(value = "PersistentVolumeClaims 상세 조회(Get PersistentVolumeClaims detail)", nickname = "getPersistentVolumeClaims")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
-    })
+    @Operation(summary = "PersistentVolumeClaims 상세 조회(Get PersistentVolumeClaims detail)", operationId = "getPersistentVolumeClaims")
+    @Parameter(name = "params", description = "request parameters", required = true, schema = @Schema(implementation = Params.class))
     @GetMapping(value = "/{resourceName:.+}")
     public PersistentVolumeClaims getPersistentVolumeClaims(Params params) {
         return persistentVolumeClaimsService.getPersistentVolumeClaims(params);
@@ -71,10 +70,8 @@ public class PersistentVolumeClaimsController {
      * @param params the params
      * @return the persistentVolumeClaims yaml
      */
-    @ApiOperation(value = "PersistentVolumeClaims YAML 조회(Get PersistentVolumeClaims yaml)", nickname = "getPersistentVolumeClaimsYaml")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
-    })
+    @Operation(summary = "PersistentVolumeClaims YAML 조회(Get PersistentVolumeClaims yaml)", operationId = "getPersistentVolumeClaimsYaml")
+    @Parameter(name = "params", description = "request parameters", required = true, schema = @Schema(implementation = Params.class))
     @GetMapping(value = "/{resourceName:.+}/yaml")
     public CommonResourcesYaml getPersistentVolumeClaimsYaml(Params params) {
         return persistentVolumeClaimsService.getPersistentVolumeClaimsYaml(params);
@@ -86,10 +83,8 @@ public class PersistentVolumeClaimsController {
      * @param params the params
      * @return return is succeeded
      */
-    @ApiOperation(value = "PersistentVolumeClaims 생성(Create PersistentVolumeClaims)", nickname = "createPersistentVolumeClaims")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
-    })
+    @Operation(summary = "PersistentVolumeClaims 생성(Create PersistentVolumeClaims)", operationId = "createPersistentVolumeClaims")
+    @Parameter(name = "params", description = "request parameters", required = true, schema = @Schema(implementation = Params.class))
     @PostMapping
     public Object createPersistentVolumeClaims(@RequestBody Params params) throws Exception {
         if (params.getYaml().contains("---")) {
@@ -106,13 +101,10 @@ public class PersistentVolumeClaimsController {
      * @param params the params
      * @return return is succeeded
      */
-    @ApiOperation(value = "PersistentVolumeClaims 삭제(Delete PersistentVolumeClaims)", nickname = "deletePersistentVolumeClaims")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
-    })
+    @Operation(summary = "PersistentVolumeClaims 삭제(Delete PersistentVolumeClaims)", operationId = "deletePersistentVolumeClaims")
+    @Parameter(name = "params", description = "request parameters", required = true, schema = @Schema(implementation = Params.class))
     @DeleteMapping("/{resourceName:.+}")
     public ResultStatus deletePersistentVolumeClaims(Params params) {
-
         return persistentVolumeClaimsService.deletePersistentVolumeClaims(params);
     }
 
@@ -122,13 +114,10 @@ public class PersistentVolumeClaimsController {
      * @param params the params
      * @return return is succeeded
      */
-    @ApiOperation(value = "PersistentVolumeClaims 수정(Update PersistentVolumeClaims)", nickname = "updatePersistentVolumeClaims")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "params", value = "request parameters", required = true, dataType = "common.model.Params", paramType = "body", dataTypeClass = Params.class)
-    })
+    @Operation(summary = "PersistentVolumeClaims 수정(Update PersistentVolumeClaims)", operationId = "updatePersistentVolumeClaims")
+    @Parameter(name = "params", description = "request parameters", required = true, schema = @Schema(implementation = Params.class))
     @PutMapping("/{resourceName:.+}")
     public ResultStatus updatePersistentVolumeClaims(@RequestBody Params params) {
-
         return persistentVolumeClaimsService.updatePersistentVolumeClaims(params);
     }
 

@@ -181,9 +181,6 @@ public class SshKeysService {
             return sshKeys;
         }
         return (SshKeys) commonService.setResultModel(sshKeys, Constants.RESULT_STATUS_SUCCESS);
-      /*  return (SshKeys) commonService.setResultModel(restTemplateService.sendGlobal(Constants.TARGET_COMMON_API, "/sshKeys/{id:.+}"
-                        .replace("{id:.+}", params.getResourceUid()), HttpMethod.DELETE, setSshKeys(params), SshKeys.class, params),
-                Constants.RESULT_STATUS_SUCCESS);*/
     }
 
     /**

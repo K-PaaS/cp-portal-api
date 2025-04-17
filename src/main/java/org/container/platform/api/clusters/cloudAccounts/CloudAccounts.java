@@ -1,7 +1,6 @@
 package org.container.platform.api.clusters.cloudAccounts;
 
 import lombok.Data;
-import org.container.platform.api.common.Constants;
 
 /**
  * CloudAccounts Model 클래스

@@ -2,8 +2,6 @@ package org.container.platform.api.secrets;
 
 import lombok.Data;
 import org.container.platform.api.common.model.CommonItemMetaData;
-import org.container.platform.api.configmaps.ConfigMaps;
-
 import java.util.List;
 import java.util.Map;
 

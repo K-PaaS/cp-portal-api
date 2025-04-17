@@ -2,7 +2,6 @@ package org.container.platform.api.workloads.pods;
 
 import lombok.Data;
 import org.container.platform.api.common.model.CommonMetaData;
-
 import java.util.List;
 
 /**

@@ -2,8 +2,6 @@ package org.container.platform.api.secrets.vaultSecrets;
 
 import lombok.Data;
 
-import java.util.List;
-
 /**
  * VaultDatabaseSecrets Model 클래스
  *
@@ -20,6 +18,7 @@ public class VaultDatabaseSecrets {
 
     private long id;
     private String name;
+    private String namespace;
     private String dbType;
     private String appName;
     private String appNamespace;

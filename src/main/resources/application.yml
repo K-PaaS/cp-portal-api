@@ -85,10 +85,6 @@ vault:
     update: "/apis/secrets.hashicorp.com/v1beta1/namespaces/{namespace}/vaultauths/{name}-dynamic-vault-auth"
     listAllNamespaces: "/apis/secrets.hashicorp.com/v1beta1/vaultauths"
 
-cp:
-  provide-as-service: cp-portal-service
-  provide-as-standalone: cp-portal-standalone
-
 cpNamespace:
   defaultNamespace: cp-portal-temp-namespace
   exceptNamespace: ${cpNamespace.defaultNamespace}, all, ALL, chaos-mesh, cp-pipeline, cp-portal, cp-source-control, harbor, ingress-nginx, keycloak, kube-node-lease, kube-public, kube-system, mariadb, metallb-system, vault, chartmuseum, istio-system, kubeedge, kubeflow, kubeflow-user-example-com, knative-eventing, knative-serving, auth, cert-manager, postgres
@@ -107,6 +103,11 @@ cpNamespace:
     low: cp-low-limitrange
     medium: cp-medium-limitrange
     high: cp-high-limitrange
+  trafficPolicy:
+    namespace: kyverno
+    labels:
+      managed: kpaas.kyverno.io/managed=true
+      allowed: cp-role=shared
 
 cpAnnotations:
   configuration: kubectl.kubernetes.io/, kubernetes.io/, k8s.io/
@@ -270,6 +271,8 @@ cpMetricCollector:
       get: "/getDashboardData"
       key: "cluster_id"
 
+logging:
+  config: classpath:logback-spring.xml
 
 ---
 spring:
@@ -277,23 +280,20 @@ spring:
     activate:
       on-profile: local
 
-logging:
-  level:
-    ROOT: INFO
-  path: classpath:logback-spring.xml
-  file: logs/application.log
-
 server:
   port: ${PORT:3333}
   auth:
     valid: N
+
+logging:
+  file:
+    path: logs
 
 commonApi:
   url: http://localhost:3334
   authorization:
     id: admin
     password: cpcommon!123
-
 
 cpTerraman:
   template:
@@ -305,16 +305,14 @@ spring:
     activate:
       on-profile: prod
 
-logging:
-  level:
-    ROOT: INFO
-  path: classpath:logback-spring.xml
-  file: logs/application.log
-
 server:
   port: ${PORT:3333}
   auth:
     valid: N
+
+logging:
+  file:
+    path: /home/1000/logs
 
 commonApi:
   url: ${CP_PORTAL_COMMON_API_URI}

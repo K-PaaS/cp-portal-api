@@ -2,7 +2,6 @@ package org.container.platform.api.users;
 
 import lombok.Data;
 import org.container.platform.api.common.model.CommonItemMetaData;
-
 import java.util.List;
 
 /**

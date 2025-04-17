@@ -9,7 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 import java.util.Enumeration;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -27,17 +27,6 @@ import java.util.stream.Stream;
 public class AspectService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AspectService.class);
-
-    /**
-     * Service 클래스 접근 전 로그(On before log service access)
-     *
-     * @param joinPoint the join point
-     */
-    @Before("execution(* org.container.platform..*Service.*(..))")
-    public void onBeforeLogServiceAccess(JoinPoint joinPoint) {
-        LOGGER.warn("######## ON BEFORE SERVICE ACCESS :: {}", CommonUtils.loggerReplace(joinPoint));
-    }
-
 
     /**
      * Controller 클래스 접근 전 로그(On before log controller access)

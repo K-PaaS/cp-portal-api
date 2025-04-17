@@ -1,20 +1,8 @@
 package org.container.platform.api.clusters.resourceQuotas;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
-
 import java.util.List;
-import java.util.Map;
-
-
 import lombok.Data;
-
-import org.springframework.util.StringUtils;
-
-import org.container.platform.api.clusters.resourceQuotas.support.ResourceQuotasStatus;
-import org.container.platform.api.common.Constants;
 import org.container.platform.api.common.model.CommonItemMetaData;
-import org.container.platform.api.common.model.CommonMetaData;
 
 /**
  * ResourceQuotas List Model 클래스

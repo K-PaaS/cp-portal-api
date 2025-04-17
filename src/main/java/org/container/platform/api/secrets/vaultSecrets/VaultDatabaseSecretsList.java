@@ -1,7 +1,6 @@
 package org.container.platform.api.secrets.vaultSecrets;
 
 import lombok.Data;
-
 import java.util.List;
 
 /**

@@ -11,7 +11,6 @@ import org.container.platform.api.common.model.CommonSpec;
 import org.container.platform.api.workloads.pods.support.ContainerStatusesItem;
 import org.container.platform.api.workloads.pods.support.PodsStatus;
 import org.container.platform.api.workloads.pods.support.Volume;
-
 import java.util.List;
 import java.util.Map;
 

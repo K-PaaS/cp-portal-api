@@ -49,19 +49,6 @@ public class DeploymentsController {
     }
 
     /**
-     * Deployments Vault Secret 적용 목록 조회(Get Deployments Vault Secret List)
-     *
-     * @param params the params
-     * @return the deployments list
-     */
-    @Operation(summary = "Deployments Vault Secret 목록 조회(Get Deployments List)", operationId = "getDeploymentsVaultSecretList")
-    @Parameter(name = "params", description = "request parameters", required = true, schema=@Schema(implementation = Params.class))
-    @GetMapping(value = "/vaultSecret")
-    public DeploymentsList getDeploymentsVaultSecretList(Params params) {
-        return deploymentsService.getDeploymentsVaultSecretList(params);
-    }
-
-    /**
      * Deployments 상세 조회(Get Deployments Detail)
      *
      * @param params the params
@@ -73,7 +60,6 @@ public class DeploymentsController {
     public Deployments getDeployments(Params params) {
         return deploymentsService.getDeployments(params);
     }
-
 
     /**
      * Deployments YAML 조회(Get Deployments Yaml)
@@ -87,7 +73,6 @@ public class DeploymentsController {
     public CommonResourcesYaml getDeploymentsYaml(Params params) {
         return deploymentsService.getDeploymentsYaml(params);
     }
-
 
     /**
      * Deployments 생성(Create Deployments)
@@ -106,7 +91,6 @@ public class DeploymentsController {
         return deploymentsService.createDeployments(params);
     }
 
-
     /**
      * Deployments 수정(Update Deployments)
      *
@@ -120,7 +104,6 @@ public class DeploymentsController {
         return deploymentsService.updateDeployments(params);
     }
 
-
     /**
      * Deployments 삭제(Delete Deployments)
      *
@@ -133,6 +116,5 @@ public class DeploymentsController {
     public ResultStatus deleteDeployments(Params params) {
         return deploymentsService.deleteDeployments(params);
     }
-
 
 }

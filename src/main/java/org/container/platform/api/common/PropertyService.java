@@ -438,57 +438,6 @@ public class PropertyService {
     @Value("${vault.secretsEngines.kv.ssh-key}")
     private String vaultSecretsEnginesKvSshKeyPath;
 
-    @Value("${vault.secretsEngines.database.connections}")
-    private String vaultSecretsEnginesDatabaseConnectionsPath;
-
-    @Value("${vault.secretsEngines.database.credentials}")
-    private String vaultSecretsEnginesDatabaseCredentialsPath;
-
-    @Value("${vault.secretsEngines.database.roles}")
-    private String vaultSecretsEnginesDatabaseRolesPath;
-
-    @Value("${vault.policies}")
-    private String vaultPolicies;
-
-    @Value("${vault.access.auth-kubernetes.roles}")
-    private String vaultAccessAuthKubernetesRolesPath;
-
-    @Value("${vault.vaultDynamicSecret.list}")
-    private String vaultVaultDynamicSecretListUrl;
-
-    @Value("${vault.vaultDynamicSecret.get}")
-    private String vaultVaultDynamicSecretGetUrl;
-
-    @Value("${vault.vaultDynamicSecret.create}")
-    private String vaultVaultDynamicSecretCreateUrl;
-
-    @Value("${vault.vaultDynamicSecret.delete}")
-    private String vaultVaultDynamicSecretDeleteUrl;
-
-    @Value("${vault.vaultDynamicSecret.update}")
-    private String vaultVaultDynamicSecretUpdateUrl;
-
-    @Value("${vault.vaultDynamicSecret.listAllNamespaces}")
-    private String vaultVaultDynamicSecretListAllNamespacesUrl;
-
-    @Value("${vault.vaultAuth.list}")
-    private String vaultVaultAuthListUrl;
-
-    @Value("${vault.vaultAuth.get}")
-    private String vaultVaultAuthGetUrl;
-
-    @Value("${vault.vaultAuth.create}")
-    private String vaultVaultAuthCreateUrl;
-
-    @Value("${vault.vaultAuth.delete}")
-    private String vaultVaultAuthDeleteUrl;
-
-    @Value("${vault.vaultAuth.update}")
-    private String vaultVaultAuthUpdateUrl;
-
-    @Value("${vault.vaultAuth.listAllNamespaces}")
-    private String vaultVaultAuthListAllNamespacesUrl;
-
     @Value("${cpTerraman.template.path}")
     private String cpTerramanTemplatePath;
 

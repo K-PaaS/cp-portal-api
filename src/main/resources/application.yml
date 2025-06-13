@@ -14,12 +14,6 @@ spring:
       kv:
         enabled: true
         backend: secret
-      database:
-        enabled: true
-        backend: database
-      postgresql:
-        enabled: true
-        backend: postgresql
       app-role:
         role-id: ${VAULT_ROLE_ID}
         secret-id: ${VAULT_SECRET_ID}
@@ -61,33 +55,10 @@ vault:
       provider-credential: "secret/{iaas}/{id}"
       cluster-token: "secret/cluster/{id}"
       ssh-key: "secret/ssh-key/{id}"
-    database:
-      base: "database-secret/"
-      connections: "database-secret/config/{name}-db"
-      roles: "database-secret/roles/{name}-role"
-      credentials: "database-secret/creds/{name}-role"
-  policies: "sys/policies/acl/{name}-policy"
-  access:
-    auth-kubernetes:
-      roles: "auth/k8s-auth-mount/role/{name}-role"
-  vaultDynamicSecret:
-    list: "/apis/secrets.hashicorp.com/v1beta1/namespaces/{namespace}/vaultdynamicsecrets"
-    get: "/apis/secrets.hashicorp.com/v1beta1/namespaces/{namespace}/vaultdynamicsecrets/{name}-vault-dynamic-secret"
-    create: "/apis/secrets.hashicorp.com/v1beta1/namespaces/{namespace}/vaultdynamicsecrets"
-    delete: "/apis/secrets.hashicorp.com/v1beta1/namespaces/{namespace}/vaultdynamicsecrets/{name}-vault-dynamic-secret"
-    update: "/apis/secrets.hashicorp.com/v1beta1/namespaces/{namespace}/vaultdynamicsecrets/{name}-vault-dynamic-secret"
-    listAllNamespaces: "/apis/secrets.hashicorp.com/v1beta1/vaultdynamicsecrets"
-  vaultAuth:
-    list: "/apis/secrets.hashicorp.com/v1beta1/namespaces/{namespace}/vaultauths"
-    get: "/apis/secrets.hashicorp.com/v1beta1/namespaces/{namespace}/vaultauths/{name}-dynamic-vault-auth"
-    create: "/apis/secrets.hashicorp.com/v1beta1/namespaces/{namespace}/vaultauths"
-    delete: "/apis/secrets.hashicorp.com/v1beta1/namespaces/{namespace}/vaultauths/{name}-dynamic-vault-auth"
-    update: "/apis/secrets.hashicorp.com/v1beta1/namespaces/{namespace}/vaultauths/{name}-dynamic-vault-auth"
-    listAllNamespaces: "/apis/secrets.hashicorp.com/v1beta1/vaultauths"
 
 cpNamespace:
   defaultNamespace: cp-portal-temp-namespace
-  exceptNamespace: ${cpNamespace.defaultNamespace}, all, ALL, chaos-mesh, cp-pipeline, cp-portal, cp-source-control, harbor, ingress-nginx, keycloak, kube-node-lease, kube-public, kube-system, mariadb, metallb-system, vault, chartmuseum, istio-system, kubeedge, kubeflow, kubeflow-user-example-com, knative-eventing, knative-serving, auth, cert-manager, postgres
+  exceptNamespace: ${cpNamespace.defaultNamespace}, ${cpNamespace.trafficPolicy.namespace}, all, ALL, chaos-mesh, cp-pipeline, cp-portal, cp-source-control, harbor, ingress-nginx, keycloak, kube-node-lease, kube-public, kube-system, mariadb, metallb-system, openbao, chartmuseum, istio-system, kubeedge, kubeflow, kubeflow-user-example-com, knative-eventing, knative-serving, auth, cert-manager
   clusterAdminNamespace: kube-system
   role:
     list: cp-init-role, cp-admin-role

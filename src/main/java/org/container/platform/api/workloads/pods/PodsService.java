@@ -260,6 +260,9 @@ public class PodsService {
         Map<String, Set<Object>> labels = new HashMap<>();
 
         for(PodsListItem podsListItem : podsList.getItems()) {
+            if(podsListItem.getLabels() == "-"){
+                continue;
+            }
             Map<String, Object> itemLabels = (Map<String, Object>) podsListItem.getLabels();
             for (Map.Entry<String, Object> entry : itemLabels.entrySet()) {
                 String key = entry.getKey();

@@ -292,14 +292,8 @@ public class Constants {
     public static final String DOCKER_CONFIG_JSON = ".dockerconfigjson";
 
     public static final String STORAGE_BACK_END_KUBERNETES = "kubernetes";
-    public static final String STORAGE_BACK_END_VAULT = "vault";
     public static final String DATA_BYTES = "bytes";
     public static final String SERVICE_ACCOUNT_TOKEN_CA_CRT = "ca.crt";
-    public static final String DYNAMIC_SERVICE_ACCOUNT = "-dynamic-service-account";
-    public static final String DYNAMIC_VAULT_AUTH = "-dynamic-vault-auth";
-    public static final String VAULT_DYNAMIC_SECRET = "-vault-dynamic-secret";
-    public static final String VAULT_DATABASE_POSTGRES = "psql";
-
 
     public static final String TAG_BR = "<br>";
     public static final String TAG_DIV_BEGIN = "<div>";

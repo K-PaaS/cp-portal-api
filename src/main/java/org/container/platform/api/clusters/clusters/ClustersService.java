@@ -80,6 +80,7 @@ public class ClustersService {
      */
     @SuppressFBWarnings
     public Clusters createClusters(Params params) {
+        params.setCluster(String.valueOf(UUID.randomUUID()));
         Clusters clusters = setClusters(params);
         Clusters ret;
 

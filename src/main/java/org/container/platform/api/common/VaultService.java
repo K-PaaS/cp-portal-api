@@ -3,6 +3,7 @@ package org.container.platform.api.common;
 import io.jsonwebtoken.lang.Assert;
 import org.container.platform.api.clusters.clusters.Clusters;
 import org.container.platform.api.common.model.Params;
+import org.container.platform.api.exception.ResultStatusException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.vault.core.VaultTemplate;
 import org.springframework.vault.support.VaultResponse;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -38,7 +40,6 @@ public class VaultService {
      */
     @TrackExecutionTime
     public <T> T read(String path, Class<T> requestClass) {
-
         if (path.contains("database")) {
 
             Object response = Optional.of(vaultTemplate.read(path));
@@ -114,11 +115,9 @@ public class VaultService {
         Clusters cluster = null;
         try {
             cluster = read(propertyService.getVaultSecretsEnginesKvClusterTokenPath().replace("{id}", clusterId), Clusters.class);
-        }
-        catch (NullPointerException e) {
+        } catch (NullPointerException e) {
             LOGGER.info("No cluster details registered with this clusterId >> " + e.getMessage());
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             LOGGER.info("exception occurred while getting cluster details >> " + e.getMessage());
         }
         return cluster;
@@ -172,6 +171,41 @@ public class VaultService {
         }
 
         return tokenPath;
+    }
+
+    private List<String> listClusterKeys() {
+        try {
+            List<String> keys = vaultTemplate.list(propertyService.getVaultSecretsEnginesKvClusterListPath());
+            return keys != null ? keys : List.of();
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to list clusters", e);
+        }
+    }
+
+    public void isExistCluster(Params params) {
+        List<String> clusterKeys = listClusterKeys();
+        LOGGER.info("cluster secret count: {}", clusterKeys.size());
+        for (String key : clusterKeys) {
+            Clusters cluster = getClusterDetails(key);
+            if (cluster != null && params.getClusterApiUrl().equals(cluster.getClusterApiUrl())) {
+                throw new ResultStatusException(MessageConstant.CLUSTER_ALREADY_REGISTERED.getMsg());
+            }
+        }
+    }
+
+    public void deleteCluster(Params params) {
+        LOGGER.info("delete cluster data from secret management..");
+        String metadataPath = propertyService.getVaultSecretsEnginesKvClusterListPath() + "/" + params.getCluster();
+        try {
+            vaultTemplate.doWithSession(session -> {
+                session.delete(metadataPath);
+                return null;
+            });
+
+        } catch (Exception e) {
+            LOGGER.info("Failed to completely delete cluster from Vault. path={}", metadataPath, e);
+            throw new RuntimeException("cluster delete failed: " + params.getCluster(), e);
+        }
     }
 
 }

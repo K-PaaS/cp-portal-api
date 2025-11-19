@@ -87,7 +87,8 @@ public enum MessageConstant {
     INVALID_DB_SERVICE("잘못된 DB Service 입니다.","Invalid DB Service."),
     INVALID_UNIT_OF_TIME("잘못된 시간 단위 입니다.","Invalid Unit of Time."),
     FORBIDDEN( "해당 리소스에 접근할 수 있는 권한이 없습니다.", "You do not have permission to access the resource."),
-    APPLICATION_FORBIDDEN( "적용한 어플리케이션 네임스페스에 접근할 수 있는 권한이 없습니다.", "You do not have permission to access the applied application namespace..");
+    APPLICATION_FORBIDDEN( "적용한 어플리케이션 네임스페스에 접근할 수 있는 권한이 없습니다.", "You do not have permission to access the applied application namespace.."),
+    CLUSTER_ALREADY_REGISTERED("해당 클러스터는 이미 등록되어 있습니다.", "The cluster is already registered.");
 
     private String ko_msg;
     private String eng_msg;

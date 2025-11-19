@@ -141,10 +141,9 @@ public class ClustersService {
             LOGGER.info("Terraman API call end");
         }
         else {
-
             Clusters rgCluster = new Clusters();
-
             try{
+                vaultService.isExistCluster(params);
                 restTemplateService.sendValid(params.getClusterApiUrl(), HttpMethod.GET,  Map.class, params);
                 createClusterInfoToVault(params);
                 clusters.setStatus(Constants.ClusterStatus.ACTIVE.getInitial());
@@ -153,6 +152,10 @@ public class ClustersService {
             catch (CommonStatusCodeException e) {
                 LOGGER.info("CLUSTER_REGISTRATION_FAILED : " + CommonUtils.loggerReplace(e.getErrorMessage()));
                 throw new CommonStatusCodeException(e.getErrorMessage());
+            }
+            catch (ResultStatusException e){
+                LOGGER.info("CLUSTER_REGISTRATION_FAILED : " + CommonUtils.loggerReplace(e.getMessage()));
+                throw new ResultStatusException(e.getMessage());
             }
             catch(Exception e){
                 LOGGER.info("CLUSTER_REGISTRATION_FAILED : " + CommonUtils.loggerReplace(e.getMessage()));
@@ -273,7 +276,7 @@ public class ClustersService {
             restTemplateService.send(Constants.TARGET_COMMON_API, "/clusters/{id}".replace("{id}", params.getCluster()),
                     HttpMethod.DELETE, null, ResultStatus.class, params);
 
-            vaultService.delete(propertyService.getVaultSecretsEnginesKvClusterTokenPath().replace("{id}", params.getCluster()));
+            vaultService.deleteCluster(params);
 
             for (Users users : usersList.getItems()) {
                 Params deleteUser = new Params(users.getClusterId(), users.getUserAuthId(), users.getUserType(), users.getCpNamespace());
@@ -314,9 +317,10 @@ public class ClustersService {
      */
     public boolean createClusterInfoToVault(Params params) {
         //Check ClusterId
+        LOGGER.info("check clusterId already exist..");
         Clusters clusters = vaultService.getClusterDetails(params.getCluster());
         if(!Objects.isNull(clusters)) {
-            LOGGER.info("cluster id is already exist.");
+            LOGGER.info("clusterId is already exist.");
             return false;
         }
 

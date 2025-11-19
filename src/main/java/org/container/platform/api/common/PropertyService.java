@@ -421,6 +421,9 @@ public class PropertyService {
     @Value("${vault.secretsEngines.kv.base}")
     private String vaultSecretsEnginesKvBasePath;
 
+    @Value("${vault.secretsEngines.kv.cluster-list}")
+    private String vaultSecretsEnginesKvClusterListPath;
+
     @Value("${vault.secretsEngines.kv.cluster-token}")
     private String vaultSecretsEnginesKvClusterTokenPath;
 

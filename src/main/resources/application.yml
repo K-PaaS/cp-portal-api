@@ -53,6 +53,7 @@ vault:
       super-admin-token: "secret/cluster/{clusterId}"
       user-token: "secret/user/{userAuthId}/{clusterId}/{namespace}"
       provider-credential: "secret/{iaas}/{id}"
+      cluster-list: "secret/metadata/cluster"
       cluster-token: "secret/cluster/{id}"
       ssh-key: "secret/ssh-key/{id}"
 

@@ -329,7 +329,7 @@ public class ClustersServiceTest {
 
         }
         // then
-        assertEquals(null, result.getResultCode());
+        assertEquals(null, result);
     }
 
     private Clusters setClusters(Params gParams) {
